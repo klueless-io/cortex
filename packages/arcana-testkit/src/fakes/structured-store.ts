@@ -83,6 +83,9 @@ export function createFakeStructuredStore(): StructuredStore {
       entities.set(entity.id, entity);
     },
     getEntity: async (id: string) => entities.get(id) ?? null,
+    deleteEntity: async (id: string) => {
+      entities.delete(id);
+    },
 
     storeEdge: async (edge: Edge) => {
       edges.set(edge.id, edge);

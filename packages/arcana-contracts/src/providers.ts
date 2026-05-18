@@ -46,6 +46,7 @@ export interface StructuredStore {
   // Entity
   upsertEntity(entity: Entity): Promise<void>;
   getEntity(id: string): Promise<Entity | null>;
+  deleteEntity(id: string): Promise<void>;
 
   // Edge
   storeEdge(edge: Edge): Promise<void>;

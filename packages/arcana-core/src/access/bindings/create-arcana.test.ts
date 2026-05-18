@@ -25,6 +25,7 @@ function makeFakeStructured(): StructuredStore {
     getChunksForMemory: async () => [],
     upsertEntity: async () => {},
     getEntity: async () => null,
+    deleteEntity: async () => {},
     storeEdge: async () => {},
     getNeighbors: async () => [],
     storeFact: async () => {},
@@ -103,6 +104,8 @@ describe('createArcana', () => {
     await expect(arcana.command.pin('m1')).rejects.toBeInstanceOf(
       NotImplementedError,
     );
+    // Note: command.upsertEntity, deleteEntity, linkNodes are now implemented
+    // (see access/command/index.test.ts). They no longer throw.
     await expect(
       arcana.ingest.ingestDocument({ format: 'markdown', content: '# x' }),
     ).rejects.toBeInstanceOf(NotImplementedError);
