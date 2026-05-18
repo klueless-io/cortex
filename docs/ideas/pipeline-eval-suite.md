@@ -1,6 +1,6 @@
 # Arcana Pipeline Eval Suite
 
-> **Status**: Idea — refined via `/agent-skills:idea-refine` on 2026-05-18. Awaiting decision on the open questions before scaffold work begins.
+> **Status**: **Parked — build-ready when triggered.** Idea refined via `/agent-skills:idea-refine` on 2026-05-18. Three of four open questions answered below; Q3 (starter documents) decided at build-time. **Trigger**: build when `retrieve.hybridSearch` or `maintain.runSleepPipeline` gets a real implementation — those are the first multi-step paths where eval-suite coverage starts paying for itself. Until then, ADRs + KyberBot's `/appydave:review-unit-tests` rhythm are the active defensive infrastructure.
 
 ## Problem Statement
 
@@ -47,10 +47,19 @@ Building blocks already exist: `.mochaccino/` data format is established, Mocha 
 
 ## Open Questions
 
-1. **Trace file layout**: one big `07-pipeline-traces.json` array, or one file per trace in `07-pipeline-traces/<slug>.json`? *(Lean: per file — discoverable in `ls`, easier to add to, Mocha can iterate the directory.)*
-2. **Where does the Vitest harness live**: `packages/arcana-core/src/__evals__/` (co-located with code) or top-level `evals/` directory (signals "this is special")? *(Lean: co-located — keeps tests close to the code under test.)*
-3. **What are the 2-3 starter documents?** Fox sentence is locked. Need one real conversation (yours to pick — a Slack snippet, a Telegram log, a short blog draft?) and possibly a paragraph of prose with clear entity-relation structure (e.g., a Wikipedia-style "X is the CEO of Y, founded in Z" passage).
-4. **Stubbed-stage representation in the trace JSON** — flag per stage (`status: 'stubbed'`) plus a `simulated_output` field the test uses? Or a separate `expected_when_implemented` array? *(Lean: flag + simulated_output — keeps each stage's record self-contained.)*
+1. **Trace file layout** — ✅ **Decided: per file** in `.mochaccino/data/07-pipeline-traces/<slug>.json`. Discoverable via `ls`, easier to add to, Mocha can iterate the directory.
+2. **Where does the Vitest harness live** — ✅ **Decided: `packages/arcana-core/src/__evals__/pipeline-trace.test.ts`** (co-located with the kernel under test).
+3. **What are the 2-3 starter documents?** — 🔓 **Open until build-time.** Fox sentence is locked. The other 1-2 (one real conversation snippet + maybe one structured-prose paragraph) are decided when the suite gets built, since the right examples depend on what kernel methods are real at trigger-time.
+4. **Stubbed-stage representation in the trace JSON** — ✅ **Decided: per-stage `status` + `simulated_output` field.** Each stage record is self-contained:
+   ```json
+   {
+     "step": "extractEntities",
+     "status": "stubbed",
+     "simulated_output": { "entities": [...] },
+     "graph_delta": { "+Entity": [...] }
+   }
+   ```
+   When the step's real impl lands, the field stays as `simulated_output` for trace docs that *want* a known mock (consistency-of-shape testing), but the test runner switches to using the real call. The test asserts the SAME `graph_delta` either way — the simulation is just there to keep the rest of the pipeline running deterministically while one step is stubbed.
 
 ---
 
