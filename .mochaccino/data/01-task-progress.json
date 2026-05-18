@@ -49,7 +49,8 @@
       "label": "v0.x — demand-driven implementations",
       "tasks": [
         { "id": "v0x.001", "title": "arcana-testkit revival (smaller scope)", "closed": "2026-05-18", "note": "T9 was deferred, but demand from KyberBot module #1 brought it back — exactly the demand-driven flow. Smaller scope: just the 4 fake providers (StructuredStore, VectorStore, EmbeddingProvider, LLMProvider), no compliance suite yet." },
-        { "id": "v0x.002", "title": "arcana-core/ingest.storeMemory implementation", "closed": "2026-05-18", "note": "First real kernel method implementation. Scope-locked to the canonical row write (build Memory with defaults, validate via MemorySchema, persist via StructuredStore, return id). Deliberately excluded: chunking, embedding, fact extraction, edge creation — those land when retrieval demands them. djb2 contentHash + crypto.randomUUID id. Caller from KyberBot's timeline.ts mirror path." }
+        { "id": "v0x.002", "title": "arcana-core/ingest.storeMemory implementation", "closed": "2026-05-18", "note": "First real kernel method implementation. Scope-locked to the canonical row write (build Memory with defaults, validate via MemorySchema, persist via StructuredStore, return id). Deliberately excluded: chunking, embedding, fact extraction, edge creation — those land when retrieval demands them. djb2 contentHash + crypto.randomUUID id. Caller from KyberBot's timeline.ts mirror path." },
+        { "id": "v0x.003", "title": "arcana-core/command — upsertEntity, deleteEntity, linkNodes", "closed": "2026-05-18", "commit": "17c3f48", "driven_by": "KyberBot module #2 (entity-graph.ts)", "note": "Three command methods implemented + linkMemories renamed to linkNodes per ADR 001 (name disagreed with NodeRef signature). Contract change: deleteEntity added to StructuredStore interface (additive). Tests grew from 102→116. Demand-driven loop continues to work as designed." }
       ]
     },
     {
