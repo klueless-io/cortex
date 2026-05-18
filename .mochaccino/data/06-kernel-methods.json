@@ -15,7 +15,7 @@
       "id": "ingest",
       "label": "ingest",
       "methods": [
-        { "name": "storeMemory", "status": "implemented", "driven_by": "kyberbot module #1 (timeline.ts)", "commit": "1f6a7c4", "scope_notes": "canonical row write only; chunking/embedding/extraction deferred" },
+        { "name": "storeMemory", "status": "implemented", "driven_by": "kyberbot module #1 (timeline.ts)", "commit": "1f6a7c4", "scope_notes": "canonical row write only; chunking/embedding/extraction deferred", "adopted_by": ["kyberbot/packages/cli/src/brain/timeline.ts (closed 2026-05-18, 5 integration tests passing)"] },
         { "name": "ingestDocument", "status": "stubbed", "driven_by": null, "notes": "no consumer demand yet" }
       ]
     },
@@ -54,9 +54,9 @@
       "id": "access.command",
       "label": "access.command (write facade)",
       "methods": [
-        { "name": "upsertEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48" },
-        { "name": "deleteEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "added deleteEntity to StructuredStore interface as part of this work (additive contract change)" },
-        { "name": "linkNodes", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "renamed from linkMemories per ADR 001 (name disagreed with NodeRef signature)" },
+        { "name": "upsertEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "adopted_by": ["kyberbot/packages/cli/src/brain/entity-graph.ts (closed 2026-05-18, 6 integration tests passing)"] },
+        { "name": "deleteEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "added deleteEntity to StructuredStore interface as part of this work (additive contract change — ADR 002)", "adopted_by": ["kyberbot/packages/cli/src/brain/entity-graph.ts (closed 2026-05-18)"] },
+        { "name": "linkNodes", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "renamed from linkMemories per ADR 001 (name disagreed with NodeRef signature)", "adopted_by": ["kyberbot/packages/cli/src/brain/entity-graph.ts (closed 2026-05-18)"] },
         { "name": "recordFact", "status": "stubbed", "driven_by": null, "notes": "lands when fact-store.ts adopted" },
         { "name": "correctFact", "status": "stubbed", "driven_by": null },
         { "name": "pin", "status": "stubbed", "driven_by": null },
@@ -69,6 +69,10 @@
   "summary": {
     "implemented_count": 4,
     "stubbed_count": 17,
-    "total_kernel_methods": 21
+    "total_kernel_methods": 21,
+    "consumers_actively_adopting": ["kyberbot (arcana-adoption branch)"],
+    "kyberbot_modules_closed": 3,
+    "kyberbot_modules_remaining": 12,
+    "kyberbot_provider_adapters_built": ["OpenAIEmbeddingProvider", "ChromaDBVectorStore"]
   }
 }

@@ -29,3 +29,4 @@ Standard sections:
 ## Current ADRs
 
 - [001 — Method renames before publish](./001-method-renames-before-publish.md)
+- [002 — `deleteEntity` added to StructuredStore interface](./002-deleteentity-contract-addition.md)

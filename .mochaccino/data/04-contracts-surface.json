@@ -32,7 +32,7 @@
       "id": "provider_interfaces",
       "label": "Provider interfaces (TS)",
       "rows": [
-        { "name": "StructuredStore", "status": "complete", "test_file": "providers.test.ts" },
+        { "name": "StructuredStore", "status": "complete", "test_file": "providers.test.ts", "evolution": ["v0.1 initial 21 methods", "v0.x: +deleteEntity (ADR 002, 2026-05-18, driven by kyberbot module #2)"] },
         { "name": "VectorStore", "status": "complete", "test_file": "providers.test.ts" },
         { "name": "EmbeddingProvider", "status": "complete", "test_file": "providers.test.ts" },
         { "name": "LLMProvider", "status": "complete", "test_file": "providers.test.ts" },
