@@ -30,3 +30,4 @@ Standard sections:
 
 - [001 — Method renames before publish](./001-method-renames-before-publish.md)
 - [002 — `deleteEntity` added to StructuredStore interface](./002-deleteentity-contract-addition.md)
+- [003 — Facts as memories vs facts as triples](./003-facts-as-memories-vs-facts-as-triples.md)

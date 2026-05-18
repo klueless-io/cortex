@@ -41,7 +41,7 @@
       "id": "access.query",
       "label": "access.query (read facade)",
       "methods": [
-        { "name": "queryFacts", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #4 (fact-store.ts) adopted" },
+        { "name": "queryFacts", "status": "stubbed", "driven_by": null, "notes": "lands when a triple-producing consumer adopts (likely Kybernesis Brain's queue-worker fact-extraction). KyberBot's facts are sentence-shaped — they mirror via ingest.storeMemory instead. See ADR 003." },
         { "name": "getNeighbors", "status": "stubbed", "driven_by": null },
         { "name": "stats", "status": "stubbed", "driven_by": null },
         { "name": "listContradictions", "status": "stubbed", "driven_by": null },
@@ -57,7 +57,7 @@
         { "name": "upsertEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "adopted_by": ["kyberbot/packages/cli/src/brain/entity-graph.ts (closed 2026-05-18, 6 integration tests passing)"] },
         { "name": "deleteEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "added deleteEntity to StructuredStore interface as part of this work (additive contract change — ADR 002)", "adopted_by": ["kyberbot/packages/cli/src/brain/entity-graph.ts (closed 2026-05-18)"] },
         { "name": "linkNodes", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "renamed from linkMemories per ADR 001 (name disagreed with NodeRef signature)", "adopted_by": ["kyberbot/packages/cli/src/brain/entity-graph.ts (closed 2026-05-18)"] },
-        { "name": "recordFact", "status": "stubbed", "driven_by": null, "notes": "lands when fact-store.ts adopted" },
+        { "name": "recordFact", "status": "stubbed", "driven_by": null, "notes": "lands when a triple-producing consumer adopts. KyberBot's sentence-shaped facts mirror via ingest.storeMemory instead. See ADR 003." },
         { "name": "correctFact", "status": "stubbed", "driven_by": null },
         { "name": "pin", "status": "stubbed", "driven_by": null },
         { "name": "moveToTier", "status": "stubbed", "driven_by": null },

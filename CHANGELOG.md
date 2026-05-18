@@ -38,6 +38,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - T9 (testkit) revived in smaller scope; T10 (libsql provider) / T11 (CI) / T12 (publish) deferred until consumer demand justifies them
 - Kernel methods implemented in demand-driven order — each KyberBot adoption module pulls the methods it needs
 
+### Documentation corrections
+- Adoption playbook (`docs/adoption/kyberbot.md`) row 4 was wrong: KyberBot's fact-store doesn't demand `command.recordFact`. KyberBot's facts are sentence-shaped (free text + entity list), not structured triples. They mirror via `ingest.storeMemory`. Triples are a future consumer (likely Kybernesis Brain). See ADR 003.
+- Row 5 (`fact-extractor.ts`) clarified: same sentence mirror unless KyberBot's extractor evolves to produce triples (a separate, deliberate decision).
+
 ## v0.1.0 — TBD
 
 Will be assigned when:

@@ -185,11 +185,11 @@ KyberBot brain modules are roughly listed in dependency order. Lower-numbered it
 
 | Order | KyberBot module | Arcana methods it'll demand |
 |---|---|---|
-| 1 | `timeline.ts` | `ingest.storeMemory`, `access.query.queryFacts`-ish reads |
-| 2 | `entity-graph.ts` | entity + edge ops (via `access.command.linkMemories`, store helpers) |
+| 1 | `timeline.ts` | `ingest.storeMemory` (read methods stay local) |
+| 2 | `entity-graph.ts` | `command.upsertEntity`, `command.deleteEntity`, `command.linkNodes` |
 | 3 | `embeddings.ts` | provider wiring: `EmbeddingProvider` + `VectorStore` adapters around OpenAI + ChromaDB |
-| 4 | `fact-store.ts` | `access.command.recordFact`, `access.query.queryFacts` |
-| 5 | `fact-extractor.ts` | `ingest.storeMemory` flow + LLM provider wiring |
+| 4 | `fact-store.ts` | `ingest.storeMemory` (KyberBot facts are sentence-shaped memories, not triples — see ADR 003. `command.recordFact` stays a stub.) |
+| 5 | `fact-extractor.ts` | `ingest.storeMemory` flow (sentence-shaped). If/when evolved to produce structured triples → `command.recordFact` gets demanded; until then, sentence mirror via storeMemory. |
 | 6 | `fact-contradiction.ts` | sleep step + contradiction storage |
 | 7 | `fact-temporal.ts` | temporal expiry logic in fact storage |
 | 8 | `fact-retrieval.ts` | `retrieve.factRetrieval` (multi-stage) |
