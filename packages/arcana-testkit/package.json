@@ -1,0 +1,35 @@
+{
+  "name": "@kybernesisai/arcana-testkit",
+  "version": "0.1.0",
+  "description": "In-memory fake providers for testing Arcana consumers",
+  "license": "MIT",
+  "author": "David Cruwys (AppyDave)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./fakes": {
+      "types": "./dist/fakes/index.d.ts",
+      "default": "./dist/fakes/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@kybernesisai/arcana-contracts": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
