@@ -13,6 +13,13 @@
         "vitest": "^4.0.0",
       },
     },
+    "packages/arcana-config": {
+      "name": "@kybernesisai/arcana-config",
+      "version": "0.1.0",
+      "dependencies": {
+        "zod": "^3.23.0",
+      },
+    },
     "packages/arcana-contracts": {
       "name": "@kybernesisai/arcana-contracts",
       "version": "0.1.0",
@@ -53,6 +60,8 @@
     "@humanwhocodes/retry": ["@humanwhocodes/retry@0.4.3", "", {}, "sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ=="],
 
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
+
+    "@kybernesisai/arcana-config": ["@kybernesisai/arcana-config@workspace:packages/arcana-config"],
 
     "@kybernesisai/arcana-contracts": ["@kybernesisai/arcana-contracts@workspace:packages/arcana-contracts"],
 

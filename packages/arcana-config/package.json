@@ -1,0 +1,39 @@
+{
+  "name": "@kybernesisai/arcana-config",
+  "version": "0.1.0",
+  "description": "Zod-validated configuration loader for Arcana — defaults → file → env",
+  "license": "MIT",
+  "author": "David Cruwys (AppyDave)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "default": "./dist/config.js"
+    },
+    "./load-config": {
+      "types": "./dist/load-config.d.ts",
+      "default": "./dist/load-config.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

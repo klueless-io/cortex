@@ -29,9 +29,12 @@
       "id": "arcana-config",
       "npm_name": "@kybernesisai/arcana-config",
       "role": "Zod-validated config loader (defaults → file → env)",
-      "depends_on": ["arcana-contracts"],
-      "status": "not_started",
-      "tasks": ["T6"]
+      "depends_on": ["zod@^3.23.0"],
+      "status": "complete",
+      "tasks": ["T6"],
+      "v0_1_progress": {
+        "T6_load_config": "complete (28 tests passing)"
+      }
     },
     {
       "id": "arcana-core",
