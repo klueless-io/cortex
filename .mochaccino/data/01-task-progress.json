@@ -3,7 +3,7 @@
   "title": "Arcana v0.1.0 Build Progress",
   "subtitle": "Task lifecycle across the scaffold milestone",
   "purpose": "Live view of where v0.1.0 stands. Each task moves todo → in-progress → done. Updated after every Tn closes.",
-  "generated": "2026-05-18",
+  "generated": "2026-05-19",
   "system": "arcana",
   "milestone": "v0.1.0",
   "status_legend": [
@@ -36,7 +36,7 @@
       "id": "blocked",
       "label": "Blocked / Awaiting",
       "tasks": [
-        { "id": "T2", "title": "npm scope reservation", "owner": "Ian (or transferable from David)", "note": "Register kybernesisai org on npm before T10a." }
+        { "id": "T2", "title": "npm scope reservation", "owner": "David", "note": "Org 'kybernesis' confirmed (not kybernesisai). Scope @kybernesis/* is active. Publish blocked on OTP browser flow — user handling manually." }
       ]
     },
     {
@@ -56,7 +56,8 @@
         { "id": "v0x.006", "title": "markFactSuperseded + storeContradiction + Contradiction.rationale (ADR 006)", "closed": "2026-05-18", "driven_by": "KyberBot module #11 (sleep/observe.ts)", "note": "markFactSuperseded: pure-link op sets isLatest=false + supersededBy on old fact. storeContradiction: kernel facade over provider; mints id + createdAt; status defaults 'pending'; rationale optional. ContradictionSchema gains rationale?: string field. correctFact stub deleted (dead surface — no consumer wants combined create-and-supersede). Tests: 141→151." },
         { "id": "v0x.007", "title": "Memory.status field (ADR 007 §3.1)", "closed": "2026-05-19", "commit": "525187f", "note": "MemoryStatusSchema = z.enum(['active','archived','deleted']). MemorySchema.status required. ingest.storeMemory defaults status to 'active'. Brain audit revealed this is a domain feature (both KyberBot and Brain track memory lifecycle). Tests: 151→156." },
         { "id": "v0x.008", "title": "Memory-level supersession — markMemorySuperseded (ADR 007 §3.2)", "closed": "2026-05-19", "commit": "6f9b86f", "note": "MemorySchema.isLatest: boolean (required). MemorySchema.supersededBy?: string. StructuredStore.markMemorySuperseded pure-link op mirrors markFactSuperseded. ingest.storeMemory defaults isLatest to true. Testkit fake updated with throw-on-unknown-id semantics. Tests: 156→162." },
-        { "id": "v0x.009", "title": "ProfileEntry schema replacing EntityProfile.staticFacts: string[] (ADR 007 §4)", "closed": "2026-05-19", "commit": "7098c77", "note": "ProfileEntrySchema: {value, factId?, confidence?, recordedAt?}. EntityProfileSchema.staticFacts changed from string[] to ProfileEntry[]. Flat-string callers migrate trivially: wrap each string in {value}. Brain's structured arrays project naturally. 5 new tests + regression test that raw strings now throw. Tests: 162→162 (6 files reused, count unchanged at 162; test count is additive within files)." }
+        { "id": "v0x.009", "title": "ProfileEntry schema replacing EntityProfile.staticFacts: string[] (ADR 007 §4)", "closed": "2026-05-19", "commit": "7098c77", "note": "ProfileEntrySchema: {value, factId?, confidence?, recordedAt?}. EntityProfileSchema.staticFacts changed from string[] to ProfileEntry[]. Flat-string callers migrate trivially: wrap each string in {value}. Brain's structured arrays project naturally. 5 new tests + regression test that raw strings now throw. Tests: 162→162 (6 files reused, count unchanged at 162; test count is additive within files)." },
+        { "id": "v0x.010", "title": "ADR 008: Brain migration analysis (brain-vs-harness classification)", "closed": "2026-05-19", "note": "Classifies every proposed Kybernesis Brain feature as brain (Arcana domain) vs harness (OAuth, connectors, multi-tenant, Motus — NOT Arcana). Confirms: expiresAt/surprisalScore/lastReinforcedAt already in FactSchema (contracts) but NOT surfaced in kernel methods or sleep pipeline yet. Identifies 5 Convex artifacts Kybernesis Brain must shed before adopting Arcana: 4-flat-ID edges, shadow entity rows, loose enum vocab, _creationTime, reactive query patterns. Timeline query (queryFacts with asOf) identified as a missing kernel method." }
       ]
     },
     {
@@ -64,10 +65,16 @@
       "label": "Deferred (post-scaffold; demand-driven)",
       "tasks": [
         { "id": "T9", "title": "arcana-testkit compliance suite", "deferred_to": "when a second real provider exists", "reason": "The 4 fake providers landed (v0.x.001). The original compliance harness — runComplianceSuite(provider) cross-checking implementations — stays deferred until libsql is joined by Convex or Chroma." },
-        { "id": "T10", "title": "arcana-providers-libsql", "status": "in_progress", "started": "2026-05-19", "note": "Building now. Full StructuredStore implementation over libsql (same sync binding KyberBot uses). Tables for all 9 entity types. In-memory (:memory:) integration tests against real SQLite. Unblocks KyberBot wiring initArcana() with a real store." },
-        { "id": "T11", "title": "CI: ci.yml", "deferred_to": "when remote exists", "reason": "Local-only repo, no PR flow yet." },
-        { "id": "T12a", "title": "First publish (manual)", "deferred_to": "after KyberBot adoption validates contracts", "reason": "Local file: deps work for current consumption pattern. Publish once contracts have been stress-tested by a real consumer." },
-        { "id": "T12b", "title": "CI: publish.yml + idempotency proof", "deferred_to": "after T12a", "reason": "Follows publish flow." }
+        { "id": "T10", "title": "arcana-providers-libsql", "status": "done", "closed": "2026-05-19", "note": "Full StructuredStore implementation over libsql (same sync binding KyberBot uses). Tables for all 9 entity types. In-memory (:memory:) integration tests against real SQLite. Unblocks KyberBot wiring initArcana() with a real store. Total: 191 tests, 23 files, 5 packages, all passing." },
+        { "id": "T11", "title": "arcana-provider-sqlite-vec", "status": "todo", "note": "VectorStore implementation over sqlite-vec (SQLite vector extension). Planned future provider that unblocks KyberAgent Desktop and ChromaDB removal from KyberBot. Not yet started — blocked until T10 libsql usage is validated in KyberBot adoption." },
+        { "id": "T12", "title": "CI: ci.yml", "deferred_to": "when remote exists", "reason": "Local-only repo, no PR flow yet." },
+        { "id": "T13a", "title": "First publish (manual)", "deferred_to": "after KyberBot adoption validates contracts", "reason": "Local file: deps work for current consumption pattern. Publish once contracts have been stress-tested by a real consumer. Blocked on OTP browser flow — user doing it manually. npm org is 'kybernesis' (not kybernesisai), scope is @kybernesis/*." },
+        { "id": "T13b", "title": "CI: publish.yml + idempotency proof", "deferred_to": "after T13a", "reason": "Follows publish flow." },
+        { "id": "T14", "title": "hybridSearch implementation", "deferred_to": "when KyberBot module #9 (hybrid-search.ts) adopted", "reason": "No consumer demand yet. Requires VectorStore + EmbeddingProvider wiring." },
+        { "id": "T15", "title": "factRetrieval implementation", "deferred_to": "when KyberBot module #8 (fact-retrieval.ts) adopted", "reason": "No consumer demand yet." },
+        { "id": "T16", "title": "getEntityProfile implementation", "deferred_to": "when KyberBot module #12 (user-profile.ts) adopted", "reason": "No consumer demand yet." },
+        { "id": "T17", "title": "Sleep pipeline implementation (runSleepPipeline / startSleepSchedule / stopSleepSchedule)", "deferred_to": "when KyberBot sleep modules fully adopted", "reason": "13-step pipeline; all three methods stubbed. expiresAt/surprisalScore/lastReinforcedAt already in FactSchema contracts but pipeline that uses them is not yet implemented." },
+        { "id": "T18", "title": "Timeline query — queryFacts with asOf date parameter", "deferred_to": "demand-driven", "reason": "Not in Arcana at all currently. Identified in ADR 008 as a missing kernel method. Needed for Brain migration scenarios where temporal queries are required." }
       ]
     }
   ]

@@ -3,12 +3,13 @@
   "title": "Arcana Kernel Method Status",
   "subtitle": "Which methods are implemented vs stubbed; demand-driven by KyberBot adoption",
   "purpose": "Tracks the demand-driven implementation trail. Each method is either stubbed (throws NotImplementedError) or implemented with a real body. The 'driven_by' field names the consumer module that triggered the implementation.",
-  "generated": "2026-05-18",
+  "generated": "2026-05-19",
   "system": "arcana",
   "status_legend": [
     { "id": "stubbed", "symbol": "○", "label": "NotImplementedError stub" },
     { "id": "implemented", "symbol": "✓", "label": "Real implementation + tests" },
-    { "id": "deferred", "symbol": "⊘", "label": "Deferred until demand surfaces" }
+    { "id": "deferred", "symbol": "⊘", "label": "Deferred until demand surfaces" },
+    { "id": "missing", "symbol": "✗", "label": "Not in Arcana yet — identified gap, not even stubbed" }
   ],
   "zones": [
     {
@@ -23,18 +24,19 @@
       "id": "retrieve",
       "label": "retrieve",
       "methods": [
-        { "name": "hybridSearch", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #9 (hybrid-search.ts) adopted" },
-        { "name": "factRetrieval", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #8 (fact-retrieval.ts) adopted" },
-        { "name": "getEntityProfile", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #12 (user-profile.ts) adopted" }
+        { "name": "hybridSearch", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #9 (hybrid-search.ts) adopted; read parity ~30% until this + factRetrieval + getEntityProfile implemented" },
+        { "name": "factRetrieval", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #8 (fact-retrieval.ts) adopted; NOTE: expiresAt/surprisalScore/lastReinforcedAt are already in FactSchema (contracts) but factRetrieval kernel method is not implemented — these fields are in the schema but not yet used in any kernel or sleep pipeline path" },
+        { "name": "getEntityProfile", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #12 (user-profile.ts) adopted" },
+        { "name": "queryFacts (asOf timeline)", "status": "missing", "driven_by": null, "notes": "NOT in Arcana at all. Identified in ADR 008 as a missing kernel method. queryFacts currently has no date-filtering parameter. Timeline query (queryFacts with asOf: Date) is needed for Brain migration scenarios. Will require StructuredStore.getFactsForEntity to accept a temporal filter." }
       ]
     },
     {
       "id": "maintain",
       "label": "maintain (sleep pipeline)",
       "methods": [
-        { "name": "runSleepPipeline", "status": "stubbed", "driven_by": null, "notes": "13-step pipeline; lands with sleep modules (#11)" },
-        { "name": "startSleepSchedule", "status": "stubbed", "driven_by": null, "notes": "Scheduler provider integration" },
-        { "name": "stopSleepSchedule", "status": "stubbed", "driven_by": null }
+        { "name": "runSleepPipeline", "status": "stubbed", "driven_by": null, "notes": "13-step pipeline; entirely stubbed. expiresAt/surprisalScore/lastReinforcedAt are in FactSchema contracts but the sleep steps that would use them (decay scoring, expiry sweeps) are not implemented. Lands with sleep modules (#11)." },
+        { "name": "startSleepSchedule", "status": "stubbed", "driven_by": null, "notes": "Scheduler provider integration; entirely stubbed" },
+        { "name": "stopSleepSchedule", "status": "stubbed", "driven_by": null, "notes": "Entirely stubbed" }
       ]
     },
     {
@@ -72,18 +74,37 @@
   "summary": {
     "implemented_count": 12,
     "stubbed_count": 14,
-    "total_kernel_methods": 26,
-    "consumers_actively_adopting": ["kyberbot (arcana-adoption branch)"],
+    "missing_count": 1,
+    "total_kernel_methods_catalogued": 27,
+    "write_parity_percent": 100,
+    "read_parity_percent": 30,
+    "test_counts": { "tests": 191, "files": 23, "packages": 5, "all_passing": true },
+    "consumers_actively_adopting": ["kyberbot (arcana-adoption branch, 22 commits, 724 tests)"],
     "kyberbot_modules_closed": 10,
     "kyberbot_modules_remaining": 5,
     "kyberbot_provider_adapters_built": ["OpenAIEmbeddingProvider", "ChromaDBVectorStore"],
+    "contracts_ahead_of_kernel": ["expiresAt, surprisalScore, lastReinforcedAt — in FactSchema but not surfaced in any kernel method or sleep pipeline step"],
+    "future_providers_planned": ["arcana-provider-sqlite-vec (unblocks KyberAgent Desktop + ChromaDB removal from KyberBot)"],
+    "brain_migration_blockers": [
+      "Kybernesis Brain must shed 5 Convex artifacts before adopting Arcana",
+      "4-flat-ID edges (must adopt NodeRef pattern)",
+      "shadow entity rows (must remove Convex-ism)",
+      "loose enum vocab (must align with Arcana scopes)",
+      "_creationTime usage (must switch to ISO createdAt)",
+      "reactive query patterns (Arcana is pull-only, no live queries)"
+    ],
+    "brain_vs_harness_classification": {
+      "brain_domain_already_in_arcana": ["Memory blocks", "temporal facts", "surprisalScore", "ProfileEntry", "EntityProfile", "Contradiction", "Insight"],
+      "harness_not_arcana": ["OAuth", "connectors", "multi-tenant routing", "Motus integration"]
+    },
     "contract_evolutions": [
       "v0.1.0 initial schema (FactSchema required triples, no updateMemory)",
       "v0.x: deleteEntity added to StructuredStore (ADR 002)",
       "v0.x: FactSchema corrected — fact (sentence) required, attribute/value optional (ADR 004 supersedes ADR 003)",
       "v0.x: updateMemory added to StructuredStore + command (ADR 005 — Memory is not append-only; unblocks pin/moveToTier and DVR-UT-006 orphan-mirror fix)",
       "v0.x: markFactSuperseded + storeContradiction added; Contradiction.rationale added; correctFact stub deleted (ADR 006 — driven by kyberbot module #11)",
-      "v0.x: Memory.status + Memory.isLatest + Memory.supersededBy fields added; markMemorySuperseded kernel + provider method added (ADR 007 §3.1-§3.2 — driven by Brain-vs-Convex audit)"
+      "v0.x: Memory.status + Memory.isLatest + Memory.supersededBy fields added; markMemorySuperseded kernel + provider method added (ADR 007 §3.1-§3.2 — driven by Brain-vs-Convex audit)",
+      "v0.x ADR 008: Brain migration analysis — confirmed expiresAt/surprisalScore/lastReinforcedAt in contracts; identified timeline query as missing kernel method; classified brain vs harness features"
     ]
   }
 }

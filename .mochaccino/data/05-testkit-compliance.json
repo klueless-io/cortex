@@ -3,7 +3,7 @@
   "title": "Testkit Provider Compliance",
   "subtitle": "Provider × compliance test — every implementer of a provider interface runs the same suite",
   "purpose": "The contract claim: any provider in any package must pass arcana-testkit's runComplianceSuite. v0.1.0 ships with one provider (libsql) and one placeholder test, just to prove the harness wires up.",
-  "generated": "2026-05-18",
+  "generated": "2026-05-19",
   "system": "arcana",
   "milestone": "v0.1.0",
   "status_legend": [
@@ -16,27 +16,33 @@
     {
       "id": "arcana-providers-libsql",
       "interface": "StructuredStore",
-      "v0_1_target": "Real connection + storeMemory/getMemory round-trip; other methods throw NotImplementedError",
+      "v0_1_target": "Full StructuredStore over libsql — all 9 entity types, in-memory integration tests",
+      "status": "complete",
+      "closed": "2026-05-19",
       "tests": [
-        { "id": "connect", "label": "Open in-memory libsql connection", "status": "not_started" },
-        { "id": "store_get_roundtrip", "label": "storeMemory then getMemory returns the same Memory", "status": "not_started" }
+        { "id": "connect", "label": "Open in-memory libsql connection", "status": "passing" },
+        { "id": "store_get_roundtrip", "label": "storeMemory then getMemory returns the same Memory", "status": "passing" },
+        { "id": "all_entity_types", "label": "All 9 entity types covered with in-memory SQLite integration tests", "status": "passing" }
+      ]
+    },
+    {
+      "id": "arcana-provider-sqlite-vec",
+      "interface": "VectorStore",
+      "v0_1_target": "Not in v0.1 — planned future provider",
+      "status": "not_started",
+      "note": "Unblocks KyberAgent Desktop and ChromaDB removal from KyberBot. Compliance harness will run against this once it ships.",
+      "tests": [
+        { "id": "upsert_query", "label": "upsert one chunk, query returns it", "status": "not_started" }
       ]
     },
     {
       "id": "arcana-providers-convex",
       "interface": "StructuredStore",
-      "v0_1_target": "Not in v0.1 — placeholder row to show the suite scales",
+      "v0_1_target": "Not in v0.1 — placeholder row to show the suite scales. Kybernesis Brain must shed 5 Convex artifacts before this is viable.",
+      "status": "not_started",
       "tests": [
         { "id": "connect", "label": "Open Convex client", "status": "not_started" },
         { "id": "store_get_roundtrip", "label": "storeMemory then getMemory returns the same Memory", "status": "not_started" }
-      ]
-    },
-    {
-      "id": "arcana-providers-chroma",
-      "interface": "VectorStore",
-      "v0_1_target": "Not in v0.1",
-      "tests": [
-        { "id": "upsert_query", "label": "upsert one chunk, query returns it", "status": "not_started" }
       ]
     }
   ]

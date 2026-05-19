@@ -3,7 +3,7 @@
   "title": "Arcana Package Graph",
   "subtitle": "Five packages, their dependencies, and current build state",
   "purpose": "Shows the v0.1.0 package layout and dependency direction. Useful for understanding what blocks what during the scaffold milestone.",
-  "generated": "2026-05-18",
+  "generated": "2026-05-19",
   "system": "arcana",
   "milestone": "v0.1.0",
   "status_legend": [
@@ -51,19 +51,31 @@
     {
       "id": "arcana-testkit",
       "npm_name": "@kybernesis/arcana-testkit",
-      "role": "In-memory fake providers for consumer integration tests (compliance harness deferred)",
+      "role": "In-memory fake providers for consumer integration tests (compliance harness deferred until second real provider)",
       "depends_on": ["@kybernesis/arcana-contracts (workspace)"],
-      "status": "scaffolded",
-      "tasks": ["T9"]
+      "status": "complete",
+      "tasks": ["T9"],
+      "note": "4 fake providers shipped (StructuredStore, VectorStore, EmbeddingProvider, LLMProvider). Compliance harness runComplianceSuite() deferred until arcana-provider-sqlite-vec or Convex provider joins libsql.",
+      "v0_1_status": "complete"
     },
     {
       "id": "arcana-providers-libsql",
       "npm_name": "@kybernesis/arcana-providers-libsql",
       "role": "Full StructuredStore implementation over libsql (same sync SQLite binding as KyberBot). All 9 entity types. In-memory integration tests. Unblocks KyberBot wiring initArcana().",
       "depends_on": ["arcana-contracts", "libsql@0.5.x"],
-      "status": "scaffolded",
+      "status": "complete",
       "tasks": ["T10"],
-      "started": "2026-05-19"
+      "closed": "2026-05-19",
+      "v0_1_status": "complete"
+    },
+    {
+      "id": "arcana-provider-sqlite-vec",
+      "npm_name": "@kybernesis/arcana-provider-sqlite-vec",
+      "role": "VectorStore implementation over sqlite-vec (SQLite vector extension). Planned future provider that unblocks KyberAgent Desktop and ChromaDB removal from KyberBot.",
+      "depends_on": ["arcana-contracts", "sqlite-vec"],
+      "status": "not_started",
+      "tasks": ["T11"],
+      "note": "Planned; not yet started. Blocked until arcana-provider-libsql usage is validated in KyberBot adoption."
     }
   ]
 }

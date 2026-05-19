@@ -3,7 +3,10 @@
   "title": "Arcana Publish Pipeline",
   "subtitle": "From commit to npm — v0.1.0 first publish is hand-rolled; v0.1.1 onward is CI-driven",
   "purpose": "Shows the publish path for v0.1.x. The v0.1.0 manual pass surfaces auth/scope/exports gotchas with immediate feedback. v0.1.1 onward proves idempotency via publish.yml.",
-  "generated": "2026-05-18",
+  "npm_org": "kybernesis",
+  "npm_scope": "@kybernesis/*",
+  "publish_status": "blocked — OTP browser flow required; user handling manually as of 2026-05-19",
+  "generated": "2026-05-19",
   "system": "arcana",
   "milestone": "v0.1.0",
   "status_legend": [
