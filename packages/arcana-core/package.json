@@ -51,7 +51,8 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@kybernesis/arcana-contracts": "workspace:*"
+    "@kybernesis/arcana-contracts": "workspace:*",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@kybernesis/arcana-testkit": "workspace:*",

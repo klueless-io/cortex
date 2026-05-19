@@ -3,7 +3,6 @@
   "files": [],
   "references": [
     { "path": "packages/arcana-contracts" },
-    { "path": "packages/arcana-config" },
     { "path": "packages/arcana-core" },
     { "path": "packages/arcana-testkit" },
     { "path": "packages/arcana-provider-libsql" }
