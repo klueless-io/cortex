@@ -17,7 +17,7 @@
       "label": "Data model (Zod schemas)",
       "source": "~/dev/ad/brains/kybernesis/arcana-spec.md §10",
       "rows": [
-        { "name": "Memory", "status": "complete", "test_file": "memory.test.ts", "evolution": ["v0.1 initial", "v0.x: ADR 007 — +status: 'active'|'archived'|'deleted' (Brain audit revealed Memory.status is a domain feature, not a Convex artifact; KyberBot also has it). ingest.storeMemory defaults status to 'active'."] },
+        { "name": "Memory", "status": "complete", "test_file": "memory.test.ts", "evolution": ["v0.1 initial", "v0.x: ADR 007 §3.1 — +status: 'active'|'archived'|'deleted' (Brain audit revealed Memory.status is a domain feature, not a Convex artifact; KyberBot also has it). ingest.storeMemory defaults status to 'active'.", "v0.x: ADR 007 §3.2 — +isLatest: boolean (required) and +supersededBy?: string. Memory-level supersession mirrors the fact-level pattern from ADR 006. ingest.storeMemory defaults isLatest to true."] },
         { "name": "Chunk", "status": "complete", "test_file": "memory.test.ts" },
         { "name": "Entity", "status": "complete", "test_file": "entity.test.ts" },
         { "name": "Edge", "status": "complete", "test_file": "edge.test.ts" },
@@ -32,7 +32,7 @@
       "id": "provider_interfaces",
       "label": "Provider interfaces (TS)",
       "rows": [
-        { "name": "StructuredStore", "status": "complete", "test_file": "providers.test.ts", "evolution": ["v0.1 initial", "v0.x: +deleteEntity (ADR 002, 2026-05-18, driven by kyberbot module #2)", "v0.x: +updateMemory (ADR 005, 2026-05-18, Memory not append-only; unblocks pin/moveToTier and orphan-mirror fix)", "v0.x: +markFactSuperseded (ADR 006, 2026-05-18, driven by kyberbot module #11 supersede write-path)"] },
+        { "name": "StructuredStore", "status": "complete", "test_file": "providers.test.ts", "evolution": ["v0.1 initial", "v0.x: +deleteEntity (ADR 002, 2026-05-18, driven by kyberbot module #2)", "v0.x: +updateMemory (ADR 005, 2026-05-18, Memory not append-only; unblocks pin/moveToTier and orphan-mirror fix)", "v0.x: +markFactSuperseded (ADR 006, 2026-05-18, driven by kyberbot module #11 supersede write-path)", "v0.x: +markMemorySuperseded (ADR 007 §3.2, 2026-05-19, memory-level supersession mirroring the fact-level pattern)"] },
         { "name": "VectorStore", "status": "complete", "test_file": "providers.test.ts" },
         { "name": "EmbeddingProvider", "status": "complete", "test_file": "providers.test.ts" },
         { "name": "LLMProvider", "status": "complete", "test_file": "providers.test.ts" },

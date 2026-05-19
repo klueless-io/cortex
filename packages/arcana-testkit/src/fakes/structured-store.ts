@@ -71,6 +71,19 @@ export function createFakeStructuredStore(): StructuredStore {
       }
       memories.set(id, { ...existing, ...fields });
     },
+    markMemorySuperseded: async (oldMemoryId: string, newMemoryId: string) => {
+      const existing = memories.get(oldMemoryId);
+      if (!existing) {
+        throw new Error(
+          `fake StructuredStore: markMemorySuperseded called for unknown id ${oldMemoryId}`,
+        );
+      }
+      memories.set(oldMemoryId, {
+        ...existing,
+        isLatest: false,
+        supersededBy: newMemoryId,
+      });
+    },
     deleteMemory: async (id: string) => {
       memories.delete(id);
       chunksByMemory.delete(id);

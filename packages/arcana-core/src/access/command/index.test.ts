@@ -29,6 +29,7 @@ describe('createCommand surface', () => {
     expect(typeof api.deleteEntity).toBe('function');
     expect(typeof api.recordFact).toBe('function');
     expect(typeof api.markFactSuperseded).toBe('function');
+    expect(typeof api.markMemorySuperseded).toBe('function');
     expect(typeof api.storeContradiction).toBe('function');
     expect(typeof api.linkNodes).toBe('function');
     expect(typeof api.updateMemory).toBe('function');
@@ -221,6 +222,8 @@ describe('command.updateMemory', () => {
     isPinned: false,
     contentHash: djb2Hash('original content'),
     source: 'cli' as const,
+    status: 'active' as const,
+    isLatest: true,
   };
 
   beforeEach(async () => {
@@ -381,6 +384,43 @@ describe('command.markFactSuperseded', () => {
   it('throws when oldFactId does not exist', async () => {
     await expect(
       api.markFactSuperseded('missing', 'also-missing'),
+    ).rejects.toThrow();
+  });
+});
+
+describe('command.markMemorySuperseded', () => {
+  const mkMemory = (id: string, content: string) => ({
+    id,
+    title: '',
+    summary: '',
+    content,
+    tags: [],
+    priority: 0.5,
+    tier: 'warm' as const,
+    decayScore: 0,
+    accessCount: 0,
+    isPinned: false,
+    contentHash: djb2Hash(content),
+    source: 'chat' as const,
+    status: 'active' as const,
+    isLatest: true,
+  });
+
+  it('marks an existing memory as superseded by another', async () => {
+    await structured.storeMemory(mkMemory('mem_old', 'David lives in Sydney'));
+    await structured.storeMemory(mkMemory('mem_new', 'David lives in Melbourne'));
+    await api.markMemorySuperseded('mem_old', 'mem_new');
+    const old = await structured.getMemory('mem_old');
+    const updated = await structured.getMemory('mem_new');
+    expect(old?.isLatest).toBe(false);
+    expect(old?.supersededBy).toBe('mem_new');
+    expect(updated?.isLatest).toBe(true);
+    expect(updated?.supersededBy).toBeUndefined();
+  });
+
+  it('throws when oldMemoryId does not exist', async () => {
+    await expect(
+      api.markMemorySuperseded('missing', 'also-missing'),
     ).rejects.toThrow();
   });
 });

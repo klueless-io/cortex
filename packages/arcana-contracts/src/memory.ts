@@ -40,6 +40,15 @@ export const MemorySchema = z
     contentHash: z.string(),
     source: MemorySourceSchema,
     status: MemoryStatusSchema,
+    /**
+     * `true` if this Memory is the current version; `false` once another
+     * Memory supersedes it. See ADR 007 §3.2. Defaults to `true` at write
+     * time (set by `ingest.storeMemory`). Flipped to `false` only via
+     * `markMemorySuperseded`, which also fills `supersededBy`.
+     */
+    isLatest: z.boolean(),
+    /** When `isLatest` is `false`, the id of the Memory that replaced this one. */
+    supersededBy: z.string().min(1).optional(),
     scopes: ScopesSchema.optional(),
   })
   .strict();

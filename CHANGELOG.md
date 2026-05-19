@@ -11,6 +11,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `MemoryStatusSchema` — `z.enum(['active', 'archived', 'deleted'])` lifecycle vocab for Memory rows
 - `MemorySchema.status` — required field of type `MemoryStatusSchema`. Domain feature surfaced by the Brain-vs-Convex audit; both KyberBot and Brain track memory lifecycle, Arcana now does too. `ingest.storeMemory` defaults `status` to `'active'`. ([ADR 007](./docs/decisions/007-shape-thesis-portable-rules-not-records.md))
 
+### Added — Memory-level supersession (ADR 007 §3.2)
+- `MemorySchema.isLatest: boolean` (required) and `MemorySchema.supersededBy?: string` — mirrors the fact-level supersession pattern from ADR 006 at the memory level.
+- `StructuredStore.markMemorySuperseded(oldMemoryId, newMemoryId)` — pure-link provider method: sets `isLatest=false` and `supersededBy=newMemoryId` on the old memory.
+- `command.markMemorySuperseded(oldMemoryId, newMemoryId)` — kernel facade over the provider method; delegates and logs.
+- `ingest.storeMemory` defaults `isLatest: true` (new memories are latest by definition).
+- Implemented in the testkit fake (`createFakeStructuredStore`) with the same throw-on-unknown-id semantics as `markFactSuperseded`.
+
 ### Added — `@kybernesisai/arcana-core`
 - `ingest.storeMemory(input)` — canonical row write with defaults + djb2 contentHash + UUID id ([commit 1f6a7c4](./))
 - `command.upsertEntity(entity)` — persist an Entity via the structured store

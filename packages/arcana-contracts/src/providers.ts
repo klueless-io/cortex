@@ -49,6 +49,13 @@ export interface StructuredStore {
    * it themselves; they trust the kernel.
    */
   updateMemory(id: string, fields: Partial<Omit<Memory, 'id'>>): Promise<void>;
+  /**
+   * Mark a memory as superseded by another. Updates `isLatest=false` and
+   * `supersededBy=newMemoryId` on the old memory. The new memory must already
+   * exist (created via `storeMemory`); this is a pure link operation.
+   * Mirrors `markFactSuperseded`. See ADR 007 §3.2.
+   */
+  markMemorySuperseded(oldMemoryId: string, newMemoryId: string): Promise<void>;
   deleteMemory(id: string): Promise<void>;
 
   // Chunk

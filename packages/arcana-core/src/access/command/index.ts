@@ -97,6 +97,13 @@ export interface CommandApi {
    */
   markFactSuperseded(oldFactId: string, newFactId: string): Promise<void>;
   /**
+   * Mark an existing memory as superseded by another. Pure link operation:
+   * updates `isLatest=false` and `supersededBy=newMemoryId` on the old memory.
+   * The new memory must already exist (typically created via `ingest.storeMemory`).
+   * Mirrors `markFactSuperseded`. See ADR 007 §3.2.
+   */
+  markMemorySuperseded(oldMemoryId: string, newMemoryId: string): Promise<void>;
+  /**
    * Store a contradiction between two facts. Kernel mints id + createdAt;
    * status defaults to `'pending'`. `rationale` captures the why-detected
    * signal (e.g., LLM-extracted explanation). Returns the new contradiction id.
@@ -250,6 +257,17 @@ export function createCommand(deps: CommandDeps): CommandApi {
       deps.logger.debug('arcana.command.markFactSuperseded', {
         oldFactId,
         newFactId,
+      });
+    },
+
+    markMemorySuperseded: async (
+      oldMemoryId: string,
+      newMemoryId: string,
+    ): Promise<void> => {
+      await deps.structured.markMemorySuperseded(oldMemoryId, newMemoryId);
+      deps.logger.debug('arcana.command.markMemorySuperseded', {
+        oldMemoryId,
+        newMemoryId,
       });
     },
 

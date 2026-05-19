@@ -21,6 +21,7 @@ const sampleMemory: Memory = {
   contentHash: 'abc123',
   source: 'cli',
   status: 'active',
+  isLatest: true,
   scopes: { org_id: 'org_1' },
 };
 
@@ -56,6 +57,22 @@ describe('MemorySchema', () => {
   it('rejects a memory missing status', () => {
     const { status: _drop, ...withoutStatus } = sampleMemory;
     expect(() => MemorySchema.parse(withoutStatus)).toThrow();
+  });
+
+  it('rejects a memory missing isLatest', () => {
+    const { isLatest: _drop, ...withoutIsLatest } = sampleMemory;
+    expect(() => MemorySchema.parse(withoutIsLatest)).toThrow();
+  });
+
+  it('accepts supersededBy when set', () => {
+    const superseded: Memory = { ...sampleMemory, isLatest: false, supersededBy: 'mem_2' };
+    expect(MemorySchema.parse(superseded)).toEqual(superseded);
+  });
+
+  it('rejects an empty supersededBy string', () => {
+    expect(() =>
+      MemorySchema.parse({ ...sampleMemory, isLatest: false, supersededBy: '' }),
+    ).toThrow();
   });
 });
 

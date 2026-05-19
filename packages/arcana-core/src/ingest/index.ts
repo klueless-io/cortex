@@ -76,6 +76,7 @@ export function createIngest(deps: IngestDeps): IngestApi {
         contentHash: djb2Hash(input.content),
         source: input.source,
         status: 'active',
+        isLatest: true,
         scopes: input.scopes,
       });
 
