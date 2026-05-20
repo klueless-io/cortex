@@ -119,8 +119,28 @@ export function createQuery(deps: QueryDeps): QueryApi {
       return freshEnvelope(insights);
     },
 
+    readBlock: async (label: string): Promise<QueryResult<string | null>> => {
+      const self = await deps.structured.getAgentSelf();
+      const block = self?.memoryBlocks.find((b) => b.label === label);
+      deps.logger.debug('arcana.query.readBlock', {
+        label,
+        found: Boolean(block),
+      });
+      return freshEnvelope(block?.content ?? null);
+    },
+
+    getBlockHistory: async (
+      label: string,
+    ): Promise<QueryResult<AgentSelf['history']>> => {
+      const self = await deps.structured.getAgentSelf();
+      const entries = (self?.history ?? []).filter((e) => e.label === label);
+      deps.logger.debug('arcana.query.getBlockHistory', {
+        label,
+        count: entries.length,
+      });
+      return freshEnvelope(entries);
+    },
+
     stats: async () => stub('stats'),
-    readBlock: async () => stub('readBlock'),
-    getBlockHistory: async () => stub('getBlockHistory'),
   };
 }

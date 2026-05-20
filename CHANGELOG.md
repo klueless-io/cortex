@@ -7,6 +7,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## v0.3.1 — 2026-05-21
+
+### Added — `@kybernesis/arcana-core` (block-zone facades)
+- `query.readBlock(label)` — thin facade over `structured.getAgentSelf`; returns the content of the matching memory block or `null` if not found.
+- `query.getBlockHistory(label)` — thin facade; returns the history entries filtered to the supplied label. Empty array when no history exists or agent-self has not been stored.
+
+### Notes
+- Closes the two block-zone stubs on the kernel matrix (20/28 → 22/28 implemented). Both methods are pure read facades — no contract changes, no provider changes.
+- Currently no active consumer demand — implemented for completeness so that whenever Kyber in Cloud begins migration, the full `access.query` surface is available. Aligned with the "easier to reach parity now and delete unused later" position.
+
 ## v0.3.0 — 2026-05-20
 
 ### Added — `@kybernesis/arcana-testkit` (new subpath: `./parity`)

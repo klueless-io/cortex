@@ -177,8 +177,8 @@
         { "name": "stats", "status": "stubbed", "driven_by": null, "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "unused" } } },
         { "name": "listContradictions", "status": "implemented", "driven_by": "v0.2.1 easy-facade sprint 2026-05-20", "commit": "TBD", "notes": "Thin facade over structured.listContradictions; respects optional status filter. Provider-level method was already implemented.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
         { "name": "listInsights", "status": "implemented", "driven_by": "v0.2.1 easy-facade sprint 2026-05-20", "commit": "TBD", "notes": "Thin facade over structured.listInsights; respects optional entityId filter. Provider-level method was already implemented.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
-        { "name": "readBlock", "status": "stubbed", "driven_by": null, "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
-        { "name": "getBlockHistory", "status": "stubbed", "driven_by": null, "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } }
+        { "name": "readBlock", "status": "implemented", "driven_by": "v0.3.1 parity-fill sprint 2026-05-21", "commit": "TBD", "notes": "Thin facade over structured.getAgentSelf; returns block content (or null) for matching label. No active consumer; implemented for surface completeness ahead of Kyber-in-Cloud migration.", "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "getBlockHistory", "status": "implemented", "driven_by": "v0.3.1 parity-fill sprint 2026-05-21", "commit": "TBD", "notes": "Thin facade; returns history entries filtered to label. Empty array when no history. No active consumer; surface-completeness move.", "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } }
       ]
     },
     {
@@ -201,17 +201,18 @@
     }
   ],
   "summary": {
-    "implemented_count": 20,
-    "stubbed_count": 8,
+    "implemented_count": 22,
+    "stubbed_count": 6,
     "missing_count": 0,
     "total_kernel_methods_catalogued": 28,
     "write_parity_percent": 100,
-    "read_parity_percent": 95,
-    "test_counts": { "tests": 249, "files": 25, "packages": 5, "all_passing": true },
+    "read_parity_percent": 100,
+    "test_counts": { "tests": 254, "files": 25, "packages": 5, "all_passing": true },
     "arcana_config_merge": "arcana-config package DELETED 2026-05-19; merged into arcana-core src/config/.",
     "fts_hybridsearch_sprint": "Sprint 2026-05-20 landed: searchFulltext contract + libsql FTS5 impl + kernel hybridSearch (RRF k=60) + queryFacts asOf + ADR 009 (parity gate) + ADR 010 (sleep step gap). KyberBot untouched per ADR 009 deferred-swap principle.",
     "easy_facade_sprint": "Follow-on sprint 2026-05-20 (v0.2.1) landed: getNeighbors + listContradictions + listInsights kernel facades (thin wrappers over already-implemented provider methods). Tier 2 audits run in parallel: (a) FTS5 syntax-injection audit — clean, 10KB input cap added defensively; (b) hybridSearch vs KyberBot parity cross-check — shape parity holds, channel topology diverges (Arcana 3-channel vs KyberBot 4-channel), top-N overlap expected 60–75% on parity test, documented in docs/plans/2026-05-20-tier1-tier2-facades-and-audits.md.",
     "parity_harness_sprint": "v0.3.0 sprint 2026-05-20 landed: runParityHarness shared utility in @kybernesis/arcana-testkit/parity — the comparison engine required by ADR 009 for any consumer swap. Generic top-N overlap test with configurable threshold + per-query diff tracking + error capture. 11 new tests. Unblocks the KyberBot hybrid-search swap (whenever KyberBot brings fixtures + invokes the harness).",
+    "parity_fill_sprint": "v0.3.1 sprint 2026-05-21 landed: readBlock + getBlockHistory kernel facades (thin wrappers over structured.getAgentSelf). No active consumer demand — implemented for surface completeness ahead of Kyber-in-Cloud migration. Matrix moves to 22/28 implemented; read parity hits 100%. Only remaining stubs: sleep pipeline (3) + 3 no-demand items. Also: docs/audits/sleep-pipeline-gap-analysis.md added — decision-support analysis for ADR 010 with concrete runtime impact of each option; recommends Option A (add consolidate + observe as steps 14/15).",
     "delivery_review_status": "CONDITIONAL PASS r2 (2026-05-20). EC-015 in-flight guard needed before merge. 4 KyberBot-side patches still remaining.",
     "consumers_actively_adopting": ["kyberbot (arcana-adoption branch)"],
     "kyberbot_modules_closed": 10,

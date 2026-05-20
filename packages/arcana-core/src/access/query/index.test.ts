@@ -5,6 +5,7 @@ import {
   type Contradiction,
   type Insight,
   type Edge,
+  type AgentSelf,
 } from '@kybernesis/arcana-contracts';
 import { createFakeStructuredStore } from '@kybernesis/arcana-testkit/fakes';
 import { createQuery, type QueryApi, type QueryDeps } from './index.js';
@@ -262,18 +263,82 @@ describe('query.listInsights', () => {
   });
 });
 
+describe('query.readBlock', () => {
+  const self: AgentSelf = {
+    memoryBlocks: [
+      { label: 'persona', content: 'curious operator', updatedAt: '2026-05-21T00:00:00.000Z' },
+      { label: 'objectives', content: 'ship kernel sleep pipeline', updatedAt: '2026-05-21T00:00:00.000Z' },
+    ],
+    history: [],
+  };
+
+  beforeEach(async () => {
+    await structured.updateAgentSelf(self);
+  });
+
+  it('returns the content of the block with the given label', async () => {
+    const result = await api.readBlock('persona');
+    expect(result.data).toBe('curious operator');
+  });
+
+  it('returns null when the label is unknown', async () => {
+    const result = await api.readBlock('does-not-exist');
+    expect(result.data).toBeNull();
+  });
+
+  it('returns null when no agent-self has been stored', async () => {
+    // fresh store (no updateAgentSelf yet)
+    const freshStore = createFakeStructuredStore();
+    await freshStore.connect();
+    const freshApi = createQuery({ structured: freshStore, logger: createNoopLogger() });
+    const result = await freshApi.readBlock('persona');
+    expect(result.data).toBeNull();
+  });
+
+  it('wraps in QueryResult envelope', async () => {
+    const result = await api.readBlock('persona');
+    expect(result.generated_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(result.data_age_ms).toBe(0);
+    expect(result.stale).toBe(false);
+  });
+});
+
+describe('query.getBlockHistory', () => {
+  const self: AgentSelf = {
+    memoryBlocks: [{ label: 'persona', content: 'v2 persona', updatedAt: '2026-05-21T00:00:00.000Z' }],
+    history: [
+      { label: 'persona', previousContent: 'v0 persona', changedAt: '2026-05-19T00:00:00.000Z', changedBy: 'david' },
+      { label: 'persona', previousContent: 'v1 persona', changedAt: '2026-05-20T00:00:00.000Z' },
+      { label: 'objectives', previousContent: 'older goal', changedAt: '2026-05-19T00:00:00.000Z' },
+    ],
+  };
+
+  beforeEach(async () => {
+    await structured.updateAgentSelf(self);
+  });
+
+  it('returns history filtered to the supplied label', async () => {
+    const result = await api.getBlockHistory('persona');
+    expect(result.data).toHaveLength(2);
+    expect(result.data.every((e) => e.label === 'persona')).toBe(true);
+  });
+
+  it('returns empty array when no history exists for the label', async () => {
+    const result = await api.getBlockHistory('never-changed');
+    expect(result.data).toEqual([]);
+  });
+
+  it('returns empty array when no agent-self has been stored', async () => {
+    const freshStore = createFakeStructuredStore();
+    await freshStore.connect();
+    const freshApi = createQuery({ structured: freshStore, logger: createNoopLogger() });
+    const result = await freshApi.getBlockHistory('persona');
+    expect(result.data).toEqual([]);
+  });
+});
+
 describe('still-stubbed query methods', () => {
   it('stats throws NotImplementedError', async () => {
     await expect(api.stats()).rejects.toThrow(NotImplementedError);
-  });
-
-  it('readBlock throws NotImplementedError', async () => {
-    await expect(api.readBlock('persona')).rejects.toThrow(NotImplementedError);
-  });
-
-  it('getBlockHistory throws NotImplementedError', async () => {
-    await expect(api.getBlockHistory('persona')).rejects.toThrow(
-      NotImplementedError,
-    );
   });
 });
