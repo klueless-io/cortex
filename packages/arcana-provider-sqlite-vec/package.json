@@ -1,0 +1,32 @@
+{
+  "name": "@kybernesis/arcana-provider-sqlite-vec",
+  "version": "0.1.0",
+  "description": "Arcana VectorStore provider — sqlite-vec (no Docker, zero-infrastructure vector search)",
+  "license": "MIT",
+  "author": "David Cruwys (AppyDave)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@kybernesis/arcana-contracts": "workspace:*",
+    "better-sqlite3": "^12.4.1",
+    "sqlite-vec": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^20.11.0"
+  },
+  "publishConfig": { "access": "public" }
+}
