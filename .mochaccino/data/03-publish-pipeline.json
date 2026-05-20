@@ -14,7 +14,7 @@
     "@kybernesis/arcana-provider-sqlite-vec"
   ],
   "publish_order": "contracts first (no workspace deps), then core, testkit, provider-libsql, provider-sqlite-vec in any order",
-  "publish_status": "v0.2.1 live since 2026-05-20; v0.3.0 (parity harness) staged, awaiting OTP publish",
+  "publish_status": "v0.3.0 live since 2026-05-20 (parity harness in arcana-testkit); v0.2.1 superseded",
   "publish_command": "pnpm publish -r --filter='./packages/*' --access public",
   "generated": "2026-05-20",
   "system": "arcana",
@@ -152,16 +152,20 @@
     },
     {
       "id": "v0_3_0_manual",
-      "label": "v0.3.0 — Parity harness publish (staged; OTP pending)",
-      "status": "not_started",
-      "blocked_on": "npm login (OTP browser flow) — code + commit + tag already on origin/main",
+      "label": "v0.3.0 — Parity harness publish",
+      "status": "green",
+      "closed": "2026-05-20",
       "semver_rationale": "Minor bump — new public API export at @kybernesis/arcana-testkit/parity. No existing contract changes; pure additive surface.",
       "stages": [
-        { "id": "version_bump", "label": "Bump all 5 packages to 0.3.0", "status": "green" },
-        { "id": "dry_run", "label": "pnpm publish -r --dry-run (verify workspace:* rewrites)", "status": "not_started", "note": "next step before real publish" },
-        { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "not_started", "note": "requires OTP — handed back to David" },
-        { "id": "verify_testkit", "label": "npm view @kybernesis/arcana-testkit@0.3.0", "status": "not_started" },
-        { "id": "tag", "label": "git tag v0.3.0 && git push --tags", "status": "green", "note": "tagged + pushed 2026-05-20 (per goal contract)" }
+        { "id": "version_bump", "label": "Bump all 5 packages to 0.3.0", "status": "green", "note": "committed 97b78bb" },
+        { "id": "dry_run", "label": "pnpm publish -r --dry-run (verify workspace:* rewrites)", "status": "green" },
+        { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "green", "note": "OTP browser flow completed by user; all 5 packages live" },
+        { "id": "verify_contracts", "label": "npm view @kybernesis/arcana-contracts@0.3.0", "status": "green" },
+        { "id": "verify_core", "label": "npm view @kybernesis/arcana-core@0.3.0", "status": "green" },
+        { "id": "verify_testkit", "label": "npm view @kybernesis/arcana-testkit@0.3.0", "status": "green", "note": "carries the new ./parity export" },
+        { "id": "verify_libsql", "label": "npm view @kybernesis/arcana-provider-libsql@0.3.0", "status": "green" },
+        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/arcana-provider-sqlite-vec@0.3.0", "status": "green" },
+        { "id": "tag", "label": "git tag v0.3.0 && git push --tags", "status": "green", "note": "tagged + pushed 2026-05-20" }
       ]
     },
     {
