@@ -3,7 +3,7 @@
   "title": "Arcana Kernel Method Status",
   "subtitle": "Which methods are implemented vs stubbed; demand-driven by KyberBot adoption",
   "purpose": "Tracks the demand-driven implementation trail. Each method is either stubbed (throws NotImplementedError) or implemented with a real body. The 'driven_by' field names the consumer module that triggered the implementation.",
-  "generated": "2026-05-19",
+  "generated": "2026-05-20",
   "system": "arcana",
   "status_legend": [
     { "id": "stubbed", "symbol": "○", "label": "NotImplementedError stub" },
@@ -18,16 +18,17 @@
       "methods": [
         { "name": "storeMemory", "status": "implemented", "driven_by": "kyberbot module #1 (timeline.ts)", "commit": "1f6a7c4", "scope_notes": "canonical row write only; chunking/embedding/extraction deferred", "adopted_by": ["kyberbot/packages/cli/src/brain/timeline.ts (closed 2026-05-18, 5 integration tests passing)"] },
         { "name": "ingestDocument", "status": "stubbed", "driven_by": null, "notes": "no consumer demand yet" },
-        { "name": "[createArcana vector-optional]", "status": "implemented", "driven_by": "arcana-config merge / DVR review", "notes": "ArcanaOptions.vector is now optional. createMissingVectorStore() fallback added — same pattern as scheduler/queue stubs. Callers (including KyberBot) do not need to wire a VectorStore to construct an Arcana instance." }
+        { "name": "[createArcana vector-optional]", "status": "implemented", "driven_by": "arcana-config merge / DVR review", "notes": "ArcanaOptions.vector is now optional. createMissingVectorStore() fallback added — same pattern as scheduler/queue stubs. Callers (including KyberBot) do not need to wire a VectorStore to construct an Arcana instance." },
+        { "name": "[arcana-provider-sqlite-vec]", "status": "implemented", "driven_by": "T13 (arcana-provider-sqlite-vec package)", "commit": "7bb12c4", "notes": "VectorStore via vec0 virtual table; rowid_ref companion pattern; :memory: testing; 11 tests. New package added v0.1.1. Unblocks hybridSearch when FTS5 tables also in StructuredStore." }
       ]
     },
     {
       "id": "retrieve",
       "label": "retrieve",
       "methods": [
-        { "name": "hybridSearch", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #9 (hybrid-search.ts) adopted; read parity ~30% until this + factRetrieval + getEntityProfile implemented" },
-        { "name": "factRetrieval", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #8 (fact-retrieval.ts) adopted; NOTE: expiresAt/surprisalScore/lastReinforcedAt are already in FactSchema (contracts) but factRetrieval kernel method is not implemented — these fields are in the schema but not yet used in any kernel or sleep pipeline path" },
-        { "name": "getEntityProfile", "status": "stubbed", "driven_by": null, "notes": "lands when KyberBot module #12 (user-profile.ts) adopted" },
+        { "name": "hybridSearch", "status": "stubbed", "driven_by": null, "notes": "requires sqlite-vec provider + FTS5 tables in StructuredStore; next after publish unblocked. read parity still partial until this lands." },
+        { "name": "factRetrieval", "status": "implemented", "driven_by": "arcana-core internal (T12)", "commit": "7bb12c4", "scope_notes": "structured-only text-match; scores by word-hit ratio; annotates with why field; hybridSearch path deferred until sqlite-vec + FTS5 ready. NOTE: expiresAt/surprisalScore/lastReinforcedAt are in FactSchema (contracts) but not yet surfaced in this path." },
+        { "name": "getEntityProfile", "status": "implemented", "driven_by": "arcana-core internal (T11)", "commit": "7bb12c4", "scope_notes": "assembles from live facts/insights/neighbors; stores result; returns from storage on second call; QueryResult envelope" },
         { "name": "queryFacts (asOf timeline)", "status": "missing", "driven_by": null, "notes": "NOT in Arcana at all. Identified in ADR 008 as a missing kernel method. queryFacts currently has no date-filtering parameter. Timeline query (queryFacts with asOf: Date) is needed for Brain migration scenarios. Will require StructuredStore.getFactsForEntity to accept a temporal filter." }
       ]
     },
@@ -73,19 +74,20 @@
     }
   ],
   "summary": {
-    "implemented_count": 12,
-    "stubbed_count": 14,
+    "implemented_count": 14,
+    "stubbed_count": 13,
     "missing_count": 1,
-    "total_kernel_methods_catalogued": 27,
+    "total_kernel_methods_catalogued": 28,
     "write_parity_percent": 100,
-    "read_parity_percent": 30,
-    "test_counts": { "tests": 193, "files": 23, "packages": 4, "all_passing": true },
+    "read_parity_percent": 50,
+    "test_counts": { "tests": 212, "files": 25, "packages": 5, "all_passing": true },
     "arcana_config_merge": "arcana-config package DELETED 2026-05-19; merged into arcana-core src/config/. loadConfig/getDefaultConfig/ENV_MAP/ConfigSchema now exported from @kybernesis/arcana-core.",
     "provider_bug_fixes": [
       "DVR-EC-001 (2026-05-19): arcana-provider-libsql connect() now mkdirSync(parent, {recursive:true}) before opening file-path database — fixes crash when data directory does not yet exist"
     ],
-    "delivery_review_status": "CONDITIONAL PASS (2026-05-19). 6 patches identified: 2 Arcana-side (vector-optional + mkdir fix — both done). 4 KyberBot-side patches remaining before arcana-adoption branch can merge.",
+    "delivery_review_status": "CONDITIONAL PASS r2 (2026-05-20). EC-015 in-flight guard needed before merge. EC-013/014 optional. 4 KyberBot-side patches still remaining.",
     "kyberbot_remaining_patches": [
+      "EC-015: in-flight guard needed (required before merge)",
       "DVR-EC-002: temperature/maxTokens honesty in ClaudeLLMProvider — drop at type boundary with Omit + comment, or wire through CLI flags",
       "DVR-BH-002/EC-006: OPENAI_API_KEY guard — wrap in try/catch or gate behind arcana.enabled flag",
       "DVR-CQ-002/UT-005: extract bootArcana(root) from run.ts + add integration test",
@@ -96,7 +98,7 @@
     "kyberbot_modules_remaining": 5,
     "kyberbot_provider_adapters_built": ["OpenAIEmbeddingProvider", "ChromaDBVectorStore"],
     "contracts_ahead_of_kernel": ["expiresAt, surprisalScore, lastReinforcedAt — in FactSchema but not surfaced in any kernel method or sleep pipeline step"],
-    "future_providers_planned": ["arcana-provider-sqlite-vec (unblocks KyberAgent Desktop + ChromaDB removal from KyberBot)"],
+    "providers_shipping": ["arcana-provider-libsql (StructuredStore)", "arcana-provider-sqlite-vec (VectorStore, added v0.1.1)"],
     "brain_migration_blockers": [
       "Kybernesis Brain must shed 5 Convex artifacts before adopting Arcana",
       "4-flat-ID edges (must adopt NodeRef pattern)",

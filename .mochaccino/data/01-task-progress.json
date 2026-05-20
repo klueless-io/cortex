@@ -1,11 +1,11 @@
 {
   "angle": "kanban",
-  "title": "Arcana v0.1.0 Build Progress",
-  "subtitle": "Task lifecycle across the scaffold milestone",
-  "purpose": "Live view of where v0.1.0 stands. Each task moves todo → in-progress → done. Updated after every Tn closes.",
-  "generated": "2026-05-19",
+  "title": "Arcana v0.1.1 Build Progress",
+  "subtitle": "Task lifecycle across the scaffold + retrieve milestone",
+  "purpose": "Live view of where v0.1.1 stands. Each task moves todo → in-progress → done. Updated after every Tn closes.",
+  "generated": "2026-05-20",
   "system": "arcana",
-  "milestone": "v0.1.0",
+  "milestone": "v0.1.1",
   "status_legend": [
     { "id": "todo", "symbol": "○", "label": "Not started" },
     { "id": "in_progress", "symbol": "◐", "label": "In progress" },
@@ -45,13 +45,12 @@
     },
     {
       "id": "todo",
-      "label": "Todo (next sprint — after KyberBot merge)",
+      "label": "Todo (next — after KyberBot merge + npm publish)",
       "tasks": [
-        { "id": "NS-001", "title": "getEntityProfile implementation (no vector needed)", "note": "Assembles structured profile data: entity + associated facts + ProfileEntry array from EntityProfile. No VectorStore required — pure structured data assembly. Unblocks KyberBot module #12 (user-profile.ts)." },
-        { "id": "NS-002", "title": "factRetrieval structured version (entity expansion via graph edges)", "note": "Retrieves facts for an entity and its graph neighbours (via Edge traversal). No VectorStore required — entity expansion is graph-walk over StructuredStore. Unblocks KyberBot module #8 (fact-retrieval.ts)." },
-        { "id": "NS-003", "title": "arcana-provider-sqlite-vec (VectorStore over sqlite-vec)", "note": "Unblocks hybridSearch and enables ChromaDB removal from KyberBot. Enables KyberAgent Desktop. Depends on arcana-provider-libsql being validated in KyberBot adoption first." },
-        { "id": "NS-004", "title": "hybridSearch implementation against sqlite-vec provider", "note": "Requires arcana-provider-sqlite-vec (NS-003). RRF scoring, graph hops, optional reranker. Unblocks KyberBot module #9 (hybrid-search.ts)." },
-        { "id": "NS-005", "title": "Wire KyberBot read modules through Arcana", "note": "KyberBot write path: 100% integrated. Read path: KyberBot still reads through its own layer. Once getEntityProfile + factRetrieval land in Arcana, KyberBot modules #8/#9/#12 can be rewired to call Arcana instead of local implementations." }
+        { "id": "T14", "title": "hybridSearch implementation", "blocked_on": "FTS5 in StructuredStore + sqlite-vec provider wired", "note": "Requires arcana-provider-sqlite-vec (done) + FTS5 tables in StructuredStore. RRF scoring, graph hops, optional reranker. Unblocks KyberBot module #9 (hybrid-search.ts)." },
+        { "id": "T15", "title": "npm publish v0.1.1 (pnpm publish -r)", "blocked_on": "npm login (user OTP flow)", "note": "5 packages now. Use `pnpm publish -r --filter='./packages/*' --access public`. v0.1.0 was partial (workspace:* not rewritten; arcana-provider-libsql missed). v0.1.1 is the correct first full publish." },
+        { "id": "T16", "title": "KyberBot arcana-adoption branch merge", "blocked_on": "EC-015 in-flight guard fix + npm publish (T15)", "note": "EC-015 is required before merge. EC-013/014 optional. 4 KyberBot-side patches still pending." },
+        { "id": "NS-005", "title": "Wire KyberBot read modules through Arcana", "note": "KyberBot write path: 100% integrated. Read path: KyberBot still reads through its own layer. Once getEntityProfile + factRetrieval land in Arcana (done), KyberBot modules #8/#9/#12 can be rewired to call Arcana instead of local implementations." }
       ]
     },
     {
@@ -71,24 +70,22 @@
         { "id": "v0x.011", "title": "arcana-config merged into arcana-core (package deleted)", "closed": "2026-05-19", "note": "arcana-config package DELETED. Files moved to packages/arcana-core/src/config/. @kybernesis/arcana-core now exports loadConfig, getDefaultConfig, ENV_MAP, ConfigSchema directly. Package graph reduced from 5 to 4. tsconfig.json project references updated. Publish pipeline updated to 4 packages." },
         { "id": "v0x.012", "title": "vector optional in ArcanaOptions + createMissingVectorStore()", "closed": "2026-05-19", "note": "ArcanaOptions.vector changed from required to optional. createMissingVectorStore() fallback added — same pattern as the existing no-op scheduler/queue stubs. Callers including KyberBot's initArcana() do not need to wire a VectorStore until hybridSearch is demanded. Delivery review patch DVR (Arcana-side)." },
         { "id": "v0x.013", "title": "DVR-EC-001: arcana-provider-libsql connect() mkdir fix", "closed": "2026-05-19", "note": "connect() now calls mkdirSync(path.dirname(url), {recursive: true}) before opening a file-path database. Fixes crash when the data directory does not yet exist. In-memory (:memory:) path is unaffected. Delivery review patch (Arcana-side)." },
-        { "id": "v0x.014", "title": "docs/requirements/brain-migration-requirements.md created", "closed": "2026-05-19", "note": "Full spec-writer output. Comprehensive requirements document for Kybernesis Brain migration to Arcana. Covers all 5 Convex artifacts to shed, migration phases, and success criteria. Future work — migration itself requires arcana-provider-postgres (not yet built)." }
+        { "id": "v0x.014", "title": "docs/requirements/brain-migration-requirements.md created", "closed": "2026-05-19", "note": "Full spec-writer output. Comprehensive requirements document for Kybernesis Brain migration to Arcana. Covers all 5 Convex artifacts to shed, migration phases, and success criteria. Future work — migration itself requires arcana-provider-postgres (not yet built)." },
+        { "id": "T11", "title": "getEntityProfile implementation", "closed": "2026-05-20", "commit": "7bb12c4", "note": "Assembles from live facts/insights/neighbors; stores result; returns from storage on second call; QueryResult envelope. Demand-driven (T11). No VectorStore required — pure structured data assembly." },
+        { "id": "T12", "title": "factRetrieval implementation", "closed": "2026-05-20", "commit": "7bb12c4", "note": "Structured-only text-match; scores by word-hit ratio; annotates with why field. hybridSearch path deferred until sqlite-vec + FTS5 ready. Demand-driven (T12)." },
+        { "id": "T13", "title": "arcana-provider-sqlite-vec", "closed": "2026-05-20", "commit": "7bb12c4", "note": "New package: VectorStore via vec0 virtual table; rowid_ref companion pattern; :memory: testing; 11 tests. All packages bumped to v0.1.1. Package graph back to 5 packages." }
       ]
     },
     {
       "id": "deferred",
       "label": "Deferred (post-scaffold; demand-driven)",
       "tasks": [
-        { "id": "T9", "title": "arcana-testkit compliance suite", "deferred_to": "when a second real provider exists", "reason": "The 4 fake providers landed (v0.x.001). The original compliance harness — runComplianceSuite(provider) cross-checking implementations — stays deferred until libsql is joined by Convex or Chroma." },
-        { "id": "T10", "title": "arcana-provider-libsql", "status": "done", "closed": "2026-05-19", "note": "Full StructuredStore implementation over libsql (same sync binding KyberBot uses). Tables for all 9 entity types. In-memory (:memory:) integration tests against real SQLite. DVR-EC-001 fix: connect() mkdirSync parent dir before opening file-path database. Unblocks KyberBot wiring initArcana() with a real store. Total after all 2026-05-19 work: 193 tests, 23 files, 4 packages, all passing." },
-        { "id": "T11", "title": "arcana-provider-sqlite-vec", "status": "todo", "note": "VectorStore implementation over sqlite-vec (SQLite vector extension). Planned future provider that unblocks KyberAgent Desktop and ChromaDB removal from KyberBot. Not yet started — blocked until T10 libsql usage is validated in KyberBot adoption." },
-        { "id": "T12", "title": "CI: ci.yml", "deferred_to": "when remote exists", "reason": "Local-only repo, no PR flow yet." },
-        { "id": "T13a", "title": "First publish (manual)", "deferred_to": "after KyberBot adoption validates contracts", "reason": "Local file: deps work for current consumption pattern. Publish once contracts have been stress-tested by a real consumer. Blocked on OTP browser flow — user doing it manually. npm org is 'kybernesis' (not kybernesisai), scope is @kybernesis/*." },
-        { "id": "T13b", "title": "CI: publish.yml + idempotency proof", "deferred_to": "after T13a", "reason": "Follows publish flow." },
-        { "id": "T14", "title": "hybridSearch implementation", "deferred_to": "when KyberBot module #9 (hybrid-search.ts) adopted", "reason": "No consumer demand yet. Requires VectorStore + EmbeddingProvider wiring." },
-        { "id": "T15", "title": "factRetrieval implementation", "deferred_to": "when KyberBot module #8 (fact-retrieval.ts) adopted", "reason": "No consumer demand yet." },
-        { "id": "T16", "title": "getEntityProfile implementation", "deferred_to": "when KyberBot module #12 (user-profile.ts) adopted", "reason": "No consumer demand yet." },
-        { "id": "T17", "title": "Sleep pipeline implementation (runSleepPipeline / startSleepSchedule / stopSleepSchedule)", "deferred_to": "when KyberBot sleep modules fully adopted", "reason": "13-step pipeline; all three methods stubbed. expiresAt/surprisalScore/lastReinforcedAt already in FactSchema contracts but pipeline that uses them is not yet implemented." },
-        { "id": "T18", "title": "Timeline query — queryFacts with asOf date parameter", "deferred_to": "demand-driven", "reason": "Not in Arcana at all currently. Identified in ADR 008 as a missing kernel method. Needed for Brain migration scenarios where temporal queries are required." }
+        { "id": "T9-compliance", "title": "arcana-testkit compliance suite", "deferred_to": "when a second real provider exists alongside libsql", "reason": "The 4 fake providers landed (v0.x.001). The original compliance harness — runComplianceSuite(provider) cross-checking implementations — stays deferred. arcana-provider-sqlite-vec now exists; compliance harness can be wired when both are battle-tested." },
+        { "id": "CI-yml", "title": "CI: ci.yml", "deferred_to": "when remote exists", "reason": "Local-only repo, no PR flow yet." },
+        { "id": "CI-publish-yml", "title": "CI: publish.yml + idempotency proof", "deferred_to": "after first successful publish", "reason": "Follows publish flow." },
+        { "id": "SLEEP", "title": "Sleep pipeline implementation (runSleepPipeline / startSleepSchedule / stopSleepSchedule)", "deferred_to": "when KyberBot sleep modules fully adopted", "reason": "13-step pipeline; all three methods stubbed. expiresAt/surprisalScore/lastReinforcedAt already in FactSchema contracts but pipeline that uses them is not yet implemented." },
+        { "id": "TIMELINE", "title": "Timeline query — queryFacts with asOf date parameter", "deferred_to": "demand-driven", "reason": "Not in Arcana at all currently. Identified in ADR 008 as a missing kernel method. Needed for Brain migration scenarios where temporal queries are required." },
+        { "id": "KYBERAGENT", "title": "KyberAgent Arcana adoption", "deferred_to": "post-publish; schema gaps resolved", "reason": "On hold — schema gaps identified, codebase in flux. Waiting for KyberBot adoption to stabilise and publish to land first." }
       ]
     }
   ]

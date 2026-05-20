@@ -1,21 +1,22 @@
 {
   "angle": "card-grid",
   "title": "Arcana Package Graph",
-  "subtitle": "Four packages, their dependencies, and current build state",
-  "purpose": "Shows the v0.1.0 package layout and dependency direction. NOTE: arcana-config was merged into arcana-core (src/config/) on 2026-05-19, reducing the graph from 5 to 4 packages. arcana-provider-sqlite-vec is planned but not yet started.",
-  "generated": "2026-05-19",
+  "subtitle": "Five packages, their dependencies, and current build state",
+  "purpose": "Shows the v0.1.1 package layout and dependency direction. NOTE: arcana-config was merged into arcana-core (src/config/) on 2026-05-19, reducing the graph from 5 to 4. arcana-provider-sqlite-vec was added on 2026-05-20, bringing it back to 5.",
+  "generated": "2026-05-20",
   "system": "arcana",
-  "milestone": "v0.1.0",
-  "package_count": 4,
+  "milestone": "v0.1.1",
+  "package_count": 5,
   "status_legend": [
     { "id": "not_started", "symbol": "○", "label": "Not started" },
     { "id": "scaffolded", "symbol": "◐", "label": "Skeleton in place" },
-    { "id": "complete", "symbol": "✓", "label": "v0.1.0 complete" }
+    { "id": "complete", "symbol": "✓", "label": "Complete" }
   ],
   "packages": [
     {
       "id": "arcana-contracts",
       "npm_name": "@kybernesis/arcana-contracts",
+      "version": "0.1.1",
       "role": "Base — Zod schemas, provider interfaces, Logger, QueryResult envelope, ARP scopes",
       "depends_on": ["zod@^3.23.0"],
       "status": "complete",
@@ -29,21 +30,25 @@
     {
       "id": "arcana-core",
       "npm_name": "@kybernesis/arcana-core",
-      "role": "Kernel — createArcana() factory + ingest/retrieve/maintain/access zones + config loader (arcana-config merged in 2026-05-19)",
+      "version": "0.1.1",
+      "role": "Kernel — createArcana() factory + ingest/retrieve/maintain/access zones + config loader (arcana-config merged in 2026-05-19) + getEntityProfile + factRetrieval implementations",
       "depends_on": ["@kybernesis/arcana-contracts (workspace)", "zod@^3.23.0"],
       "status": "complete",
-      "tasks": ["T6", "T7", "T8"],
+      "tasks": ["T6", "T7", "T8", "T11", "T12"],
       "config_merge_note": "arcana-config package DELETED on 2026-05-19. loadConfig/getDefaultConfig/ENV_MAP/ConfigSchema all now export from @kybernesis/arcana-core (src/config/). This reduces the package graph from 5 to 4.",
       "v0_1_progress": {
         "T6_load_config": "merged in — three-layer loader (defaults → file → env), 28 config tests, deep-frozen result, 7 nested sections with locked-in defaults from arcana-spec.md §11",
         "T7_skeleton_zones": "complete (zones throw NotImplementedError; SLEEP_STEPS const; access/bindings/ placeholder)",
-        "T8_createArcana_factory": "complete (.providers frozen; logger defaults to createNoopLogger(); scheduler/queue fallback stubs; vector is now optional — createMissingVectorStore() fallback added same pattern as scheduler/queue)"
+        "T8_createArcana_factory": "complete (.providers frozen; logger defaults to createNoopLogger(); scheduler/queue fallback stubs; vector is now optional — createMissingVectorStore() fallback added same pattern as scheduler/queue)",
+        "T11_getEntityProfile": "implemented (commit 7bb12c4) — assembles from live facts/insights/neighbors; stores result; returns from storage on second call; QueryResult envelope",
+        "T12_factRetrieval": "implemented (commit 7bb12c4) — structured-only text-match; scores by word-hit ratio; annotates with why field; hybridSearch path deferred until sqlite-vec + FTS5 ready"
       },
       "v0_1_status": "complete"
     },
     {
       "id": "arcana-testkit",
       "npm_name": "@kybernesis/arcana-testkit",
+      "version": "0.1.1",
       "role": "In-memory fake providers for consumer integration tests (compliance harness deferred until second real provider)",
       "depends_on": ["@kybernesis/arcana-contracts (workspace)"],
       "status": "complete",
@@ -54,6 +59,7 @@
     {
       "id": "arcana-provider-libsql",
       "npm_name": "@kybernesis/arcana-provider-libsql",
+      "version": "0.1.1",
       "role": "Full StructuredStore implementation over libsql (same sync SQLite binding as KyberBot). All 9 entity types. In-memory integration tests. mkdirSync fix for file-path databases (DVR-EC-001). Unblocks KyberBot wiring initArcana().",
       "depends_on": ["@kybernesis/arcana-contracts (workspace)", "libsql@0.5.x"],
       "status": "complete",
@@ -63,17 +69,20 @@
         "DVR-EC-001: connect() now mkdirSync(parent, {recursive:true}) before opening a file-path database, so the provider works when the data directory does not yet exist"
       ],
       "v0_1_status": "complete"
-    }
-  ],
-  "planned_packages": [
+    },
     {
       "id": "arcana-provider-sqlite-vec",
       "npm_name": "@kybernesis/arcana-provider-sqlite-vec",
-      "role": "VectorStore implementation over sqlite-vec (SQLite vector extension). Unblocks KyberAgent Desktop and ChromaDB removal from KyberBot.",
+      "version": "0.1.1",
+      "role": "VectorStore over sqlite-vec (no Docker, :memory: support). vec0 virtual table with rowid_ref companion pattern. Unblocks hybridSearch and enables ChromaDB removal from KyberBot.",
       "depends_on": ["@kybernesis/arcana-contracts (workspace)", "sqlite-vec"],
-      "status": "not_started",
-      "tasks": ["T11"],
-      "note": "Planned; not yet started. Blocked until arcana-provider-libsql usage is validated in KyberBot adoption. Enables hybridSearch and removes ChromaDB dependency from KyberBot."
+      "status": "complete",
+      "tasks": ["T13"],
+      "closed": "2026-05-20",
+      "commit": "7bb12c4",
+      "test_count": 11,
+      "note": "VectorStore via vec0 virtual table; rowid_ref companion pattern; :memory: testing; 11 tests. Added in v0.1.1 — was planned_packages in v0.1.0 data.",
+      "v0_1_status": "complete"
     }
   ]
 }

@@ -1,40 +1,74 @@
 {
   "angle": "data-flow",
   "title": "Arcana Publish Pipeline",
-  "subtitle": "From commit to npm — v0.1.0 first publish is hand-rolled; v0.1.1 onward is CI-driven",
-  "purpose": "Shows the publish path for v0.1.x. The v0.1.0 manual pass surfaces auth/scope/exports gotchas with immediate feedback. v0.1.1 onward proves idempotency via publish.yml. NOTE: arcana-config merged into arcana-core on 2026-05-19 — 4 packages published, not 5.",
+  "subtitle": "From commit to npm — v0.1.0 partial; v0.1.1 is the correct first full publish",
+  "purpose": "Shows the publish path for v0.1.x. v0.1.0 was a partial attempt using npm publish (workspace:* deps not rewritten; arcana-provider-libsql missed). v0.1.1 corrects this using pnpm publish -r. NOTE: 5 packages in v0.1.1 (arcana-provider-sqlite-vec added).",
   "npm_org": "kybernesis",
   "npm_scope": "@kybernesis/*",
-  "package_count": 4,
-  "packages_to_publish": ["@kybernesis/arcana-contracts", "@kybernesis/arcana-core", "@kybernesis/arcana-testkit", "@kybernesis/arcana-provider-libsql"],
-  "publish_order": "contracts first (no workspace deps), then core, testkit, provider-libsql in any order",
-  "publish_status": "blocked — OTP browser flow required; user handling manually as of 2026-05-19",
-  "generated": "2026-05-19",
+  "package_count": 5,
+  "packages_to_publish": [
+    "@kybernesis/arcana-contracts",
+    "@kybernesis/arcana-core",
+    "@kybernesis/arcana-testkit",
+    "@kybernesis/arcana-provider-libsql",
+    "@kybernesis/arcana-provider-sqlite-vec"
+  ],
+  "publish_order": "contracts first (no workspace deps), then core, testkit, provider-libsql, provider-sqlite-vec in any order",
+  "publish_status": "blocked — npm login required (OTP browser flow); user handling manually",
+  "publish_command": "pnpm publish -r --filter='./packages/*' --access public",
+  "generated": "2026-05-20",
   "system": "arcana",
-  "milestone": "v0.1.0",
+  "milestone": "v0.1.1",
   "status_legend": [
     { "id": "not_started", "symbol": "○", "label": "Not started" },
+    { "id": "partial", "symbol": "◑", "label": "Attempted but incomplete" },
     { "id": "wired", "symbol": "◐", "label": "Workflow exists, not run" },
     { "id": "green", "symbol": "✓", "label": "Run green" }
   ],
   "lanes": [
     {
       "id": "v0_1_0_manual",
-      "label": "v0.1.0 — Manual first publish",
+      "label": "v0.1.0 — Manual publish (PARTIAL — do not rely on)",
+      "status": "partial",
+      "issues": [
+        "Used npm publish instead of pnpm publish -r — workspace:* deps were NOT rewritten to real version numbers",
+        "arcana-provider-libsql was missed entirely",
+        "arcana-provider-sqlite-vec did not exist yet at time of v0.1.0 attempt"
+      ],
       "stages": [
         { "id": "lint", "label": "bun run lint", "status": "wired", "note": "Script exists; vacuously passes with no packages (--no-error-on-unmatched-pattern)" },
         { "id": "typecheck", "label": "bun run typecheck", "status": "wired", "note": "Script exists; guard skips tsc -b until packages/*/tsconfig.json exists" },
-        { "id": "test", "label": "bun run test", "status": "wired", "note": "Vitest 2.1.9; passWithNoTests=true; vacuously passes with no test files" },
-        { "id": "publish_contracts", "label": "npm publish @kybernesis/arcana-contracts", "status": "not_started" },
-        { "id": "publish_core", "label": "npm publish @kybernesis/arcana-core (includes merged config loader)", "status": "not_started" },
-        { "id": "publish_testkit", "label": "npm publish @kybernesis/arcana-testkit", "status": "not_started" },
-        { "id": "publish_libsql", "label": "npm publish @kybernesis/arcana-provider-libsql", "status": "not_started" },
+        { "id": "test", "label": "bun run test", "status": "wired", "note": "Vitest passes; 212 tests, 5 packages as of v0.1.1" },
+        { "id": "publish_contracts", "label": "npm publish @kybernesis/arcana-contracts", "status": "partial", "note": "Attempted; workspace:* not rewritten" },
+        { "id": "publish_core", "label": "npm publish @kybernesis/arcana-core (includes merged config loader)", "status": "partial", "note": "Attempted; workspace:* not rewritten" },
+        { "id": "publish_testkit", "label": "npm publish @kybernesis/arcana-testkit", "status": "partial", "note": "Attempted; workspace:* not rewritten" },
+        { "id": "publish_libsql", "label": "npm publish @kybernesis/arcana-provider-libsql", "status": "not_started", "note": "MISSED in v0.1.0 publish attempt" },
         { "id": "tag", "label": "git tag v0.1.0 && git push --tags", "status": "not_started" }
       ]
     },
     {
-      "id": "v0_1_1_ci",
-      "label": "v0.1.1 — CI-driven (publish.yml)",
+      "id": "v0_1_1_manual",
+      "label": "v0.1.1 — Manual publish (correct approach — pnpm publish -r)",
+      "status": "not_started",
+      "blocked_on": "npm login (OTP browser flow)",
+      "steps": [
+        "npm login (one-time, user handles OTP)",
+        "pnpm publish -r --filter='./packages/*' --access public",
+        "Verify: npm view @kybernesis/arcana-contracts@0.1.1",
+        "Verify: npm view @kybernesis/arcana-provider-sqlite-vec@0.1.1",
+        "git tag v0.1.1 && git push --tags"
+      ],
+      "stages": [
+        { "id": "login", "label": "npm login (OTP flow)", "status": "not_started", "note": "Blocked — user must complete browser OTP" },
+        { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "not_started", "note": "Rewrites workspace:* deps correctly; publishes all 5 packages in dependency order" },
+        { "id": "verify_contracts", "label": "npm view @kybernesis/arcana-contracts@0.1.1", "status": "not_started" },
+        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/arcana-provider-sqlite-vec@0.1.1", "status": "not_started", "note": "New package in v0.1.1" },
+        { "id": "tag", "label": "git tag v0.1.1 && git push --tags", "status": "not_started" }
+      ]
+    },
+    {
+      "id": "v0_1_x_ci",
+      "label": "v0.1.x+ — CI-driven (publish.yml, future)",
       "stages": [
         { "id": "ci_lint_typecheck_test", "label": "ci.yml passes on tag", "status": "not_started" },
         { "id": "ci_publish_loop", "label": "publish.yml: for each pkg in dep order, npm view → skip or publish", "status": "not_started" },
