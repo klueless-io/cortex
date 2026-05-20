@@ -21,7 +21,7 @@
   "consumers_tracked": [
     { "id": "kyberbot", "label": "KyberBot", "status": "active adoption — arcana-adoption branch, 22 commits, 724 tests" },
     { "id": "kyberagent-desktop", "label": "KyberAgent Desktop", "status": "not yet adopting; 5 schema gaps identified; codebase in flux (TCP auth, tunnels, SSE proxy just added) — adopt after stabilisation" },
-    { "id": "kybernesis-brain", "label": "Kybernesis Brain", "status": "blocked on shedding 5 Convex artifacts; needs arcana-provider-postgres before any swap; possible takeover scenario in play" }
+    { "id": "kyber-in-cloud", "label": "Kyber in Cloud", "status": "blocked on shedding 5 Convex artifacts; needs arcana-provider-postgres before any swap; possible takeover scenario in play" }
   ],
   "zones": [
     {
@@ -37,7 +37,7 @@
           "consumers": {
             "kyberbot": { "mode": "wired", "location": "kyberbot/packages/cli/src/brain/timeline.ts", "migration_debt": false, "notes": "closed 2026-05-18, 5 integration tests passing" },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "needs", "notes": "blocked on postgres provider + Convex shed" }
+            "kyber-in-cloud": { "mode": "needs", "notes": "blocked on postgres provider + Convex shed" }
           }
         },
         {
@@ -48,7 +48,7 @@
           "consumers": {
             "kyberbot": { "mode": "unused" },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "unused" }
+            "kyber-in-cloud": { "mode": "unused" }
           }
         }
       ]
@@ -66,7 +66,7 @@
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/hybrid-search.ts", "migration_debt": true, "notes": "Swap pending parity gate per ADR 009. Result shape matches KyberBot's existing flat layout so adaptation is mechanical." },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "needs", "notes": "Brain wants kernel-version directly (no legacy to regress against); blocked on postgres provider for FTS via tsvector" }
+            "kyber-in-cloud": { "mode": "needs", "notes": "Brain wants kernel-version directly (no legacy to regress against); blocked on postgres provider for FTS via tsvector" }
           }
         },
         {
@@ -78,7 +78,7 @@
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/fact-retrieval.ts", "migration_debt": true, "notes": "Swap pending parity gate" },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "needs" }
+            "kyber-in-cloud": { "mode": "needs" }
           }
         },
         {
@@ -90,7 +90,7 @@
           "consumers": {
             "kyberbot": { "mode": "needs", "notes": "consumer uses local profile generation; swap candidate" },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "needs" }
+            "kyber-in-cloud": { "mode": "needs" }
           }
         },
         {
@@ -102,7 +102,7 @@
           "consumers": {
             "kyberbot": { "mode": "unused", "notes": "no current timeline-query consumer in KyberBot" },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "needs", "notes": "core Brain migration requirement — Brain has temporal facts and needs bitemporal querying" }
+            "kyber-in-cloud": { "mode": "needs", "notes": "core Brain migration requirement — Brain has temporal facts and needs bitemporal querying" }
           }
         },
         {
@@ -114,7 +114,7 @@
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/hybrid-search.ts (timeline_fts MATCH)", "migration_debt": true, "notes": "KyberBot has its own FTS5 query — swap with hybridSearch swap" },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "needs", "notes": "blocked on arcana-provider-postgres impl of this method" }
+            "kyber-in-cloud": { "mode": "needs", "notes": "blocked on arcana-provider-postgres impl of this method" }
           }
         }
       ]
@@ -131,7 +131,7 @@
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/sleep/index.ts", "migration_debt": true, "notes": "9-step pipeline in production; swap blocked on ADR 010 resolution + parity gate" },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "needs" }
+            "kyber-in-cloud": { "mode": "needs" }
           }
         },
         {
@@ -142,7 +142,7 @@
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/runtime/fleet-sleep-scheduler.ts", "migration_debt": true },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "needs" }
+            "kyber-in-cloud": { "mode": "needs" }
           }
         },
         {
@@ -152,7 +152,7 @@
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/runtime/fleet-sleep-scheduler.ts", "migration_debt": true },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "unused" }
+            "kyber-in-cloud": { "mode": "unused" }
           }
         }
       ]
@@ -164,39 +164,39 @@
         {
           "name": "queryFacts",
           "status": "implemented",
-          "driven_by": "ADR 004 schema correction (in anticipation of KyberBot module #4 + Kybernesis Brain fact pipeline)",
+          "driven_by": "ADR 004 schema correction (in anticipation of KyberBot module #4 + Kyber in Cloud fact pipeline)",
           "commit": "TBD",
           "notes": "Reads via structured.getFactsForEntity; wraps in fresh QueryResult envelope. Sentence-form and triple-decomposed facts both queryable. Now accepts optional asOf for bitemporal filtering (added 2026-05-20).",
           "consumers": {
             "kyberbot": { "mode": "needs", "notes": "module #4 pending" },
             "kyberagent-desktop": { "mode": "unused" },
-            "kybernesis-brain": { "mode": "needs" }
+            "kyber-in-cloud": { "mode": "needs" }
           }
         },
-        { "name": "getNeighbors", "status": "implemented", "driven_by": "v0.2.1 easy-facade sprint 2026-05-20", "commit": "TBD", "notes": "Thin facade over structured.getNeighbors; wraps in QueryResult envelope. Provider-level method was already implemented.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "stats", "status": "stubbed", "driven_by": null, "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "unused" } } },
-        { "name": "listContradictions", "status": "implemented", "driven_by": "v0.2.1 easy-facade sprint 2026-05-20", "commit": "TBD", "notes": "Thin facade over structured.listContradictions; respects optional status filter. Provider-level method was already implemented.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "listInsights", "status": "implemented", "driven_by": "v0.2.1 easy-facade sprint 2026-05-20", "commit": "TBD", "notes": "Thin facade over structured.listInsights; respects optional entityId filter. Provider-level method was already implemented.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "readBlock", "status": "stubbed", "driven_by": null, "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "getBlockHistory", "status": "stubbed", "driven_by": null, "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } }
+        { "name": "getNeighbors", "status": "implemented", "driven_by": "v0.2.1 easy-facade sprint 2026-05-20", "commit": "TBD", "notes": "Thin facade over structured.getNeighbors; wraps in QueryResult envelope. Provider-level method was already implemented.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "stats", "status": "stubbed", "driven_by": null, "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "unused" } } },
+        { "name": "listContradictions", "status": "implemented", "driven_by": "v0.2.1 easy-facade sprint 2026-05-20", "commit": "TBD", "notes": "Thin facade over structured.listContradictions; respects optional status filter. Provider-level method was already implemented.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "listInsights", "status": "implemented", "driven_by": "v0.2.1 easy-facade sprint 2026-05-20", "commit": "TBD", "notes": "Thin facade over structured.listInsights; respects optional entityId filter. Provider-level method was already implemented.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "readBlock", "status": "stubbed", "driven_by": null, "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "getBlockHistory", "status": "stubbed", "driven_by": null, "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } }
       ]
     },
     {
       "id": "access.command",
       "label": "access.command (write facade)",
       "methods": [
-        { "name": "upsertEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "consumers": { "kyberbot": { "mode": "wired", "location": "kyberbot/packages/cli/src/brain/entity-graph.ts", "migration_debt": false, "notes": "closed 2026-05-18, 6 integration tests passing" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "deleteEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "added deleteEntity to StructuredStore interface as part of this work (ADR 002)", "consumers": { "kyberbot": { "mode": "wired", "location": "kyberbot/packages/cli/src/brain/entity-graph.ts", "migration_debt": false }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "linkNodes", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "renamed from linkMemories per ADR 001", "consumers": { "kyberbot": { "mode": "wired", "location": "kyberbot/packages/cli/src/brain/entity-graph.ts", "migration_debt": false }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "recordFact", "status": "implemented", "driven_by": "ADR 004 schema correction", "commit": "fb8b3dc", "notes": "Validates RecordFactInput via FactSchema; builds Fact with UUID id + ISO createdAt + isLatest=true defaults. Auto-supersession deferred to sleep pipeline.", "consumers": { "kyberbot": { "mode": "needs", "notes": "module #4 pending" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "updateMemory", "status": "implemented", "driven_by": "ADR 005 (memory is not append-only)", "commit": "TBD", "notes": "Partial update; contentHash recomputed when content changes; scopes replaced not merged.", "consumers": { "kyberbot": { "mode": "wired", "migration_debt": false }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "pin", "status": "implemented", "driven_by": "ADR 005", "commit": "TBD", "notes": "Thin wrapper: updateMemory(id, { isPinned: true })", "consumers": { "kyberbot": { "mode": "wired" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "moveToTier", "status": "implemented", "driven_by": "ADR 005", "commit": "TBD", "notes": "Thin wrapper: updateMemory(id, { tier })", "consumers": { "kyberbot": { "mode": "wired" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "markFactSuperseded", "status": "implemented", "driven_by": "kyberbot module #11 (sleep/observe.ts)", "commit": "TBD", "notes": "Pure-link op (ADR 006).", "consumers": { "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/sleep/observe.ts", "migration_debt": true }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "storeContradiction", "status": "implemented", "driven_by": "kyberbot module #11 (sleep/observe.ts)", "commit": "TBD", "notes": "Kernel mints id + createdAt; status defaults 'pending' (ADR 006).", "consumers": { "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/sleep/observe.ts", "migration_debt": true }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "markMemorySuperseded", "status": "implemented", "driven_by": "ADR 007 §3.2 (Brain-vs-Convex audit)", "commit": "TBD", "notes": "Pure-link op mirroring markFactSuperseded.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } },
-        { "name": "deleteMemory", "status": "stubbed", "driven_by": null, "notes": "no consumer demand yet", "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "unused" } } },
-        { "name": "updateBlock", "status": "stubbed", "driven_by": null, "notes": "no consumer demand yet", "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kybernesis-brain": { "mode": "needs" } } }
+        { "name": "upsertEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "consumers": { "kyberbot": { "mode": "wired", "location": "kyberbot/packages/cli/src/brain/entity-graph.ts", "migration_debt": false, "notes": "closed 2026-05-18, 6 integration tests passing" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "deleteEntity", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "added deleteEntity to StructuredStore interface as part of this work (ADR 002)", "consumers": { "kyberbot": { "mode": "wired", "location": "kyberbot/packages/cli/src/brain/entity-graph.ts", "migration_debt": false }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "linkNodes", "status": "implemented", "driven_by": "kyberbot module #2 (entity-graph.ts)", "commit": "17c3f48", "notes": "renamed from linkMemories per ADR 001", "consumers": { "kyberbot": { "mode": "wired", "location": "kyberbot/packages/cli/src/brain/entity-graph.ts", "migration_debt": false }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "recordFact", "status": "implemented", "driven_by": "ADR 004 schema correction", "commit": "fb8b3dc", "notes": "Validates RecordFactInput via FactSchema; builds Fact with UUID id + ISO createdAt + isLatest=true defaults. Auto-supersession deferred to sleep pipeline.", "consumers": { "kyberbot": { "mode": "needs", "notes": "module #4 pending" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "updateMemory", "status": "implemented", "driven_by": "ADR 005 (memory is not append-only)", "commit": "TBD", "notes": "Partial update; contentHash recomputed when content changes; scopes replaced not merged.", "consumers": { "kyberbot": { "mode": "wired", "migration_debt": false }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "pin", "status": "implemented", "driven_by": "ADR 005", "commit": "TBD", "notes": "Thin wrapper: updateMemory(id, { isPinned: true })", "consumers": { "kyberbot": { "mode": "wired" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "moveToTier", "status": "implemented", "driven_by": "ADR 005", "commit": "TBD", "notes": "Thin wrapper: updateMemory(id, { tier })", "consumers": { "kyberbot": { "mode": "wired" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "markFactSuperseded", "status": "implemented", "driven_by": "kyberbot module #11 (sleep/observe.ts)", "commit": "TBD", "notes": "Pure-link op (ADR 006).", "consumers": { "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/sleep/observe.ts", "migration_debt": true }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "storeContradiction", "status": "implemented", "driven_by": "kyberbot module #11 (sleep/observe.ts)", "commit": "TBD", "notes": "Kernel mints id + createdAt; status defaults 'pending' (ADR 006).", "consumers": { "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/sleep/observe.ts", "migration_debt": true }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "markMemorySuperseded", "status": "implemented", "driven_by": "ADR 007 §3.2 (Brain-vs-Convex audit)", "commit": "TBD", "notes": "Pure-link op mirroring markFactSuperseded.", "consumers": { "kyberbot": { "mode": "needs" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } },
+        { "name": "deleteMemory", "status": "stubbed", "driven_by": null, "notes": "no consumer demand yet", "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "unused" } } },
+        { "name": "updateBlock", "status": "stubbed", "driven_by": null, "notes": "no consumer demand yet", "consumers": { "kyberbot": { "mode": "unused" }, "kyberagent-desktop": { "mode": "unused" }, "kyber-in-cloud": { "mode": "needs" } } }
       ]
     }
   ],

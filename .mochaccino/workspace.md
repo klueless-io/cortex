@@ -2,7 +2,7 @@
 
 **Purpose**: Live documentation of the Arcana build — task progress, package graph, publish pipeline, contracts surface, and provider compliance. Updated after every task closes per the SPEC.md "build-as-documented" boundary rule.
 
-**Audience**: David (primary, scan/explore), Ian (KyberBot maintainer, consumer view), Martin (Kybernesis Brain side), future contributors.
+**Audience**: David (primary, scan/explore), Ian (KyberBot maintainer, consumer view), Martin (Kyber in Cloud side), future contributors.
 
 **Mode**: documentation — surfacing structure, progress, and decisions from the active build. Doubles as the eventual studio-build-pattern artefact when Arcana ships.
 

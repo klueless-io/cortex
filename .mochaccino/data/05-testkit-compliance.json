@@ -60,7 +60,7 @@
     {
       "id": "arcana-providers-convex",
       "interface": "StructuredStore",
-      "v0_1_target": "Not in v0.1 — placeholder row to show the suite scales. Kybernesis Brain must shed 5 Convex artifacts before this is viable.",
+      "v0_1_target": "Not in v0.1 — placeholder row to show the suite scales. Kyber in Cloud must shed 5 Convex artifacts before this is viable.",
       "status": "not_started",
       "tests": [
         { "id": "connect", "label": "Open Convex client", "status": "not_started" },

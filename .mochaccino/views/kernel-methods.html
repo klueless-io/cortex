@@ -126,7 +126,7 @@
   <div class="legend-item"><span class="pill p-unused">unused</span> doesn't apply to this consumer</div>
 </div>
 <div class="legend" style="margin-top:6px">
-  <div class="legend-item"><span class="pill-c" style="font-size:10px;color:var(--fg-muted)">KB = KyberBot · KD = KyberAgent Desktop · KBR = Kybernesis Brain</span></div>
+  <div class="legend-item"><span class="pill-c" style="font-size:10px;color:var(--fg-muted)">KB = KyberBot · KA = KyberAgent Desktop · KC = Kyber in Cloud</span></div>
 </div>
 
 <!-- access.command -->
@@ -135,51 +135,51 @@
   <div class="zone-header"><span class="zone-name">access.command</span><span class="zone-sub">write facade · 12 methods · write parity 100%</span></div>
 
   <div class="method"><div class="m-name">upsertEntity</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">KyberBot #2 entity-graph.ts</span><div class="note">commit 17c3f48 · 6 integration tests · closed 2026-05-18</div></div>
   </div>
   <div class="method"><div class="m-name">deleteEntity</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">KyberBot #2 entity-graph.ts</span><div class="note">additive to StructuredStore (ADR 002)</div></div>
   </div>
   <div class="method"><div class="m-name">linkNodes</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">KyberBot #2 entity-graph.ts</span><div class="note">renamed from linkMemories per NodeRef signature (ADR 001)</div></div>
   </div>
   <div class="method"><div class="m-name">recordFact</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">ADR 004 — anticipated KyberBot #4 + Brain fact pipeline</span><div class="note">UUID id + ISO createdAt defaults · sentence-form required</div></div>
   </div>
   <div class="method"><div class="m-name">updateMemory</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">ADR 005 — Memory is not append-only</span><div class="note">partial update · contentHash recomputed · unblocked pin/moveToTier</div></div>
   </div>
   <div class="method"><div class="m-name">pin</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">ADR 005</span><div class="note">thin wrapper: updateMemory(id, {isPinned:true})</div></div>
   </div>
   <div class="method"><div class="m-name">moveToTier</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">ADR 005</span><div class="note">thin wrapper: updateMemory(id, {tier})</div></div>
   </div>
   <div class="method"><div class="m-name">markFactSuperseded</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">KyberBot #11 sleep/observe.ts</span><div class="note">isLatest=false + supersededBy (ADR 006)</div></div>
   </div>
   <div class="method"><div class="m-name">storeContradiction</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">KyberBot #11 sleep/observe.ts</span><div class="note">mints id + createdAt · status defaults 'pending' (ADR 006)</div></div>
   </div>
   <div class="method"><div class="m-name">markMemorySuperseded</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">ADR 007 §3.2 — Brain-vs-Convex audit</span><div class="note">memory-level supersession · mirrors markFactSuperseded</div></div>
   </div>
   <div class="method"><div class="m-name">deleteMemory</div><div class="m-status s-stub">○ stub</div>
-    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-unused">KBR <span class="pill-c">·</span></span></div>
+    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-unused">KC <span class="pill-c">·</span></span></div>
     <div class="m-detail"><span class="note">no consumer demand yet</span></div>
   </div>
   <div class="method"><div class="m-name">updateBlock</div><div class="m-status s-stub">○ stub</div>
-    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="note">no consumer demand yet · Brain may want for agent-self blocks</span></div>
   </div>
 </div>
@@ -188,19 +188,19 @@
 <div class="zone">
   <div class="zone-header"><span class="zone-name">ingest</span><span class="zone-sub">2 methods + 2 cross-cutting</span></div>
   <div class="method"><div class="m-name">storeMemory</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">KyberBot #1 timeline.ts</span><div class="note">commit 1f6a7c4 · 5 integration tests · canonical row write only</div></div>
   </div>
   <div class="method"><div class="m-name">ingestDocument</div><div class="m-status s-stub">○ stub</div>
-    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-unused">KBR <span class="pill-c">·</span></span></div>
+    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-unused">KC <span class="pill-c">·</span></span></div>
     <div class="m-detail"><span class="note">no consumer demand yet</span></div>
   </div>
   <div class="method"><div class="m-name">[vector-optional]</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-unused">KBR <span class="pill-c">·</span></span></div>
+    <div class="m-consumers"><span class="pill p-wired">KB <span class="pill-c">wired</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-unused">KC <span class="pill-c">·</span></span></div>
     <div class="m-detail"><span class="driven">arcana-config merge + DVR review</span><div class="note">ArcanaOptions.vector? optional · createMissingVectorStore() fallback</div></div>
   </div>
   <div class="method"><div class="m-name">[sqlite-vec provider]</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">T13</span><div class="note">commit 7bb12c4 · vec0 virtual table · rowid_ref pattern · :memory: · 11 tests · drops ChromaDB/Docker dep</div></div>
   </div>
 </div>
@@ -209,23 +209,23 @@
 <div class="zone">
   <div class="zone-header"><span class="zone-name">retrieve</span><span class="zone-sub">5 methods · sprint 2026-05-20 closed the read-parity gap</span></div>
   <div class="method"><div class="m-name">getEntityProfile</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">T11 arcana-core internal</span><div class="note">commit 7bb12c4 · assembles from facts/insights/neighbors · stores + caches · QueryResult</div></div>
   </div>
   <div class="method"><div class="m-name">factRetrieval</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">T12 arcana-core internal</span><div class="note">commit 7bb12c4 · structured text-match · upgraded to wave-1 result shape · why: 'text-match (structured-only, no FTS5)'</div></div>
   </div>
   <div class="method"><div class="m-name">hybridSearch</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">FTS+hybrid sprint 2026-05-20</span><div class="note">RRF (k=60) over keyword (FTS5) + semantic (VectorStore) + graph (BFS) · wave-1 KyberBot-parity result shape · optional reranker · per-channel failures degrade gracefully</div><div class="warn">KyberBot swap blocked on parity gate per ADR 009</div></div>
   </div>
   <div class="method"><div class="m-name">queryFacts (asOf timeline)</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">ADR 008 + sprint 2026-05-20</span><div class="note">optional asOf: ISO-8601 param · filters facts where expiresAt ≤ asOf · backward compat · libsql impl filters in SQL</div></div>
   </div>
   <div class="method"><div class="m-name">[searchFulltext provider]</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">sprint 2026-05-20</span><div class="note">new StructuredStore.searchFulltext contract method · libsql impl uses FTS5 virtual table + sync triggers · returns FulltextMatch[] with memoryId + 0..1 score + matchedFields · postgres impl (future) uses tsvector</div></div>
   </div>
 </div>
@@ -234,31 +234,31 @@
 <div class="zone">
   <div class="zone-header"><span class="zone-name">access.query</span><span class="zone-sub">read facade · 7 methods</span></div>
   <div class="method"><div class="m-name">queryFacts</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">ADR 004 + sprint 2026-05-20</span><div class="note">structured.getFactsForEntity · fresh QueryResult envelope · now accepts optional asOf for bitemporal filtering</div></div>
   </div>
   <div class="method"><div class="m-name">getNeighbors</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">v0.2.1 easy-facade sprint</span><div class="note">thin facade over structured.getNeighbors · QueryResult envelope</div></div>
   </div>
   <div class="method"><div class="m-name">stats</div><div class="m-status s-stub">○ stub</div>
-    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-unused">KBR <span class="pill-c">·</span></span></div>
+    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-unused">KC <span class="pill-c">·</span></span></div>
     <div class="m-detail"></div>
   </div>
   <div class="method"><div class="m-name">listContradictions</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">v0.2.1 easy-facade sprint</span><div class="note">thin facade over structured.listContradictions · respects status filter</div></div>
   </div>
   <div class="method"><div class="m-name">listInsights</div><div class="m-status s-impl">✓ done</div>
-    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-needs">KB <span class="pill-c">needs</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="driven">v0.2.1 easy-facade sprint</span><div class="note">thin facade over structured.listInsights · respects entityId filter</div></div>
   </div>
   <div class="method"><div class="m-name">readBlock</div><div class="m-status s-stub">○ stub</div>
-    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"></div>
   </div>
   <div class="method"><div class="m-name">getBlockHistory</div><div class="m-status s-stub">○ stub</div>
-    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-unused">KB <span class="pill-c">·</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"></div>
   </div>
 </div>
@@ -267,15 +267,15 @@
 <div class="zone">
   <div class="zone-header"><span class="zone-name">maintain</span><span class="zone-sub">sleep pipeline · entirely stubbed · step-list gap unresolved (ADR 010)</span></div>
   <div class="method"><div class="m-name">runSleepPipeline</div><div class="m-status s-stub">○ stub</div>
-    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="note">13-step pipeline · KyberBot 9 vs Arcana 13 reconciliation deferred (ADR 010)</span><div class="warn">contracts ahead of kernel: surprisalScore, lastReinforcedAt unreachable until sleep lands · expiresAt now surfaced via queryFacts asOf</div></div>
   </div>
   <div class="method"><div class="m-name">startSleepSchedule</div><div class="m-status s-stub">○ stub</div>
-    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-needs">KBR <span class="pill-c">needs</span></span></div>
+    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-needs">KC <span class="pill-c">needs</span></span></div>
     <div class="m-detail"><span class="note">Scheduler provider integration; entirely stubbed</span></div>
   </div>
   <div class="method"><div class="m-name">stopSleepSchedule</div><div class="m-status s-stub">○ stub</div>
-    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KD <span class="pill-c">·</span></span><span class="pill p-unused">KBR <span class="pill-c">·</span></span></div>
+    <div class="m-consumers"><span class="pill p-parallel">KB <span class="pill-c">parallel</span></span><span class="pill p-unused">KA <span class="pill-c">·</span></span><span class="pill p-unused">KC <span class="pill-c">·</span></span></div>
     <div class="m-detail"></div>
   </div>
 </div>
