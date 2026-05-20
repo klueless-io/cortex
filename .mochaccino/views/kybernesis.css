@@ -1,0 +1,218 @@
+/* Kybernesis design system — extracted from DESIGN.md (dark theme canonical) */
+
+/* ── Fonts ──────────────────────────────────────────────────────────────────── */
+/* Load via <link> in <head> — see DESIGN.md §2.3 for canonical snippet         */
+
+/* ── Tokens ─────────────────────────────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-primary:   #0d1117;
+  --bg-secondary: #111827;
+  --bg-tertiary:  #161d2d;
+  --bg-elevated:  #1a2235;
+
+  /* Foreground */
+  --fg-primary:   #f1f5f9;
+  --fg-secondary: #94a3b8;
+  --fg-tertiary:  #64748b;
+  --fg-muted:     #475569;
+
+  /* Borders */
+  --border-color:       #1e2a3a;
+  --border-color-hover: #2d3f5a;
+  --border-hover:       #2d3f5a; /* alias — kept for backwards compat with existing views */
+
+  /* Accents */
+  --accent-emerald:       #10b981;
+  --accent-emerald-muted: rgba(16, 185, 129, 0.15);
+  --accent-cyan:          #22d3ee;
+  --accent-cyan-muted:    rgba(34, 211, 238, 0.15);
+  --accent-teal:          #14b8a6;
+  --accent-violet:        #7c3aed;
+  --accent-amber:         #d97706;
+
+  /* Status */
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-error:   #ef4444;
+  --status-info:    #3b82f6;
+
+  /* Typography */
+  --font-mono: 'Space Mono', 'SF Mono', 'Monaco', 'Menlo', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --text-xs:   9px;
+  --text-sm:  11px;
+  --text-base:13px;
+  --text-lg:  16px;
+  --text-xl:  20px;
+
+  /* Spacing (4px scale) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Borders */
+  --radius:      0px;       /* SQUARE corners everywhere */
+  --radius-full: 9999px;    /* only for dots and pills */
+
+  /* Transitions */
+  --transition-fast:   100ms ease-out;
+  --transition-normal: 150ms ease;
+
+  /* Layout */
+  --header-height: 36px;
+}
+
+/* Light mode override — add class="light" to <html> */
+html.light {
+  --bg-primary:   #faf9f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary:  #f5f4f2;
+  --bg-elevated:  #ffffff;
+
+  --fg-primary:   #1e293b;
+  --fg-secondary: #475569;
+  --fg-tertiary:  #64748b;
+  --fg-muted:     #94a3b8;
+
+  --border-color:       #e8e6e1;
+  --border-color-hover: #d5d3ce;
+
+  /* Accents darken in light mode for legibility */
+  --accent-emerald: #059669;
+  --accent-cyan:    #0891b2;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Base ───────────────────────────────────────────────────────────────────── */
+body {
+  background: var(--bg-primary);
+  color: var(--fg-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  padding: var(--space-8);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--fg-muted); }
+::-webkit-scrollbar-thumb:hover { background: var(--fg-tertiary); }
+
+/* ── Typography ─────────────────────────────────────────────────────────────── */
+h1 {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  letter-spacing: -0.02em;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-cyan);
+}
+
+/* ── Section title ──────────────────────────────────────────────────────────── */
+/* Usage: <div class="section-title">// ZONES</div>                              */
+.section-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent-emerald);
+  padding: var(--space-3) 0 var(--space-2);
+}
+
+/* ── Wordmark ───────────────────────────────────────────────────────────────── */
+/* Usage: <div class="wordmark">// <em>ARCANA</em> · VIEW NAME</div>             */
+.wordmark {
+  font-size: var(--text-sm);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: var(--space-4);
+}
+.wordmark em {
+  color: var(--accent-emerald);
+  font-style: normal;
+}
+
+/* ── Tagline ────────────────────────────────────────────────────────────────── */
+.tagline {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 12px;
+  color: var(--fg-tertiary);
+  margin-top: 6px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+.header {
+  margin-bottom: var(--space-8);
+}
+
+/* ── Badge ──────────────────────────────────────────────────────────────────── */
+/* Usage: <span class="badge">REMOTE</span>                                      */
+.badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  padding: 1px var(--space-1);
+  line-height: 16px;
+}
+
+/* ── Status dot ─────────────────────────────────────────────────────────────── */
+/* Usage: <span class="status-dot status-dot--online"></span>                    */
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+.status-dot--online  { background: var(--status-success); box-shadow: 0 0 6px rgba(16,185,129,0.5); }
+.status-dot--offline { background: var(--fg-muted); }
+.status-dot--error   { background: var(--status-error);   box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+
+/* ── Story cards (3-col narrative grid) ─────────────────────────────────────── */
+.stories {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border-color);
+}
+.story {
+  background: var(--bg-secondary);
+  padding: 18px 20px;
+}
+.story-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: var(--space-2);
+}
+.story-body {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 12px;
+  color: var(--fg-tertiary);
+  line-height: 1.7;
+}
+.story-body strong {
+  color: var(--fg-secondary);
+  font-weight: 500;
+}
