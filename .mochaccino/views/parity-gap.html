@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arcana — Parity Gap</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.5; padding: 24px; }
+  h1 { font-size: 20px; font-weight: 600; color: #f1f5f9; letter-spacing: -0.02em; }
+  .subtitle { color: #64748b; font-size: 13px; margin-top: 4px; }
+  .meta { color: #475569; font-size: 11px; margin-top: 6px; }
+  .header { margin-bottom: 28px; }
+
+  /* legend */
+  .legend { display: flex; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; }
+  .dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+  /* main table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; max-width: 960px; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 16px; text-align: left; border-bottom: 2px solid #1e2a3a; }
+  th.col-area { color: #64748b; width: 180px; }
+  th.col-arcana  { color: #6366f1; }
+  th.col-kyberbot { color: #22d3ee; }
+  th.col-brain   { color: #fb923c; }
+  td { padding: 0; vertical-align: top; border-bottom: 1px solid #111827; }
+  tr:hover td { background: rgba(255,255,255,0.015); }
+
+  /* area label */
+  .area-cell { padding: 12px 16px; }
+  .area-name { font-size: 13px; font-weight: 600; color: #c8d6e5; }
+  .area-desc { font-size: 10.5px; color: #475569; margin-top: 3px; line-height: 1.4; }
+
+  /* status cells */
+  .status-cell { padding: 12px 16px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 4px; margin-bottom: 4px; }
+  .chip-done    { background: rgba(34,197,94,0.12);   color: #4ade80; }
+  .chip-partial { background: rgba(245,158,11,0.12);  color: #fbbf24; }
+  .chip-blocked { background: rgba(239,68,68,0.12);   color: #f87171; }
+  .chip-none    { background: rgba(75,85,99,0.15);    color: #6b7280; }
+  .chip-na      { background: rgba(30,42,58,0.5);     color: #334155; }
+  .detail { font-size: 10.5px; color: #475569; line-height: 1.5; margin-top: 3px; }
+  .detail strong { color: #64748b; }
+
+  /* section headers */
+  .section-row td { background: #0a0f1a; padding: 6px 16px; }
+  .section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #374151; }
+
+  /* summary row */
+  .summary-row td { background: #0f1623; border-top: 2px solid #1e2a3a; padding: 14px 16px; }
+  .summary-score { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .summary-label { font-size: 10px; color: #475569; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Arcana — Parity Gap</h1>
+  <div class="subtitle">What Arcana has · what KyberBot uses · what Brain needs</div>
+  <div class="meta">v0.1.1 · 2026-05-20</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:#22c55e"></div> Done / integrated</div>
+  <div class="legend-item"><div class="dot" style="background:#f59e0b"></div> Partial / conditional</div>
+  <div class="legend-item"><div class="dot" style="background:#ef4444"></div> Blocked / missing</div>
+  <div class="legend-item"><div class="dot" style="background:#374151;border:1px solid #4b5563"></div> Not applicable / deferred</div>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+  <tr>
+    <th class="col-area">Feature area</th>
+    <th class="col-arcana">Arcana has it</th>
+    <th class="col-kyberbot">KyberBot uses it</th>
+    <th class="col-brain">Brain needs it</th>
+  </tr>
+</thead>
+<tbody>
+
+  <!-- WRITE PATH -->
+  <tr class="section-row"><td colspan="4"><div class="section-label">Write path</div></td></tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Memory write</div><div class="area-desc">storeMemory, updateMemory, pin, moveToTier, markMemorySuperseded</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ complete</div><div class="detail">10 command methods · all implemented · 100% write parity</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ integrated</div><div class="detail">22-commit arcana-adoption branch · 5+ modules wired</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ blocked</div><div class="detail">Blocked on 5 <strong>Convex artifacts</strong> removal before any Arcana wiring</div></td>
+  </tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Fact write</div><div class="area-desc">recordFact, markFactSuperseded, storeContradiction</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ complete</div><div class="detail">All 3 implemented · FactSchema sentence-form (ADR 004)</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ integrated</div><div class="detail">KyberBot sleep/observe.ts wired</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ blocked</div><div class="detail">sourceType enum mismatch (heartbeat ≠ Arcana's terminal/chat/ai-extraction) · needs translation layer</div></td>
+  </tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Entity + graph</div><div class="area-desc">upsertEntity, deleteEntity, linkNodes</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ complete</div><div class="detail">All 3 implemented · NodeRef type discriminator</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ integrated</div><div class="detail">entity-graph.ts wired · 6 integration tests</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ blocked</div><div class="detail">Brain uses 4-flat-ID edges (fromType, fromId, toType, toId) · must migrate to NodeRef · no scopes columns on entity rows</div></td>
+  </tr>
+
+  <!-- READ PATH -->
+  <tr class="section-row"><td colspan="4"><div class="section-label">Read path</div></td></tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Entity profile</div><div class="area-desc">getEntityProfile — assembles from live facts, insights, neighbors</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ implemented</div><div class="detail">commit 7bb12c4 · stores result · QueryResult envelope · 4 tests</div></td>
+    <td class="status-cell"><div class="chip chip-none">○ not wired</div><div class="detail">Arcana method exists but KyberBot hasn't wired read modules yet</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ blocked</div><div class="detail">Brain has getEntityContext() in Convex. Needs entity scopes DDL + Arcana adoption first</div></td>
+  </tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Fact retrieval</div><div class="area-desc">factRetrieval — scored fact search with entity expansion</div></td>
+    <td class="status-cell"><div class="chip chip-partial">◐ partial</div><div class="detail">Structured text-match only · no FTS5 · scores by word-hit · why field annotated · 4 tests</div></td>
+    <td class="status-cell"><div class="chip chip-none">○ not wired</div><div class="detail">Not wired yet · KyberBot has its own fact-retrieval.ts</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ blocked</div><div class="detail">Brain adoption blocked on Convex migration · full scored retrieval with entity expansion needed</div></td>
+  </tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Hybrid search</div><div class="area-desc">hybridSearch — FTS5 + vector cosine + graph BFS + recency weighting</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ stubbed</div><div class="detail">NotImplementedError · needs FTS5 tables in StructuredStore + sqlite-vec wired · next sprint</div></td>
+    <td class="status-cell"><div class="chip chip-none">○ not wired</div><div class="detail">KyberBot has 4-layer search locally · hasn't demanded Arcana's hybridSearch yet</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ blocked</div><div class="detail">Brain doesn't have hybrid search at all today</div></td>
+  </tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Timeline query</div><div class="area-desc">queryFacts(asOf) — bitemporal: facts valid as of date X</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ missing</div><div class="detail">Not even stubbed · identified ADR 008 · needs createdAt ≤ asOf ∧ expiresAt > asOf filter on StructuredStore</div></td>
+    <td class="status-cell"><div class="chip chip-na">— n/a</div><div class="detail">KyberBot doesn't use temporal queries</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ needed</div><div class="detail">Brain has temporal facts with expiresAt (Jaccard novelty, expiry sweep). This method is a Brain migration gate.</div></td>
+  </tr>
+
+  <!-- VECTOR -->
+  <tr class="section-row"><td colspan="4"><div class="section-label">Vector / embeddings</div></td></tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Vector provider</div><div class="area-desc">VectorStore — upsert, query, delete embeddings</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ shipped</div><div class="detail">arcana-provider-sqlite-vec v0.1.1 · vec0 virtual table · :memory: support · 11 tests · no Docker</div></td>
+    <td class="status-cell"><div class="chip chip-partial">◐ ChromaDB</div><div class="detail">KyberBot uses its own ChromaDB adapter · can drop Docker by switching to arcana-provider-sqlite-vec post-merge</div></td>
+    <td class="status-cell"><div class="chip chip-partial">◐ sqlite-vec</div><div class="detail">KyberAgent Desktop already migrated from ChromaDB to sqlite-vec (Ian's implementation). Schema compatible but not Arcana contracts.</div></td>
+  </tr>
+
+  <!-- SCHEMA -->
+  <tr class="section-row"><td colspan="4"><div class="section-label">Schema / contracts</div></td></tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Temporal facts</div><div class="area-desc">expiresAt, surprisalScore, lastReinforcedAt — in FactSchema</div></td>
+    <td class="status-cell"><div class="chip chip-partial">◐ contracts only</div><div class="detail">Fields exist in FactSchema (arcana-contracts) but <strong>unreachable from any kernel method or sleep step</strong></div></td>
+    <td class="status-cell"><div class="chip chip-na">— n/a</div><div class="detail">KyberBot doesn't use expiresAt</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ needs kernel</div><div class="detail">Brain uses expiresAt and surprisalScore actively · needs sleep pipeline steps to compute + apply them</div></td>
+  </tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">AgentSelf / memory blocks</div><div class="area-desc">Letta-style persona, human context, objectives blocks</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ in contracts</div><div class="detail">AgentSelf.memoryBlocks[] · label + content + updatedAt · in arcana-contracts</div></td>
+    <td class="status-cell"><div class="chip chip-na">— n/a</div><div class="detail">KyberBot is a CLI agent, doesn't use persona blocks</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ kernel gap</div><div class="detail">Brain uses Letta-style blocks heavily. Schema aligned but updateBlock/readBlock kernel methods are stubbed.</div></td>
+  </tr>
+
+  <!-- SLEEP -->
+  <tr class="section-row"><td colspan="4"><div class="section-label">Sleep pipeline</div></td></tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">Sleep pipeline</div><div class="area-desc">13-step background consolidation cycle</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ stubbed</div><div class="detail">All 13 steps throw NotImplementedError · SLEEP_STEPS const defined · entirely unimplemented</div></td>
+    <td class="status-cell"><div class="chip chip-partial">◐ local impl</div><div class="detail">KyberBot has 9-step working pipeline · hasn't demanded Arcana's sleep implementation · will be the demand signal when read modules wire</div></td>
+    <td class="status-cell"><div class="chip chip-blocked">✗ needs all 13</div><div class="detail">Brain needs: temporal expiry check, surprisal computation, entity dedup (already in KyberAgent), profile regeneration — 4 steps beyond KyberBot's 9</div></td>
+  </tr>
+
+  <!-- PUBLISH -->
+  <tr class="section-row"><td colspan="4"><div class="section-label">Package / integration</div></td></tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">npm publish</div><div class="area-desc">@kybernesis/* packages on registry</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ v0.1.1 live</div><div class="detail">5 packages · semver deps verified · pnpm publish -r fixed workspace:* issue · 2026-05-20</div></td>
+    <td class="status-cell"><div class="chip chip-partial">◐ pending swap</div><div class="detail">KyberBot still on file: deps · EC-015 fix needed then version swap + merge</div></td>
+    <td class="status-cell"><div class="chip chip-na">— future</div><div class="detail">Brain adoption hasn't started · will use Postgres provider (not yet built)</div></td>
+  </tr>
+
+  <tr>
+    <td class="area-cell"><div class="area-name">KyberBot merge</div><div class="area-desc">arcana-adoption branch → main</div></td>
+    <td class="status-cell"><div class="chip chip-done">✓ ready</div><div class="detail">v0.1.1 published · go-ahead sent to KyberBot</div></td>
+    <td class="status-cell"><div class="chip chip-partial">◐ EC-015 pending</div><div class="detail">One required fix: in-flight promise guard in arcana-singleton.ts (~10 lines) · then version swap + merge</div></td>
+    <td class="status-cell"><div class="chip chip-na">— n/a</div><div class="detail"></div></td>
+  </tr>
+
+  <!-- SUMMARY -->
+  <tr class="summary-row">
+    <td class="area-cell"><div class="area-name" style="color:#818cf8">Overall</div></td>
+    <td class="status-cell">
+      <div class="summary-score" style="color:#22c55e">~65%</div>
+      <div class="summary-label">Write complete · reads partial · sleep 0% · sqlite-vec shipped</div>
+    </td>
+    <td class="status-cell">
+      <div class="summary-score" style="color:#22d3ee">~60%</div>
+      <div class="summary-label">Write integrated · reads not yet wired · merge imminent</div>
+    </td>
+    <td class="status-cell">
+      <div class="summary-score" style="color:#fb923c">~20%</div>
+      <div class="summary-label">Schema aligned · 5 Convex artifacts to shed · kernel gaps · no adoption started</div>
+    </td>
+  </tr>
+
+</tbody>
+</table>
+</div>
+
+</body>
+</html>

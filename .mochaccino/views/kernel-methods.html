@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arcana — Kernel Method Status</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; font-size: 13px; line-height: 1.5; padding: 24px; }
+  h1 { font-size: 20px; font-weight: 600; color: #f1f5f9; letter-spacing: -0.02em; }
+  .subtitle { color: #64748b; font-size: 13px; margin-top: 4px; }
+  .header { margin-bottom: 28px; }
+  .meta { color: #475569; font-size: 11px; margin-top: 6px; }
+
+  /* parity bars */
+  .parity-row { display: flex; gap: 20px; margin-bottom: 28px; flex-wrap: wrap; }
+  .parity-card { background: #161b27; border: 1px solid #1e2a3a; border-radius: 8px; padding: 14px 20px; min-width: 180px; flex: 1; }
+  .parity-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .parity-value { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }
+  .parity-bar { height: 4px; background: #1e293b; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .parity-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  .green-val { color: #22c55e; }
+  .amber-val { color: #f59e0b; }
+  .red-val   { color: #ef4444; }
+  .green-fill { background: #22c55e; }
+  .amber-fill { background: #f59e0b; }
+  .red-fill   { background: #ef4444; }
+
+  /* legend */
+  .legend { display: flex; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; }
+  .dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .dot-implemented { background: #22c55e; }
+  .dot-stubbed     { background: #f59e0b; }
+  .dot-missing     { background: #ef4444; }
+  .dot-deferred    { background: #374151; border: 1px solid #4b5563; }
+
+  /* zone sections */
+  .zone { margin-bottom: 28px; }
+  .zone-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #1e2a3a; }
+  .zone-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #6366f1; }
+  .zone-count { font-size: 10px; color: #475569; background: #1e293b; padding: 2px 7px; border-radius: 10px; }
+
+  /* method rows */
+  .method { display: grid; grid-template-columns: 220px 90px 1fr; gap: 0; margin-bottom: 3px; border-radius: 5px; overflow: hidden; border: 1px solid #1a2235; }
+  .method:hover { border-color: #2d3f5a; }
+  .method-name { padding: 8px 12px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: #121827; color: #c8d6e5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .method-status { padding: 8px 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+  .status-implemented { background: rgba(34,197,94,0.12); color: #4ade80; }
+  .status-stubbed     { background: rgba(245,158,11,0.10); color: #fbbf24; }
+  .status-missing     { background: rgba(239,68,68,0.12); color: #f87171; }
+  .status-deferred    { background: rgba(75,85,99,0.15); color: #6b7280; }
+  .method-detail { padding: 8px 12px; background: #0f1623; color: #64748b; font-size: 11px; }
+  .driven-by { color: #6366f1; font-weight: 500; }
+  .note-text { color: #475569; margin-top: 2px; font-size: 10.5px; }
+  .contracts-ahead { color: #f59e0b; font-size: 10.5px; font-style: italic; }
+
+  /* summary footer */
+  .summary { margin-top: 32px; padding: 16px 20px; background: #0f1623; border: 1px solid #1e2a3a; border-radius: 8px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .stat { }
+  .stat-val { font-size: 22px; font-weight: 700; color: #818cf8; letter-spacing: -0.02em; }
+  .stat-label { font-size: 11px; color: #475569; margin-top: 2px; }
+  .tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; background: rgba(99,102,241,0.15); color: #818cf8; margin: 1px 2px 1px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Arcana — Kernel Method Status</h1>
+  <div class="subtitle">Which methods are real vs stubs · demand-driven by KyberBot adoption</div>
+  <div class="meta">v0.1.1 · 2026-05-20 · 212 tests passing · 5 packages on npm</div>
+</div>
+
+<div class="parity-row">
+  <div class="parity-card">
+    <div class="parity-label">Write Parity</div>
+    <div class="parity-value green-val">100%</div>
+    <div class="parity-bar"><div class="parity-fill green-fill" style="width:100%"></div></div>
+  </div>
+  <div class="parity-card">
+    <div class="parity-label">Read Parity</div>
+    <div class="parity-value amber-val">50%</div>
+    <div class="parity-bar"><div class="parity-fill amber-fill" style="width:50%"></div></div>
+  </div>
+  <div class="parity-card">
+    <div class="parity-label">Sleep Pipeline</div>
+    <div class="parity-value red-val">0%</div>
+    <div class="parity-bar"><div class="parity-fill red-fill" style="width:0%"></div></div>
+  </div>
+  <div class="parity-card">
+    <div class="parity-label">Implemented / Total</div>
+    <div class="parity-value" style="color:#818cf8">14 / 28</div>
+    <div class="parity-bar"><div class="parity-fill" style="width:50%;background:#6366f1"></div></div>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot dot-implemented"></div> Implemented + tested</div>
+  <div class="legend-item"><div class="dot dot-stubbed"></div> Stub (throws NotImplementedError)</div>
+  <div class="legend-item"><div class="dot dot-missing"></div> Missing — not even stubbed</div>
+  <div class="legend-item"><div class="dot dot-deferred"></div> Deferred — no consumer demand</div>
+</div>
+
+<!-- access.command zone -->
+<div class="zone">
+  <div class="zone-header">
+    <span class="zone-name">access.command</span>
+    <span class="zone-count">write facade — 10 methods</span>
+  </div>
+  <div class="method">
+    <div class="method-name">upsertEntity</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">KyberBot #2 entity-graph.ts</span> · commit 17c3f48 · 6 integration tests</div>
+  </div>
+  <div class="method">
+    <div class="method-name">deleteEntity</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">KyberBot #2 entity-graph.ts</span> · additive to StructuredStore (ADR 002)</div>
+  </div>
+  <div class="method">
+    <div class="method-name">linkNodes</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">KyberBot #2 entity-graph.ts</span> · renamed from linkMemories (ADR 001 · NodeRef signature)</div>
+  </div>
+  <div class="method">
+    <div class="method-name">recordFact</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">ADR 004 — anticipated KyberBot #4 + Brain fact pipeline</span> · UUID id + ISO createdAt defaults</div>
+  </div>
+  <div class="method">
+    <div class="method-name">updateMemory</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">ADR 005 — Memory is not append-only</span> · partial update · contentHash recomputed · unblocked pin/moveToTier</div>
+  </div>
+  <div class="method">
+    <div class="method-name">pin</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">ADR 005 — became real once updateMemory landed</span> · thin wrapper: updateMemory(id, {isPinned:true})</div>
+  </div>
+  <div class="method">
+    <div class="method-name">moveToTier</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">ADR 005</span> · thin wrapper: updateMemory(id, {tier})</div>
+  </div>
+  <div class="method">
+    <div class="method-name">markFactSuperseded</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">KyberBot #11 sleep/observe.ts</span> · pure-link op · isLatest=false + supersededBy (ADR 006)</div>
+  </div>
+  <div class="method">
+    <div class="method-name">storeContradiction</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">KyberBot #11 sleep/observe.ts</span> · mints id + createdAt · status defaults 'pending' (ADR 006)</div>
+  </div>
+  <div class="method">
+    <div class="method-name">markMemorySuperseded</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">ADR 007 §3.2 — Brain-vs-Convex audit</span> · mirrors markFactSuperseded · memory-level supersession</div>
+  </div>
+  <div class="method">
+    <div class="method-name">deleteMemory</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">no consumer demand yet</div>
+  </div>
+  <div class="method">
+    <div class="method-name">updateBlock</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">no consumer demand yet</div>
+  </div>
+</div>
+
+<!-- ingest zone -->
+<div class="zone">
+  <div class="zone-header">
+    <span class="zone-name">ingest</span>
+    <span class="zone-count">2 methods + 2 cross-cutting</span>
+  </div>
+  <div class="method">
+    <div class="method-name">storeMemory</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">KyberBot #1 timeline.ts</span> · commit 1f6a7c4 · 5 integration tests · canonical row write only</div>
+  </div>
+  <div class="method">
+    <div class="method-name">ingestDocument</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">no consumer demand yet</div>
+  </div>
+  <div class="method">
+    <div class="method-name">[vector optional]</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">arcana-config merge + DVR review</span> · createMissingVectorStore() fallback · ArcanaOptions.vector? optional</div>
+  </div>
+  <div class="method">
+    <div class="method-name">[sqlite-vec provider]</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">T13</span> · commit 7bb12c4 · vec0 virtual table · rowid_ref pattern · :memory: · 11 tests · unblocks hybridSearch</div>
+  </div>
+</div>
+
+<!-- retrieve zone -->
+<div class="zone">
+  <div class="zone-header">
+    <span class="zone-name">retrieve</span>
+    <span class="zone-count">4 methods · read parity gap here</span>
+  </div>
+  <div class="method">
+    <div class="method-name">getEntityProfile</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">T11 arcana-core internal</span> · commit 7bb12c4 · assembles from facts/insights/neighbors · stores + caches · QueryResult envelope</div>
+  </div>
+  <div class="method">
+    <div class="method-name">factRetrieval</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">T12 arcana-core internal</span> · commit 7bb12c4 · structured text-match · word-hit scoring · why: 'text-match (structured-only, no FTS5)'</div>
+  </div>
+  <div class="method">
+    <div class="method-name">hybridSearch</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">requires FTS5 tables in StructuredStore + sqlite-vec wired · next implementation target after KyberBot merge</div>
+  </div>
+  <div class="method">
+    <div class="method-name">queryFacts (asOf)</div>
+    <div class="method-status status-missing">✗ missing</div>
+    <div class="method-detail">not even stubbed · bitemporal filter (createdAt ≤ asOf ∧ expiresAt > asOf) · identified ADR 008 · needed for Brain migration</div>
+  </div>
+</div>
+
+<!-- access.query zone -->
+<div class="zone">
+  <div class="zone-header">
+    <span class="zone-name">access.query</span>
+    <span class="zone-count">read facade — 7 methods</span>
+  </div>
+  <div class="method">
+    <div class="method-name">queryFacts</div>
+    <div class="method-status status-implemented">✓ done</div>
+    <div class="method-detail"><span class="driven-by">ADR 004</span> · structured.getFactsForEntity · fresh QueryResult envelope</div>
+  </div>
+  <div class="method">
+    <div class="method-name">getNeighbors</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">no consumer demand yet</div>
+  </div>
+  <div class="method">
+    <div class="method-name">stats</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">no consumer demand yet</div>
+  </div>
+  <div class="method">
+    <div class="method-name">listContradictions</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">provider surface exists · kernel facade not yet exposed</div>
+  </div>
+  <div class="method">
+    <div class="method-name">listInsights</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">no consumer demand yet</div>
+  </div>
+  <div class="method">
+    <div class="method-name">readBlock</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">no consumer demand yet</div>
+  </div>
+  <div class="method">
+    <div class="method-name">getBlockHistory</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">no consumer demand yet</div>
+  </div>
+</div>
+
+<!-- maintain / sleep zone -->
+<div class="zone">
+  <div class="zone-header">
+    <span class="zone-name">maintain</span>
+    <span class="zone-count">sleep pipeline — entirely stubbed</span>
+  </div>
+  <div class="method">
+    <div class="method-name">runSleepPipeline</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">13-step pipeline · contracts ahead of kernel: <span class="contracts-ahead">expiresAt, surprisalScore, lastReinforcedAt in FactSchema but unreachable from any kernel path</span></div>
+  </div>
+  <div class="method">
+    <div class="method-name">startSleepSchedule</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">scheduler provider integration · entirely stubbed</div>
+  </div>
+  <div class="method">
+    <div class="method-name">stopSleepSchedule</div>
+    <div class="method-status status-stubbed">○ stub</div>
+    <div class="method-detail">entirely stubbed</div>
+  </div>
+</div>
+
+<div class="summary">
+  <div class="summary-grid">
+    <div class="stat"><div class="stat-val">14</div><div class="stat-label">Implemented</div></div>
+    <div class="stat"><div class="stat-val">13</div><div class="stat-label">Stubbed</div></div>
+    <div class="stat"><div class="stat-val">1</div><div class="stat-label" style="color:#ef4444">Missing</div></div>
+    <div class="stat"><div class="stat-val">212</div><div class="stat-label">Tests passing</div></div>
+    <div class="stat">
+      <div style="font-size:11px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;">Contracts ahead of kernel</div>
+      <span class="tag">expiresAt</span><span class="tag">surprisalScore</span><span class="tag">lastReinforcedAt</span>
+      <div class="note-text" style="margin-top:6px;color:#475569;font-size:10px;">In FactSchema · not surfaced in any kernel method or sleep step</div>
+    </div>
+    <div class="stat">
+      <div style="font-size:11px;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;">Next target</div>
+      <div style="color:#fbbf24;font-size:12px;">hybridSearch</div>
+      <div class="note-text" style="margin-top:3px;">needs FTS5 in StructuredStore + sqlite-vec wired</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

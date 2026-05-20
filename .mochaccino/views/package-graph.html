@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arcana — Package Graph</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.5; padding: 24px; min-height: 100vh; }
+  h1 { font-size: 20px; font-weight: 600; color: #f1f5f9; letter-spacing: -0.02em; }
+  .subtitle { color: #64748b; font-size: 13px; margin-top: 4px; }
+  .meta { color: #475569; font-size: 11px; margin-top: 6px; }
+  .header { margin-bottom: 36px; }
+
+  /* graph canvas */
+  .graph { position: relative; width: 100%; max-width: 900px; height: 520px; margin: 0 auto 32px; }
+
+  /* SVG arrows */
+  svg.arrows { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+
+  /* package cards */
+  .pkg {
+    position: absolute;
+    width: 160px;
+    background: #111827;
+    border: 1px solid #1e2a3a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: default;
+  }
+  .pkg:hover { border-color: #4b5563; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+  .pkg-name { font-size: 12px; font-weight: 600; color: #c8d6e5; font-family: 'SF Mono','Fira Code',monospace; margin-bottom: 6px; word-break: break-all; }
+  .pkg-version { font-size: 10px; color: #4ade80; background: rgba(34,197,94,0.1); padding: 1px 6px; border-radius: 10px; display: inline-block; margin-bottom: 8px; }
+  .pkg-role { font-size: 10.5px; color: #64748b; line-height: 1.4; }
+  .pkg-tests { font-size: 10px; color: #475569; margin-top: 6px; }
+  .badge { display: inline-block; font-size: 9.5px; padding: 1px 6px; border-radius: 10px; margin-top: 4px; }
+  .badge-foundation { background: rgba(99,102,241,0.15); color: #818cf8; }
+  .badge-kernel    { background: rgba(6,182,212,0.12); color: #22d3ee; }
+  .badge-testkit   { background: rgba(168,85,247,0.12); color: #c084fc; }
+  .badge-provider  { background: rgba(245,158,11,0.12); color: #fbbf24; }
+
+  /* story card */
+  .story { display: flex; gap: 16px; flex-wrap: wrap; max-width: 900px; margin: 0 auto; }
+  .story-card { flex: 1; min-width: 200px; background: #0f1623; border: 1px solid #1e2a3a; border-radius: 8px; padding: 14px 16px; }
+  .story-title { font-size: 11px; font-weight: 600; color: #6366f1; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .story-body { font-size: 12px; color: #64748b; line-height: 1.6; }
+  .story-body strong { color: #94a3b8; }
+
+  /* npm badge */
+  .npm { font-size: 10px; color: #475569; margin-top: 6px; }
+  .npm a { color: #6366f1; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Arcana — Package Graph</h1>
+  <div class="subtitle">5 packages · v0.1.1 · all on npm · dependency direction shows publish order</div>
+  <div class="meta">2026-05-20 · arcana-config absorbed into arcana-core on 2026-05-19 · arcana-provider-sqlite-vec added 2026-05-20</div>
+</div>
+
+<div class="graph" id="graph">
+
+  <!-- SVG arrow layer -->
+  <svg class="arrows" id="arrows">
+    <defs>
+      <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#2d3f5a" />
+      </marker>
+    </defs>
+    <!-- arrows drawn by JS below -->
+  </svg>
+
+  <!-- arcana-contracts (top centre — foundation, no internal deps) -->
+  <div class="pkg" id="contracts" style="left:calc(50% - 80px); top: 20px;">
+    <div class="pkg-name">arcana-contracts</div>
+    <div class="pkg-version">v0.1.1</div>
+    <div class="pkg-role">Zod schemas · provider interfaces · QueryResult · ARP scopes</div>
+    <div class="badge badge-foundation">foundation</div>
+    <div class="pkg-tests">37 tests · depends only on zod</div>
+  </div>
+
+  <!-- arcana-core (left of centre, row 2) -->
+  <div class="pkg" id="core" style="left: 80px; top: 230px;">
+    <div class="pkg-name">arcana-core</div>
+    <div class="pkg-version">v0.1.1</div>
+    <div class="pkg-role">Kernel · zones · createArcana() · config loader (merged from arcana-config)</div>
+    <div class="badge badge-kernel">kernel</div>
+    <div class="pkg-tests">~120 tests</div>
+  </div>
+
+  <!-- arcana-testkit (centre, row 2) -->
+  <div class="pkg" id="testkit" style="left:calc(50% - 80px); top: 230px;">
+    <div class="pkg-name">arcana-testkit</div>
+    <div class="pkg-version">v0.1.1</div>
+    <div class="pkg-role">In-memory fakes for all 4 provider interfaces</div>
+    <div class="badge badge-testkit">testkit</div>
+    <div class="pkg-tests">4 fakes · compliance suite deferred</div>
+  </div>
+
+  <!-- arcana-provider-libsql (far left, row 3) -->
+  <div class="pkg" id="libsql" style="left: 20px; top: 390px;">
+    <div class="pkg-name">arcana-provider-libsql</div>
+    <div class="pkg-version">v0.1.1</div>
+    <div class="pkg-role">StructuredStore over libsql · all 9 entity types · mkdirSync fix</div>
+    <div class="badge badge-provider">provider</div>
+    <div class="pkg-tests">~55 tests</div>
+  </div>
+
+  <!-- arcana-provider-sqlite-vec (right, row 3) -->
+  <div class="pkg" id="sqlitevec" style="right: 20px; top: 390px;">
+    <div class="pkg-name">arcana-provider-sqlite-vec</div>
+    <div class="pkg-version">v0.1.1</div>
+    <div class="pkg-role">VectorStore over sqlite-vec · no Docker · :memory: support</div>
+    <div class="badge badge-provider">provider</div>
+    <div class="pkg-tests">11 tests · new in v0.1.1</div>
+  </div>
+
+</div>
+
+<script>
+// Draw arrows after layout is computed
+window.addEventListener('load', () => {
+  const graph = document.getElementById('graph');
+  const svg   = document.getElementById('arrows');
+  const gr    = graph.getBoundingClientRect();
+
+  function centre(el) {
+    const r = el.getBoundingClientRect();
+    return { x: r.left - gr.left + r.width/2, y: r.top - gr.top + r.height/2, t: r.top - gr.top, b: r.top - gr.top + r.height, l: r.left - gr.left, r: r.left - gr.left + r.width };
+  }
+
+  function arrow(fromId, toId, color='#2d3f5a') {
+    const f = centre(document.getElementById(fromId));
+    const t = centre(document.getElementById(toId));
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', f.x); line.setAttribute('y1', f.b);
+    line.setAttribute('x2', t.x); line.setAttribute('y2', t.t - 4);
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width', '1.5');
+    line.setAttribute('marker-end', 'url(#arrowhead)');
+    line.setAttribute('stroke-dasharray', '');
+    svg.appendChild(line);
+  }
+
+  // contracts → core
+  arrow('contracts', 'core', '#3d4f6a');
+  // contracts → testkit
+  arrow('contracts', 'testkit', '#3d4f6a');
+  // contracts → libsql
+  arrow('contracts', 'libsql', '#3d4f6a');
+  // contracts → sqlite-vec
+  arrow('contracts', 'sqlitevec', '#3d4f6a');
+  // core → libsql (core is used by providers for types)
+  // Actually libsql depends on contracts only; core depends on contracts
+  // No core→provider dep; skip that arrow
+});
+</script>
+
+<!-- Story cards below -->
+<div class="story">
+  <div class="story-card">
+    <div class="story-title">Why publish order matters</div>
+    <div class="story-body">
+      <strong>arcana-contracts</strong> must publish first — all other packages reference it.
+      The other 4 can publish in any order. Previous v0.1.0 publish used <code>npm publish</code>
+      which left <code>workspace:*</code> in manifests instead of real semver.
+      v0.1.1 published with <code>pnpm publish -r</code> — confirmed clean.
+    </div>
+  </div>
+  <div class="story-card">
+    <div class="story-title">arcana-config disappearance</div>
+    <div class="story-body">
+      There was a 5th package: <strong>arcana-config</strong>. It was merged into arcana-core
+      on 2026-05-19 (src/config/). It had no external consumers and only added zod as a
+      transitive dep. Removing it simplified the graph without changing any public API.
+    </div>
+  </div>
+  <div class="story-card">
+    <div class="story-title">Provider landscape gaps</div>
+    <div class="story-body">
+      <strong>StructuredStore</strong>: one real provider (libsql), one fake (testkit).
+      <strong>VectorStore</strong>: one real provider (sqlite-vec), one fake (testkit). KyberBot's
+      ChromaDB wrapper is a consumer adapter, not an Arcana package.
+      <strong>arcana-provider-postgres</strong> is the next planned provider — needed for Brain migration.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
