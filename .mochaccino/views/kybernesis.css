@@ -1,37 +1,42 @@
-/* Kybernesis design system — extracted from DESIGN.md (dark theme canonical) */
+/*
+ * Kybernesis design system — extracted from DESIGN.md
+ *
+ * Light mode is the default here (brand identity: "warm off-white background").
+ * Dark mode is the canonical KyberBot Desktop app look; apply with class="dark" on <html>.
+ */
 
 /* ── Fonts ──────────────────────────────────────────────────────────────────── */
 /* Load via <link> in <head> — see DESIGN.md §2.3 for canonical snippet         */
 
-/* ── Tokens ─────────────────────────────────────────────────────────────────── */
+/* ── Tokens — Light mode default ───────────────────────────────────────────── */
 :root {
-  /* Backgrounds */
-  --bg-primary:   #0d1117;
-  --bg-secondary: #111827;
-  --bg-tertiary:  #161d2d;
-  --bg-elevated:  #1a2235;
+  /* Backgrounds — warm cream, not clinical white */
+  --bg-primary:   #faf9f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary:  #f5f4f2;
+  --bg-elevated:  #ffffff;
 
   /* Foreground */
-  --fg-primary:   #f1f5f9;
-  --fg-secondary: #94a3b8;
+  --fg-primary:   #1e293b;
+  --fg-secondary: #475569;
   --fg-tertiary:  #64748b;
-  --fg-muted:     #475569;
+  --fg-muted:     #94a3b8;
 
-  /* Borders */
-  --border-color:       #1e2a3a;
-  --border-color-hover: #2d3f5a;
-  --border-hover:       #2d3f5a; /* alias — kept for backwards compat with existing views */
+  /* Borders — warm grey, not cool slate */
+  --border-color:       #e8e6e1;
+  --border-color-hover: #d5d3ce;
+  --border-hover:       #d5d3ce; /* alias for border-color-hover */
 
-  /* Accents */
-  --accent-emerald:       #10b981;
-  --accent-emerald-muted: rgba(16, 185, 129, 0.15);
-  --accent-cyan:          #22d3ee;
-  --accent-cyan-muted:    rgba(34, 211, 238, 0.15);
-  --accent-teal:          #14b8a6;
+  /* Accents — darkened for legibility on light background */
+  --accent-emerald:       #059669;
+  --accent-emerald-muted: rgba(5, 150, 105, 0.12);
+  --accent-cyan:          #0891b2;
+  --accent-cyan-muted:    rgba(8, 145, 178, 0.12);
+  --accent-teal:          #0d9488;
   --accent-violet:        #7c3aed;
   --accent-amber:         #d97706;
 
-  /* Status */
+  /* Status (same in both themes) */
   --status-success: #10b981;
   --status-warning: #f59e0b;
   --status-error:   #ef4444;
@@ -54,9 +59,13 @@
   --space-6: 24px;
   --space-8: 32px;
 
-  /* Borders */
+  /* Shape */
   --radius:      0px;       /* SQUARE corners everywhere */
   --radius-full: 9999px;    /* only for dots and pills */
+
+  /* Shadows — barely there */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
 
   /* Transitions */
   --transition-fast:   100ms ease-out;
@@ -66,24 +75,28 @@
   --header-height: 36px;
 }
 
-/* Light mode override — add class="light" to <html> */
-html.light {
-  --bg-primary:   #faf9f7;
-  --bg-secondary: #ffffff;
-  --bg-tertiary:  #f5f4f2;
-  --bg-elevated:  #ffffff;
+/* Dark mode override — add class="dark" to <html> for the KyberBot Desktop look */
+html.dark {
+  --bg-primary:   #0d1117;
+  --bg-secondary: #111827;
+  --bg-tertiary:  #161d2d;
+  --bg-elevated:  #1a2235;
 
-  --fg-primary:   #1e293b;
-  --fg-secondary: #475569;
+  --fg-primary:   #f1f5f9;
+  --fg-secondary: #94a3b8;
   --fg-tertiary:  #64748b;
-  --fg-muted:     #94a3b8;
+  --fg-muted:     #475569;
 
-  --border-color:       #e8e6e1;
-  --border-color-hover: #d5d3ce;
+  --border-color:       #1e2a3a;
+  --border-color-hover: #2d3f5a;
+  --border-hover:       #2d3f5a;
 
-  /* Accents darken in light mode for legibility */
-  --accent-emerald: #059669;
-  --accent-cyan:    #0891b2;
+  /* Accents at full brightness in dark mode */
+  --accent-emerald:       #10b981;
+  --accent-emerald-muted: rgba(16, 185, 129, 0.15);
+  --accent-cyan:          #22d3ee;
+  --accent-cyan-muted:    rgba(34, 211, 238, 0.15);
+  --accent-teal:          #14b8a6;
 }
 
 /* ── Reset ──────────────────────────────────────────────────────────────────── */
@@ -169,7 +182,7 @@ code {
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--accent-cyan);
-  border: 1px solid rgba(34, 211, 238, 0.3);
+  border: 1px solid var(--accent-cyan-muted);
   padding: 1px var(--space-1);
   line-height: 16px;
 }
