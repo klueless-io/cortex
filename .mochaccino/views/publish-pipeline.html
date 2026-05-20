@@ -68,7 +68,7 @@
 <div class="header">
   <div class="wordmark">// <em>ARCANA</em> · PUBLISH PIPELINE</div>
   <h1>Publish Pipeline</h1>
-  <div class="tagline">v0.1.0 partial · v0.1.1 live (2026-05-20) · v0.2.0 in flight (FTS+hybrid sprint) · CI-driven path defined but not wired</div>
+  <div class="tagline">v0.1.0 partial · v0.1.1 superseded · v0.2.0 live (FTS+hybrid sprint, 2026-05-20) · CI-driven path defined but not wired</div>
 </div>
 
 <div class="section-title">// PUBLISHED PACKAGES</div>
@@ -76,23 +76,23 @@
 <div class="pkg-strip">
   <div class="pkg-item">
     <div class="pkg-name">@kybernesis/arcana-contracts</div>
-    <div class="pkg-ver">v0.1.1</div>
+    <div class="pkg-ver">v0.2.0</div>
   </div>
   <div class="pkg-item">
     <div class="pkg-name">@kybernesis/arcana-core</div>
-    <div class="pkg-ver">v0.1.1</div>
+    <div class="pkg-ver">v0.2.0</div>
   </div>
   <div class="pkg-item">
     <div class="pkg-name">@kybernesis/arcana-testkit</div>
-    <div class="pkg-ver">v0.1.1</div>
+    <div class="pkg-ver">v0.2.0</div>
   </div>
   <div class="pkg-item">
     <div class="pkg-name">@kybernesis/arcana-provider-libsql</div>
-    <div class="pkg-ver">v0.1.1</div>
+    <div class="pkg-ver">v0.2.0</div>
   </div>
   <div class="pkg-item">
     <div class="pkg-name">@kybernesis/arcana-provider-sqlite-vec</div>
-    <div class="pkg-ver">v0.1.1</div>
+    <div class="pkg-ver">v0.2.0</div>
     <span class="pkg-new">new</span>
   </div>
 </div>
@@ -241,51 +241,51 @@
   </div>
 </div>
 
-<div class="section-title">// V0.2.0 — FTS+HYBRID SPRINT (IN FLIGHT)</div>
+<div class="section-title">// V0.2.0 — FTS+HYBRID SPRINT (LIVE)</div>
 
 <div class="lane">
   <div class="lane-header">
-    <div class="lane-label">v0.2.0 — pnpm publish -r — minor bump per semver (searchFulltext + asOf + hybridSearch)</div>
-    <div class="lane-status ls-future">PENDING</div>
+    <div class="lane-label">v0.2.0 — pnpm publish -r — all 5 packages — published 2026-05-20</div>
+    <div class="lane-status ls-done">COMPLETE</div>
   </div>
   <div class="pipeline">
     <div class="step-wrap">
       <div class="step">
-        <div class="step-status ss-missing"></div>
+        <div class="step-status ss-green"></div>
         <div class="step-label">bump 5× versions</div>
-        <div class="step-note">0.1.1 → 0.2.0 across all package.json files</div>
+        <div class="step-note">0.1.1 → 0.2.0 (commit 950d55e)</div>
       </div>
       <div class="arrow">→</div>
     </div>
     <div class="step-wrap">
       <div class="step">
-        <div class="step-status ss-missing"></div>
+        <div class="step-status ss-green"></div>
         <div class="step-label">pnpm publish --dry-run</div>
-        <div class="step-note">Verify workspace:* rewrites — burn the v0.1.0 lesson</div>
+        <div class="step-note">workspace:* → ^0.2.0 verified cleanly</div>
       </div>
       <div class="arrow">→</div>
     </div>
     <div class="step-wrap">
       <div class="step">
-        <div class="step-status ss-missing"></div>
+        <div class="step-status ss-green"></div>
         <div class="step-label">pnpm publish -r</div>
-        <div class="step-note">All 5 packages · --access public</div>
+        <div class="step-note">OTP browser flow completed by user · all 5 packages live</div>
       </div>
       <div class="arrow">→</div>
     </div>
     <div class="step-wrap">
       <div class="step">
-        <div class="step-status ss-missing"></div>
+        <div class="step-status ss-green"></div>
         <div class="step-label">verify v0.2.0</div>
-        <div class="step-note">npm view @kybernesis/arcana-contracts@0.2.0</div>
+        <div class="step-note">npm view confirmed for contracts/core/libsql/sqlite-vec/testkit</div>
       </div>
       <div class="arrow">→</div>
     </div>
     <div class="step-wrap">
       <div class="step">
-        <div class="step-status ss-missing"></div>
+        <div class="step-status ss-green"></div>
         <div class="step-label">git tag v0.2.0</div>
-        <div class="step-note">Tag the release; push --tags</div>
+        <div class="step-note">Tagged + pushed</div>
       </div>
     </div>
   </div>
