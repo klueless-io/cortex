@@ -21,7 +21,7 @@
   .hint em { color: var(--accent-cyan); font-style: normal; }
 
   /* graph container */
-  #graph-wrap { position: relative; width: 100%; height: 480px; border: 1px solid var(--border-color); background: var(--bg-secondary); overflow: hidden; margin-bottom: 1px; }
+  #graph-wrap { position: relative; width: 100%; min-height: 320px; border: 1px solid var(--border-color); background: var(--bg-secondary); overflow: visible; margin-bottom: 1px; }
   #graph-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 
   /* nodes */
@@ -73,7 +73,7 @@
   <svg id="graph-svg">
     <defs>
       <marker id="arrow" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
-        <polygon points="0 0, 7 2.5, 0 5" fill="#2d3f5a"/>
+        <polygon points="0 0, 7 2.5, 0 5" fill="#94a3b8"/>
       </marker>
     </defs>
     <!-- lines injected by JS -->
@@ -187,28 +187,27 @@ const nodeEls = {
 // ── initial layout ───────────────────────────────────────────────────────────
 function initPositions() {
   const W = wrap.clientWidth;
+  const PAD = 20;
 
-  // spread the 4 dependents evenly
+  // all 4 dependents in one row, evenly spaced across full width
   const dep4 = ['core','testkit','libsql','sqlitevec'];
-  const cols = 4;
-  const colW = Math.floor((W - 40) / cols);
+  const cols = dep4.length;
+  const colW = Math.floor((W - PAD * 2) / cols);
   dep4.forEach((id, i) => {
-    positions[id].x = 20 + i * colW;
+    positions[id].x = PAD + i * colW;
   });
-  // contracts centred
+
+  // contracts centred above the row
   positions.contracts.x = Math.floor((W - CARD_W) / 2);
+  positions.contracts.y = PAD;
 
-  // pin row y based on actual measured heights after first render
-  // libsql/sqlitevec go one row below core/testkit
-  const rowMid = Math.max(
-    nodeEls.core.offsetHeight,
-    nodeEls.testkit.offsetHeight
-  );
-  positions.libsql.y    = 28 + nodeEls.contracts.offsetHeight + 24 + rowMid + 24;
-  positions.sqlitevec.y = positions.libsql.y;
+  // dependents sit below contracts with a gap
+  const rowY = PAD + nodeEls.contracts.offsetHeight + 32;
+  dep4.forEach(id => { positions[id].y = rowY; });
 
-  positions.core.y = 28 + nodeEls.contracts.offsetHeight + 24;
-  positions.testkit.y = positions.core.y;
+  // resize wrap to fit both rows cleanly
+  const maxDepH = Math.max(...dep4.map(id => nodeEls[id].offsetHeight));
+  wrap.style.height = (rowY + maxDepH + PAD) + 'px';
 }
 
 function applyPositions() {
@@ -225,7 +224,7 @@ function buildLines() {
   svg.querySelectorAll('line').forEach(l => l.remove());
   for (const [from, to] of edges) {
     const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('stroke','#2d3f5a');
+    line.setAttribute('stroke','#94a3b8');
     line.setAttribute('stroke-width','1.5');
     line.setAttribute('marker-end','url(#arrow)');
     svg.appendChild(line);
