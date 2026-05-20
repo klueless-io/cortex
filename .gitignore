@@ -15,6 +15,9 @@ build/
 # Bun
 bun.lockb
 
+# pnpm — used only for publish; lockfile is incidental (repo uses bun.lock)
+pnpm-lock.yaml
+
 # Test coverage
 coverage/
 .nyc_output/
