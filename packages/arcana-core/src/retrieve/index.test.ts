@@ -195,7 +195,7 @@ describe('factRetrieval', () => {
     expect(result.data[0]!.score).toBeGreaterThan(result.data[1]!.score);
   });
 
-  it('result includes why field indicating structured-only path', async () => {
+  it('result includes layer-tagged why field per ADR 011 KB-faithful port', async () => {
     await structured.storeMemory({
       id: 'mem_2',
       title: 'Test memory',
@@ -208,7 +208,7 @@ describe('factRetrieval', () => {
       accessCount: 0,
       isPinned: false,
       contentHash: 'ccc33333',
-      createdAt: "2026-05-21T00:00:00.000Z",
+      createdAt: '2026-05-21T00:00:00.000Z',
       source: 'cli',
       status: 'active',
       isLatest: true,
@@ -218,7 +218,8 @@ describe('factRetrieval', () => {
     const result = await api.factRetrieval({ query: 'testing document' });
 
     expect(result.data.length).toBeGreaterThan(0);
-    expect(result.data[0]!.why).toBe('text-match (structured-only, no FTS5)');
+    // KB-faithful: why is layer-tagged. Layer 1 direct match → 'fact-retrieval/direct'
+    expect(result.data[0]!.why).toBe('fact-retrieval/direct');
   });
 
   it('wraps result in QueryResult envelope', async () => {
@@ -230,6 +231,117 @@ describe('factRetrieval', () => {
     expect(result).toHaveProperty('data_age_ms', 0);
     expect(result).toHaveProperty('stale', false);
     expect(typeof result.generated_at).toBe('string');
+  });
+
+  it('layer 2 — entity-name match surfaces memories linked to matched entities', async () => {
+    // Memory whose CONTENT doesn't match the query, but is linked to an
+    // entity whose NAME does match — Layer 2 should find it.
+    await structured.storeMemory({
+      id: 'mem_linked', title: 'Unrelated title', summary: 'Unrelated', content: 'Unrelated body',
+      tags: [], priority: 0.5, tier: 'warm', decayScore: 0, accessCount: 0,
+      isPinned: false, contentHash: 'ent1', createdAt: '2026-05-21T00:00:00.000Z',
+      source: 'cli', status: 'active', isLatest: true,
+    });
+    await structured.upsertEntity({
+      id: 'ent_kyb', name: 'Kybernesis', type: 'company', mentionCount: 1,
+    });
+    await structured.storeEdge({
+      id: 'edge_l',
+      from: { type: 'entity', id: 'ent_kyb' },
+      to: { type: 'memory', id: 'mem_linked' },
+      relation: 'mentioned-in', confidence: 1.0, sharedTags: [], method: 'manual',
+      createdAt: '2026-05-21T00:00:00.000Z',
+    });
+
+    const api = createRetrieve(deps);
+    const result = await api.factRetrieval({ query: 'kybernesis' });
+    const linked = result.data.find((r) => r.memory.id === 'mem_linked');
+    expect(linked).toBeDefined();
+    expect(linked?.why).toBe('fact-retrieval/entity_expansion');
+  });
+
+  it('layer 3 — graph expansion reaches memories one hop from seed entities', async () => {
+    // Seed entity name matches query; a NEIGHBOR entity (one hop away)
+    // has its own linked memory — Layer 3 surfaces that memory.
+    await structured.storeMemory({
+      id: 'mem_hop1', title: 'Hop-one memory', summary: '', content: 'Reached via graph',
+      tags: [], priority: 0.5, tier: 'warm', decayScore: 0, accessCount: 0,
+      isPinned: false, contentHash: 'h1', createdAt: '2026-05-21T00:00:00.000Z',
+      source: 'cli', status: 'active', isLatest: true,
+    });
+    await structured.upsertEntity({ id: 'ent_seed', name: 'Sentinel', type: 'concept', mentionCount: 1 });
+    await structured.upsertEntity({ id: 'ent_hop1', name: 'Neighbor', type: 'concept', mentionCount: 1 });
+    // seed → neighbor (entity-to-entity)
+    await structured.storeEdge({
+      id: 'e_seed_hop1',
+      from: { type: 'entity', id: 'ent_seed' },
+      to: { type: 'entity', id: 'ent_hop1' },
+      relation: 'related', confidence: 1.0, sharedTags: [], method: 'manual',
+      createdAt: '2026-05-21T00:00:00.000Z',
+    });
+    // hop1 → memory
+    await structured.storeEdge({
+      id: 'e_hop1_mem',
+      from: { type: 'entity', id: 'ent_hop1' },
+      to: { type: 'memory', id: 'mem_hop1' },
+      relation: 'mentioned-in', confidence: 1.0, sharedTags: [], method: 'manual',
+      createdAt: '2026-05-21T00:00:00.000Z',
+    });
+
+    const api = createRetrieve(deps);
+    const result = await api.factRetrieval({ query: 'sentinel' });
+    const hopped = result.data.find((r) => r.memory.id === 'mem_hop1');
+    expect(hopped).toBeDefined();
+    expect(hopped?.why).toBe('fact-retrieval/graph_expansion');
+  });
+
+  it('layer 4 — bridge surfaces memories connecting ≥ 2 seed entities', async () => {
+    // Memory linked to two distinct query-matched entities. Bridge layer
+    // gives it a higher score than a single-entity-linked memory.
+    await structured.storeMemory({
+      id: 'mem_bridge', title: 'Bridge', summary: '', content: 'connective hub',
+      tags: [], priority: 0.5, tier: 'warm', decayScore: 0, accessCount: 0,
+      isPinned: false, contentHash: 'br', createdAt: '2026-05-21T00:00:00.000Z',
+      source: 'cli', status: 'active', isLatest: true,
+    });
+    await structured.upsertEntity({ id: 'ent_alpha', name: 'Alpha', type: 'concept', mentionCount: 1 });
+    await structured.upsertEntity({ id: 'ent_beta', name: 'Beta', type: 'concept', mentionCount: 1 });
+    await structured.storeEdge({
+      id: 'e_a_m', from: { type: 'entity', id: 'ent_alpha' }, to: { type: 'memory', id: 'mem_bridge' },
+      relation: 'mentioned-in', confidence: 1.0, sharedTags: [], method: 'manual',
+      createdAt: '2026-05-21T00:00:00.000Z',
+    });
+    await structured.storeEdge({
+      id: 'e_b_m', from: { type: 'entity', id: 'ent_beta' }, to: { type: 'memory', id: 'mem_bridge' },
+      relation: 'mentioned-in', confidence: 1.0, sharedTags: [], method: 'manual',
+      createdAt: '2026-05-21T00:00:00.000Z',
+    });
+
+    const api = createRetrieve(deps);
+    const result = await api.factRetrieval({ query: 'alpha beta' });
+    const bridged = result.data.find((r) => r.memory.id === 'mem_bridge');
+    expect(bridged).toBeDefined();
+    expect(bridged?.why).toBe('fact-retrieval/bridge');
+  });
+
+  it('parity-harness smoke test — factRetrieval can be wired into runParityHarness', async () => {
+    const { runParityHarness } = await import('@kybernesis/arcana-testkit/parity');
+    await structured.storeMemory({
+      id: 'mem_p', title: 'parity probe', summary: '', content: 'kybernesis',
+      tags: [], priority: 0.5, tier: 'warm', decayScore: 0, accessCount: 0,
+      isPinned: false, contentHash: 'p', createdAt: '2026-05-21T00:00:00.000Z',
+      source: 'cli', status: 'active', isLatest: true,
+    });
+    const api = createRetrieve(deps);
+    const queryFn = (input: unknown) => api.factRetrieval(input as { query: string });
+    const report = await runParityHarness({
+      queries: [{ id: 'q1', input: { query: 'kybernesis' } }],
+      baseline: queryFn,
+      candidate: queryFn,
+      extractIds: (r) => r.data.map((row) => row.memory.id),
+    });
+    expect(report.passes).toBe(true);
+    expect(report.meanOverlap).toBe(1);
   });
 });
 

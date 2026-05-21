@@ -7,6 +7,33 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## v0.4.1 — 2026-05-21
+
+### Changed — `@kybernesis/arcana-core` — `retrieve.factRetrieval` rebased per ADR 011
+
+Second application of [ADR 011](./docs/decisions/011-port-first-improve-later.md) (port-first). Rebased `factRetrieval` from the Arcana-invented "structured-only text-match + memory-expansion via `getNeighbors`" path to KyberBot's empirical 4-layer fact-retrieval flow.
+
+Source: `kyberbot/packages/cli/src/brain/fact-retrieval.ts` (994 LOC).
+
+**4-layer algorithm now in `factRetrieval`:**
+
+1. **Direct layer** — FTS keyword match against memories via `searchFulltext` (KB scoring: `0.5 + matchRatio * 0.5`).
+2. **Entity-expansion layer** — seed entities from query-name match via `listEntities`; their linked memories surface with score `1.0 × hop-0 penalty`.
+3. **Graph-expansion layer** — 1-hop traversal from seed entities (KB's tuned precision setting at `fact-retrieval.ts:373`); each hop-1 entity's linked memories scored `0.7 × hop-1 penalty (0.7)`.
+4. **Bridge layer** — memories linked to ≥ 2 distinct seed entities scored at `1.05 + (count-2) × 0.03` (above any single-entity match). Represents connective hubs across the query's entity span.
+
+**Removed:** the Arcana-invented memory-expansion path via `structured.getNeighbors({ type: 'memory', ... })` in `factRetrieval`. (`structured.getNeighbors` itself remains in the contract — Layer 3 of the new impl uses it for entity-graph traversal, which is the KB-faithful use case.)
+
+**`why` field is now layer-tagged**: `'fact-retrieval/direct' | '.../entity_expansion' | '.../graph_expansion' | '.../bridge'`. Source-layer priority determines the label when multiple layers fire for the same memory (bridge > direct > entity_expansion > graph_expansion).
+
+**Contract surface unchanged**: `FactRetrievalInput` and `HybridSearchResult` shapes are identical to v0.4.0. Pure internal-logic change.
+
+### Notes
+
+- Schema-depth divergence between KyberBot's `facts` table (carries `category`, `source_path`, `source_conversation_id`, `entities_json`, fact-level FTS5) and Arcana's lighter `Fact` schema means a 1:1 schema port is infeasible at the patch level. This sprint ports the *algorithm shape*; rich-bundle return shape (KB's `supporting_context` / `assembled_context` / `token_estimate` / `stats`) is queued for a future v2 `factRetrieval`. Full divergence list in `docs/plans/2026-05-21-fact-retrieval-rebase.md` Findings appendix.
+- Parity expectation for KyberBot's eventual `factRetrieval` swap is **100% on the memory-id set** (the swap-relevant contract surface). Rich-bundle parity requires the v2 work above.
+- Tests: 258 → 262. Added per-layer coverage tests (direct, entity_expansion, graph_expansion, bridge) plus a `runParityHarness` smoke test.
+
 ## v0.4.0 — 2026-05-21
 
 ### Architecture — [ADR 011](./docs/decisions/011-port-first-improve-later.md)

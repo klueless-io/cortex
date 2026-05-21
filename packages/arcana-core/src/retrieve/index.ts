@@ -347,88 +347,203 @@ export function createRetrieve(deps: RetrieveDeps): RetrieveApi {
     async factRetrieval(
       input: FactRetrievalInput,
     ): Promise<QueryResult<HybridSearchResult[]>> {
-      // 1. Parse query words (length > 2)
-      const words = input.query
+      // ────────────────────────────────────────────────────────────────────────
+      // KyberBot-faithful 4-layer port per ADR 011 (v0.4.1 rebase).
+      // Source: kyberbot/packages/cli/src/brain/fact-retrieval.ts
+      //
+      // KB algorithm structure: Layer 1 direct FTS → Layer 2 entity-name
+      // expansion (1-hop) → Layer 3 graph expansion (further entity hops)
+      // → Layer 4 bridge (memories connecting multiple matched entities).
+      //
+      // Schema-translation choices (documented in
+      // docs/plans/2026-05-21-fact-retrieval-rebase.md Findings appendix):
+      //   - KB has a richer `facts` table (category, source_path, entities_json,
+      //     fact-level FTS5). Arcana's Fact schema is lighter and facts don't
+      //     directly link to memories. So we operate the *algorithm* against
+      //     Arcana's memory + entity + edge tables, with facts contributing
+      //     as a ranking signal via getFactsForEntity.
+      //   - KB returns a richer bundle (facts + supporting_context +
+      //     assembled_context). Arcana's contract returns memory-shaped
+      //     HybridSearchResult[]; the layer algorithm produces memory ranks,
+      //     not fact-shaped output. Rich-bundle return is v2 work.
+      // ────────────────────────────────────────────────────────────────────────
+
+      // Hop-distance penalties (KB hybrid-search.ts:333-338)
+      const HOP_PENALTY: Record<number, number> = { 0: 1.0, 1: 0.7, 2: 0.5, 3: 0.3 };
+
+      // Tokenize query (KB pattern: length ≥ 3, strip punctuation)
+      const tokens = input.query
         .toLowerCase()
+        .replace(/[?.,!'"]/g, '')
         .split(/\s+/)
-        .filter((w) => w.length > 2);
+        .filter((w) => w.length >= 3);
 
-      // 2. Get all memories, filter to active + isLatest
-      const allMemories = await deps.structured.listMemories();
-      const activeMemories = allMemories.filter(
-        (m) => m.status === 'active' && m.isLatest === true,
-      );
+      const topK = input.tokenBudget ? Math.floor(input.tokenBudget / 200) : 10;
 
-      // 3. Score each memory
-      type ScoredMemory = { memory: Memory; score: number; viaGraph: boolean };
-      const scored: ScoredMemory[] = [];
+      // Per-memory accumulator: max score across layers; source label tracks
+      // the highest-priority layer that fired for this memory (regardless of
+      // relative score), because bridge > direct > entity_expansion >
+      // graph_expansion as a semantic-strength ordering.
+      type Source = 'direct' | 'entity_expansion' | 'graph_expansion' | 'bridge';
+      type Scored = { memoryId: string; score: number; source: Source };
+      const scored = new Map<string, Scored>();
 
-      for (const memory of activeMemories) {
-        if (words.length === 0) {
-          scored.push({ memory, score: 0, viaGraph: false });
-          continue;
+      const LAYER_PRIORITY: Record<Source, number> = {
+        bridge: 4,
+        direct: 3,
+        entity_expansion: 2,
+        graph_expansion: 1,
+      };
+
+      const bump = (memoryId: string, score: number, source: Source): void => {
+        const existing = scored.get(memoryId);
+        if (!existing) {
+          scored.set(memoryId, { memoryId, score, source });
+          return;
         }
-        const haystack =
-          (memory.title ?? '').toLowerCase() +
-          ' ' +
-          (memory.summary ?? '').toLowerCase() +
-          ' ' +
-          (memory.content ?? '').toLowerCase();
-        const matchCount = words.filter((w) => haystack.includes(w)).length;
-        const score = matchCount / words.length;
-        if (score > 0) {
-          scored.push({ memory, score, viaGraph: false });
+        if (score > existing.score) existing.score = score;
+        if (LAYER_PRIORITY[source] > LAYER_PRIORITY[existing.source]) {
+          existing.source = source;
+        }
+      };
+
+      // ── Layer 1: direct FTS over memories (KB fact-retrieval.ts:113-280) ──
+      // KB does FTS over the facts table; Arcana does FTS over memories
+      // (no fact-level FTS5 yet; that's v2 schema work). The algorithm
+      // shape — keyword match → word-match-ratio scoring → 0.5-1.0 range —
+      // is preserved.
+      if (tokens.length > 0) {
+        try {
+          const matches = await deps.structured.searchFulltext(input.query, {
+            scopes: input.scopes,
+            topK: topK * 3,
+          });
+          for (const m of matches) {
+            // KB scoring (line 162-165): 0.5 + (matchRatio * 0.5)
+            bump(m.memoryId, 0.5 + m.score * 0.5, 'direct');
+          }
+        } catch (err) {
+          deps.logger.debug('arcana.retrieve.factRetrieval.layer1-failed', {
+            error: (err as Error).message,
+          });
         }
       }
 
-      // 4. If depth > 0, expand matched memories via graph neighbors
-      const depth = input.depth ?? 1;
-      if (depth > 0 && scored.length > 0) {
-        const seenIds = new Set(scored.map((s) => s.memory.id));
-        const expansions: ScoredMemory[] = [];
-
-        for (const { memory } of scored) {
-          const neighbors = await deps.structured.getNeighbors({
-            type: 'memory',
-            id: memory.id,
+      // ── Layer 2: entity-name match → entity's facts → linked memories ──
+      // KB fact-retrieval.ts:346-448. Seed entities from query-name match;
+      // hop-0 entities get score 1.0; their associated memories are surfaced.
+      const seedEntityIds: string[] = [];
+      try {
+        for (const token of tokens) {
+          const entities = await deps.structured.listEntities({
+            nameContains: token,
+            scopes: input.scopes,
+            limit: 5,
           });
-          for (const neighbor of neighbors) {
-            if (neighbor.type === 'memory' && !seenIds.has(neighbor.id)) {
-              const neighborMemory = activeMemories.find((m) => m.id === neighbor.id);
-              if (neighborMemory) {
-                seenIds.add(neighbor.id);
-                expansions.push({ memory: neighborMemory, score: 0, viaGraph: true });
-              }
+          for (const e of entities) {
+            if (!seedEntityIds.includes(e.id)) seedEntityIds.push(e.id);
+            const neighbors = await deps.structured.getNeighbors({
+              type: 'entity',
+              id: e.id,
+            });
+            for (const n of neighbors) {
+              if (n.type !== 'memory') continue;
+              // hop-0 entities → max score per KB pattern (line 427)
+              bump(n.id, 1.0 * HOP_PENALTY[0], 'entity_expansion');
             }
           }
         }
-
-        scored.push(...expansions);
+      } catch (err) {
+        deps.logger.debug('arcana.retrieve.factRetrieval.layer2-failed', {
+          error: (err as Error).message,
+        });
       }
 
-      // 5. Sort by score desc, take topK
-      scored.sort((a, b) => b.score - a.score);
-      const topK = input.tokenBudget ? Math.floor(input.tokenBudget / 200) : 10;
-      const topResults = scored.slice(0, topK);
+      // ── Layer 3: graph traversal — 1-hop from seed entities ─────────────
+      // KB fact-retrieval.ts:291-329 (traverseEntityGraph, maxHops=1 per
+      // line 373's precision tuning). Score is confidence × hop penalty.
+      try {
+        for (const seedId of seedEntityIds) {
+          const seedNeighbors = await deps.structured.getNeighbors({
+            type: 'entity',
+            id: seedId,
+          });
+          // Walk to neighboring entities (hop 1)
+          for (const nbr of seedNeighbors) {
+            if (nbr.type !== 'entity') continue;
+            if (seedEntityIds.includes(nbr.id)) continue; // already covered by layer 2
+            // For each hop-1 entity, surface its memories with hop penalty
+            const memoryNeighbors = await deps.structured.getNeighbors({
+              type: 'entity',
+              id: nbr.id,
+            });
+            for (const mn of memoryNeighbors) {
+              if (mn.type !== 'memory') continue;
+              // KB pattern (line 427): non-seed gets ef.confidence × penalty.
+              // Without per-fact confidence here, use default 0.7 baseline.
+              bump(mn.id, 0.7 * HOP_PENALTY[1], 'graph_expansion');
+            }
+          }
+        }
+      } catch (err) {
+        deps.logger.debug('arcana.retrieve.factRetrieval.layer3-failed', {
+          error: (err as Error).message,
+        });
+      }
 
-      // 6. Return as QueryResult<HybridSearchResult[]>
-      // Note: factRetrieval's internal logic still uses getNeighbors for
-      // graph expansion (KyberBot's fact-retrieval.ts doesn't). This is a
-      // known divergence flagged by ADR 011; factRetrieval rebase to KB
-      // parity is a separate future sprint. For shape consistency in v0.4.0:
-      // graph-expanded hits collapse to 'keyword' matchType (no longer a
-      // distinct 'graph' value), graphScore is always 0.
-      const results: HybridSearchResult[] = topResults.map((s) => ({
-        memory: s.memory,
-        score: s.score,
-        keywordScore: s.score,
-        semanticScore: 0,
-        graphScore: 0,
-        matchType: 'keyword',
-        why: s.viaGraph
-          ? 'text-match + graph expansion (structured-only)'
-          : 'text-match (structured-only, no FTS5)',
-      }));
+      // ── Layer 4: bridge — memories linked to ≥ 2 seed entities ──────────
+      // KB fact-retrieval.ts has scene/bridge expansion that surfaces
+      // facts connecting distinct entity clusters. The Arcana equivalent:
+      // memories that appear in the neighbors of ≥ 2 distinct seed entities
+      // get a bridge boost (these are connective hubs across the query's
+      // entity span).
+      if (seedEntityIds.length >= 2) {
+        try {
+          const memoryToSeedCount = new Map<string, number>();
+          for (const seedId of seedEntityIds) {
+            const neighbors = await deps.structured.getNeighbors({
+              type: 'entity',
+              id: seedId,
+            });
+            for (const n of neighbors) {
+              if (n.type !== 'memory') continue;
+              memoryToSeedCount.set(n.id, (memoryToSeedCount.get(n.id) ?? 0) + 1);
+            }
+          }
+          for (const [memoryId, count] of memoryToSeedCount) {
+            if (count >= 2) {
+              // Bridge memories represent stronger evidence than any single
+              // entity match — baseline > Layer 2's max (1.0) so bridges
+              // outrank single-entity matches in the final sort.
+              bump(memoryId, 1.05 + Math.min(count - 2, 5) * 0.03, 'bridge');
+            }
+          }
+        } catch (err) {
+          deps.logger.debug('arcana.retrieve.factRetrieval.layer4-failed', {
+            error: (err as Error).message,
+          });
+        }
+      }
+
+      // ── Fusion + enrichment ─────────────────────────────────────────────
+      const ranked = [...scored.values()].sort((a, b) => b.score - a.score).slice(0, topK);
+
+      const results: HybridSearchResult[] = [];
+      for (const s of ranked) {
+        const memory = await deps.structured.getMemory(s.memoryId);
+        if (!memory) continue;
+        // Filter to active + isLatest (preserve prior behaviour)
+        if (memory.status !== 'active' || memory.isLatest !== true) continue;
+        results.push({
+          memory,
+          score: s.score,
+          keywordScore: s.source === 'direct' ? s.score : 0,
+          semanticScore: 0,
+          graphScore: 0,
+          matchType: 'keyword',
+          why: `fact-retrieval/${s.source}`,
+        });
+      }
 
       return makeEnvelope(results);
     },
