@@ -1,6 +1,6 @@
 {
   "name": "@kybernesis/arcana-provider-sqlite-vec",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Arcana VectorStore provider — sqlite-vec (no Docker, zero-infrastructure vector search)",
   "license": "MIT",
   "author": "David Cruwys (AppyDave)",
