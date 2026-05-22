@@ -14,23 +14,29 @@ import { NotImplementedError } from '../../errors.js';
  * behaviour; all kernel methods throw NotImplementedError at v0.1.
  */
 function makeFakeStructured(): StructuredStore {
-  return {
+  const store: StructuredStore = {
     connect: async () => {},
     disconnect: async () => {},
     storeMemory: async () => {},
     getMemory: async () => null,
     listMemories: async () => [],
     updateMemory: async () => {},
+    markMemorySuperseded: async () => {},
     deleteMemory: async () => {},
     storeChunks: async () => {},
     getChunksForMemory: async () => [],
     upsertEntity: async () => {},
     getEntity: async () => null,
+    listEntities: async () => [],
     deleteEntity: async () => {},
     storeEdge: async () => {},
     getNeighbors: async () => [],
     storeFact: async () => {},
+    getFact: async () => null,
     getFactsForEntity: async () => [],
+    markFactSuperseded: async () => {},
+    searchFulltext: async () => [],
+    searchFactsFulltext: async () => [],
     storeContradiction: async () => {},
     listContradictions: async () => [],
     storeInsight: async () => {},
@@ -39,7 +45,9 @@ function makeFakeStructured(): StructuredStore {
     getEntityProfile: async () => null,
     getAgentSelf: async () => null,
     updateAgentSelf: async () => {},
+    transaction: async (fn) => fn(store),
   };
+  return store;
 }
 
 function makeFakeVector(): VectorStore {

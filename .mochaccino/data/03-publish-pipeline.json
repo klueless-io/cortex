@@ -15,11 +15,11 @@
     "@kybernesis/arcana-provider-llm-claude-code"
   ],
   "publish_order": "contracts first (no workspace deps), then core, testkit, provider-libsql, provider-sqlite-vec in any order",
-  "publish_status": "v1.0.0 live since 2026-05-22; v1.1.0 staged 2026-05-22 (sleep pipeline implementation — 10-step port from KB per ADR 010 + ADR 011) — NOT YET PUBLISHED (awaits OTP)",
+  "publish_status": "v1.1.0 live since 2026-05-22; v1.2.0 staged 2026-05-22 (System Health Phase 1 — 8 production-blocker fixes + transaction primitive + latestOnly default + entity normalisation + getNeighbors multi-hop + single-flight guard) — NOT YET PUBLISHED (awaits OTP)",
   "publish_command": "pnpm publish -r --filter='./packages/*' --access public",
   "generated": "2026-05-21",
   "system": "arcana",
-  "milestone": "v1.1.0",
+  "milestone": "v1.2.0",
   "status_legend": [
     {
       "id": "not_started",

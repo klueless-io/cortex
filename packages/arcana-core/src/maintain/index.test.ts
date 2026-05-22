@@ -203,6 +203,67 @@ describe('createMaintain — orchestrator', () => {
     await api.stopSleepSchedule();
     expect(scheduler.cancel).toHaveBeenCalledWith('arcana:sleep-pipeline');
   });
+
+  // ── v1.2.0 — single-flight + partial-failure ───────────────────────────────
+
+  it('concurrent runSleepPipeline calls share the same in-flight promise (single-flight)', async () => {
+    let listMemoriesCalls = 0;
+    const structured = makeStructured({
+      listMemories: vi.fn().mockImplementation(async () => {
+        listMemoriesCalls++;
+        // Slow this step so the second call definitely overlaps.
+        await new Promise((r) => setTimeout(r, 10));
+        return [];
+      }),
+    });
+    const api = createMaintain(makeDeps({ structured }));
+    const [a, b] = await Promise.all([
+      api.runSleepPipeline({ steps: ['decayMemories'] }),
+      api.runSleepPipeline({ steps: ['decayMemories'] }),
+    ]);
+    // Only one underlying execution: listMemories called exactly once.
+    expect(listMemoriesCalls).toBe(1);
+    // Both callers got the same SleepRunResult instance.
+    expect(a).toBe(b);
+  });
+
+  it('marks step partial when result has non-empty errors[]', async () => {
+    // refreshTags returns errors[] when LLM call fails — simulate by making
+    // updateMemory throw, which the step catches and pushes to errors[].
+    const memory = makeMemory({ tags: [], title: 'long title here that exceeds the fifty character minimum threshold for tagging', summary: 'long summary that also definitely passes the fifty character minimum threshold' });
+    const structured = makeStructured({
+      listMemories: vi.fn().mockResolvedValue([memory]),
+      updateMemory: vi.fn().mockRejectedValue(new Error('DB write failed')),
+    });
+    const llm = { model: 'haiku', complete: vi.fn().mockResolvedValue('["ai","testing"]') } as unknown as MaintainDeps['llm'];
+    const api = createMaintain(makeDeps({ structured, llm }));
+    const result = await api.runSleepPipeline({ steps: ['refreshTags'] });
+    expect(result.partialSteps).toEqual(['refreshTags']);
+  });
+
+  it('resume retries partial steps (does not skip them)', async () => {
+    const memory = makeMemory({ tags: [], title: 'long title here that exceeds the fifty character minimum threshold for tagging', summary: 'long summary that also definitely passes the fifty character minimum threshold' });
+    const llmCalls = vi.fn().mockResolvedValue('["ai","testing"]');
+    const structured = makeStructured({
+      listMemories: vi.fn().mockResolvedValue([memory]),
+      updateMemory: vi.fn().mockRejectedValue(new Error('DB write failed')),
+    });
+    const llm = { model: 'haiku', complete: llmCalls } as unknown as MaintainDeps['llm'];
+    const api = createMaintain(makeDeps({ structured, llm }));
+    const r1 = await api.runSleepPipeline({ steps: ['refreshTags'] });
+    expect(r1.partialSteps).toEqual(['refreshTags']);
+    const r2 = await api.runSleepPipeline({ steps: ['refreshTags'], resume: true });
+    expect(r2.stepsRun).toEqual(['refreshTags']);
+    // Re-attempted: LLM called twice across both runs.
+    expect(llmCalls).toHaveBeenCalledTimes(2);
+  });
+
+  it('SleepRunResult always includes partialSteps array (empty when clean)', async () => {
+    const api = createMaintain(makeDeps());
+    const result = await api.runSleepPipeline({ steps: ['decayMemories'] });
+    expect(Array.isArray(result.partialSteps)).toBe(true);
+    expect(result.partialSteps).toEqual([]);
+  });
 });
 
 // ── Mechanical steps ──────────────────────────────────────────────────────────

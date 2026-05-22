@@ -33,6 +33,21 @@ export interface StructuredStore {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
 
+  /**
+   * Run `fn` inside an atomic transaction. The store passed to `fn` is the
+   * same StructuredStore instance — writes through it land inside the
+   * transaction. If `fn` throws (or returns a rejected promise), all
+   * writes roll back. If it returns normally, all writes commit.
+   *
+   * v1.2.0 — added per docs/SYSTEM-HEALTH.md to close the
+   * storeMemory+storeChunks atomicity gap. Used by composite kernel
+   * operations and by `deleteEntity`'s cascade.
+   *
+   * Nested transactions are NOT supported; calling `transaction` from
+   * inside another `transaction` is undefined behaviour.
+   */
+  transaction<T>(fn: (tx: StructuredStore) => Promise<T>): Promise<T>;
+
   // Memory
   storeMemory(memory: Memory): Promise<void>;
   getMemory(id: string): Promise<Memory | null>;
@@ -91,12 +106,20 @@ export interface StructuredStore {
    * When `asOf` (ISO 8601) is supplied, only facts that were valid at
    * that instant are returned: facts with `expiresAt` ≤ `asOf` are
    * excluded. This is bitemporal valid-time filtering. Omitting `asOf`
-   * returns all facts regardless of expiry (current behavior preserved).
+   * returns all facts regardless of expiry.
+   *
+   * `latestOnly` (default `true`, v1.2.0) — when `true`, only facts where
+   * `isLatest === true` are returned. Set to `false` to retrieve every
+   * historical version (audit trails, supersession debugging).
+   *
+   * Entity names are matched against the lowercase normalised storage
+   * form (v1.2.0); callers should not pre-lowercase but case is ignored.
    */
   getFactsForEntity(
     entity: string,
     attribute?: string,
     asOf?: string,
+    latestOnly?: boolean,
   ): Promise<Fact[]>;
   /**
    * Mark a fact as superseded by another. Updates `isLatest=false` and
@@ -158,6 +181,12 @@ export interface MemoryFilter {
   scopes?: Scopes;
   isPinned?: boolean;
   limit?: number;
+  /**
+   * v1.2.0 — when `true` (default), only memories where `isLatest === true`
+   * are returned. Set to `false` to include superseded versions (audit /
+   * history queries).
+   */
+  latestOnly?: boolean;
 }
 
 export interface EntityFilter {

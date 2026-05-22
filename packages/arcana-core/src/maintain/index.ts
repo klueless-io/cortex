@@ -55,6 +55,13 @@ export interface SleepRunResult {
   finishedAt: string;
   stepsRun: SleepStep[];
   candidatesProcessed: number;
+  /**
+   * v1.2.0 — steps that completed with non-empty `errors[]`. They are
+   * checkpointed as 'partial' and will be re-attempted on the next
+   * `runSleepPipeline({resume: true})` call. Empty array means a fully
+   * clean run.
+   */
+  partialSteps: SleepStep[];
 }
 
 export interface MaintainDeps {
@@ -78,54 +85,76 @@ const SLEEP_JOB = 'arcana:sleep-pipeline';
 export function createMaintain(deps: MaintainDeps, configOverride?: Partial<SleepConfig>): MaintainApi {
   const config: SleepConfig = { ...DEFAULT_CONFIG, ...configOverride };
 
-  // In-memory checkpoint map for the current run (step name → completed)
-  const checkpoints = new Map<SleepStep, boolean>();
+  // v1.2.0 — checkpoint map carries ternary state: undefined (not started),
+  // 'partial' (ran with errors[] — resume retries), 'complete' (clean success).
+  const checkpoints = new Map<SleepStep, 'partial' | 'complete'>();
+
+  // v1.2.0 — single-flight guard: scheduler tick and manual invocation share
+  // the same in-flight promise instead of racing checkpoint state.
+  let running: Promise<SleepRunResult> | null = null;
+
+  type StepResult = { count: number; processed?: number; errors?: string[] };
 
   const api: MaintainApi = {
     async runSleepPipeline(input: SleepRunInput = {}): Promise<SleepRunResult> {
-      const startedAt = new Date().toISOString();
-      const stepsToRun = input.steps ?? [...SLEEP_STEPS];
+      if (running) return running;
 
-      // Resume: skip already-completed steps
-      const pending = input.resume
-        ? stepsToRun.filter((s) => !checkpoints.get(s))
-        : stepsToRun;
+      running = (async (): Promise<SleepRunResult> => {
+        const startedAt = new Date().toISOString();
+        const stepsToRun = input.steps ?? [...SLEEP_STEPS];
 
-      if (!input.resume) checkpoints.clear();
+        // Resume: skip steps already marked 'complete'. 'partial' steps are
+        // re-attempted so the errors[] population can be re-processed.
+        const pending = input.resume
+          ? stepsToRun.filter((s) => checkpoints.get(s) !== 'complete')
+          : stepsToRun;
 
-      const stepsRun: SleepStep[] = [];
-      let candidatesProcessed = 0;
+        if (!input.resume) checkpoints.clear();
 
-      for (const step of pending) {
-        try {
-          let result: { count: number; processed?: number } = { count: 0 };
+        const stepsRun: SleepStep[] = [];
+        const partialSteps: SleepStep[] = [];
+        let candidatesProcessed = 0;
 
-          if (step === 'decayMemories')       result = await runDecayMemories(deps, config);
-          else if (step === 'refreshTags')    result = await runRefreshTags(deps, config);
-          else if (step === 'consolidateMemories') result = await runConsolidateMemories(deps, config);
-          else if (step === 'linkMemories')   result = await runLinkMemories(deps, config);
-          else if (step === 'tierMemories')   result = await runTierMemories(deps, config);
-          else if (step === 'summarizeMemories') result = await runSummarizeMemories(deps, config);
-          else if (step === 'observeConversations') result = await runObserveConversations(deps, config);
-          else if (step === 'rebuildUserProfile') result = await runRebuildUserProfile(deps, config);
-          else if (step === 'runReasoning')   result = await runReasoning(deps, config);
-          else if (step === 'cleanEntityGraph') result = await runCleanEntityGraph(deps, config);
+        for (const step of pending) {
+          try {
+            let result: StepResult = { count: 0 };
 
-          checkpoints.set(step, true);
-          stepsRun.push(step);
-          candidatesProcessed += result.processed ?? result.count;
-        } catch (err) {
-          deps.logger.warn(`sleep step ${step} failed`, { error: String(err) });
-          // Continue to next step — each step is idempotent and resumable
+            if (step === 'decayMemories')       result = await runDecayMemories(deps, config);
+            else if (step === 'refreshTags')    result = await runRefreshTags(deps, config);
+            else if (step === 'consolidateMemories') result = await runConsolidateMemories(deps, config);
+            else if (step === 'linkMemories')   result = await runLinkMemories(deps, config);
+            else if (step === 'tierMemories')   result = await runTierMemories(deps, config);
+            else if (step === 'summarizeMemories') result = await runSummarizeMemories(deps, config);
+            else if (step === 'observeConversations') result = await runObserveConversations(deps, config);
+            else if (step === 'rebuildUserProfile') result = await runRebuildUserProfile(deps, config);
+            else if (step === 'runReasoning')   result = await runReasoning(deps, config);
+            else if (step === 'cleanEntityGraph') result = await runCleanEntityGraph(deps, config);
+
+            const hasErrors = (result.errors?.length ?? 0) > 0;
+            checkpoints.set(step, hasErrors ? 'partial' : 'complete');
+            stepsRun.push(step);
+            if (hasErrors) partialSteps.push(step);
+            candidatesProcessed += result.processed ?? result.count;
+          } catch (err) {
+            deps.logger.warn(`sleep step ${step} failed`, { error: String(err) });
+            // Hard exception: do NOT checkpoint — will retry on resume.
+          }
         }
-      }
 
-      return {
-        startedAt,
-        finishedAt: new Date().toISOString(),
-        stepsRun,
-        candidatesProcessed,
-      };
+        return {
+          startedAt,
+          finishedAt: new Date().toISOString(),
+          stepsRun,
+          candidatesProcessed,
+          partialSteps,
+        };
+      })();
+
+      try {
+        return await running;
+      } finally {
+        running = null;
+      }
     },
 
     async startSleepSchedule(intervalMs: number): Promise<void> {

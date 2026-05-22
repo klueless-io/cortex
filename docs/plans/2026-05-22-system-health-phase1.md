@@ -141,4 +141,34 @@ Unchanged: 6 packages, bun + vitest + tsc, libsql + better-sqlite3 + sqlite-vec.
 
 _Populated during the work. Each resolution cites file:line + decision rationale where it surprised expectations._
 
-(To be populated by goal-runner.)
+### F1 — Entity normalisation: chose case-insensitive query side as defense-in-depth
+
+Items 1 + 2 interact: the audit recommended "normalise at storage", and we did. But existing tests (and likely KBOT callers in their pre-swap branch) still call `getFactsForEntity('Alice')` with capitalised names against facts that were stored pre-v1.2.0 with capitalised entities. To avoid breaking those callers AND avoid forcing a hard cutover, the libsql `getFactsForEntity` post-filter was changed to case-insensitive comparison (`e.trim().toLowerCase() === needle`) in addition to producer-side normalisation. New facts are lowercase, pre-migration legacy facts may be mixed, queries handle both. See `packages/arcana-provider-libsql/src/libsql-structured-store.ts:551` and `packages/arcana-testkit/src/fakes/structured-store.ts:205`.
+
+### F2 — Transaction primitive: `assertConnected` re-checks inside cascade methods
+
+The libsql `transaction(fn)` calls `db.exec('BEGIN')` directly with non-null assertion on `db`. Inside `deleteEntity`, the cascade SQL also uses `db!` non-null assertions rather than calling `assertConnected(db)` inside each statement. Reason: the transaction block already ran `assertConnected(db)` at entry; the non-null assertions during the cascade reflect that contract. See `packages/arcana-provider-libsql/src/libsql-structured-store.ts:430-449`.
+
+### F3 — Migration uses SQL `LOWER()` on entities_json
+
+The audit listed "lowercase + trim" — but trim at the migration boundary would require row-by-row JSON parse + rewrite, slow on large databases. Going forward, producers normalise both lowercase + trim before storage; the one-time migration only `LOWER()`s existing rows (SQL-native, fast, no row parsing). Any whitespace already in stored entities will be cleaned the next time those facts are extracted via the producer path. See `packages/arcana-provider-libsql/src/libsql-structured-store.ts:285-294`.
+
+### F4 — Resume re-tries 'partial' steps but not failed-by-exception steps
+
+A step that throws a hard exception is NOT checkpointed at all (the orchestrator catches, logs, moves on). Resume picks it up because `checkpoints.get(step) !== 'complete'` (it's `undefined`). A step that completes with `errors[]` IS checkpointed as `'partial'` and also re-attempted on resume because `'partial' !== 'complete'`. Both classes re-run on resume; only `'complete'` is truly skipped. See `packages/arcana-core/src/maintain/index.ts:107-122`.
+
+### F5 — Single-flight uses `===` identity check on shared promise
+
+Two callers calling `runSleepPipeline()` simultaneously receive the *same* Promise<SleepRunResult>. Verified in test by `expect(a).toBe(b)`. The promise is cleared in `finally` after `await running` resolves — but a third caller arriving after the first two settle starts a new run normally. See `packages/arcana-core/src/maintain/index.ts:90-132`.
+
+### F6 — getNeighbors recursive CTE returns DISTINCT rows but does NOT preserve hop-count
+
+The recursive CTE accumulates `depth` for cycle prevention (`WHERE r.depth < ?`) but the final `SELECT DISTINCT type, id` discards depth. Callers asking for `hops=3` get the union of 1-hop, 2-hop, and 3-hop neighbours without knowing which is which. If a future caller needs depth information, the contract would need a new return shape (`{ ref: NodeRef; hops: number }[]`). Out of scope for v1.2.0. See `packages/arcana-provider-libsql/src/libsql-structured-store.ts:478-498`.
+
+### F7 — Test fixture surprise: many Memory test fixtures omit `isLatest`
+
+When changing `listMemories` default to `latestOnly=true`, several testkit + access-query tests broke because their `sample` Memory fixtures lack `isLatest: true` despite the Zod schema requiring it (test compilation didn't enforce strict types — vitest transforms separately from `tsc -b`). Two options: fix every fixture, or treat undefined as latest. Chose the latter — `m.isLatest !== false` rather than `m.isLatest` — more forgiving for test code and matches the contract intent (memories should default to current). See `packages/arcana-testkit/src/fakes/structured-store.ts:56-59`.
+
+### F8 — Two existing markFactSuperseded tests needed `latestOnly: false`
+
+`packages/arcana-provider-libsql/src/libsql-structured-store.test.ts:219` and `packages/arcana-core/src/access/command/index.test.ts:378` both stored a fact, marked it superseded, then queried via `getFactsForEntity` expecting to see the superseded row. With the new default, they couldn't. Updated both to pass `latestOnly: false` explicitly. This is the intended ergonomics — the new default protects production callers; explicit opt-in serves audit/history use cases.

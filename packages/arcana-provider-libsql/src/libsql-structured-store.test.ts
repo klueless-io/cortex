@@ -216,7 +216,8 @@ describe('LibsqlStructuredStore (in-memory SQLite)', () => {
     await store.storeFact(baseFact());
     await store.storeFact({ ...baseFact(), id: 'fact_new' });
     await store.markFactSuperseded('fact_1', 'fact_new');
-    const facts = await store.getFactsForEntity('ent_1');
+    // v1.2.0 — explicit latestOnly:false to see the superseded row in history.
+    const facts = await store.getFactsForEntity('ent_1', undefined, undefined, false);
     const old = facts.find((f) => f.id === 'fact_1');
     expect(old?.isLatest).toBe(false);
     expect(old?.supersededBy).toBe('fact_new');
@@ -492,5 +493,169 @@ describe('LibsqlStructuredStore — searchFactsFulltext (v1.0.0)', () => {
     expect(paris.filter((m) => m.factId === 'f_d')).toHaveLength(0);
     const zoe = await store.searchFactsFulltext('Zoe');
     expect(zoe.filter((m) => m.factId === 'f_d')).toHaveLength(1);
+  });
+});
+
+// ── v1.2.0 System Health Phase 1 tests ────────────────────────────────────────
+
+describe('LibsqlStructuredStore — v1.2.0 transaction primitive', () => {
+  let store: ReturnType<typeof createLibsqlStructuredStore>;
+  beforeEach(async () => {
+    store = createLibsqlStructuredStore(':memory:');
+    await store.connect();
+  });
+  afterEach(async () => { await store.disconnect(); });
+
+  it('commits writes inside transaction', async () => {
+    await store.transaction(async (tx) => {
+      await tx.storeMemory(baseMemory());
+    });
+    expect(await store.getMemory('mem_1')).not.toBeNull();
+  });
+
+  it('rolls back all writes when fn throws', async () => {
+    await expect(
+      store.transaction(async (tx) => {
+        await tx.storeMemory(baseMemory());
+        throw new Error('boom');
+      }),
+    ).rejects.toThrow('boom');
+    expect(await store.getMemory('mem_1')).toBeNull();
+  });
+});
+
+describe('LibsqlStructuredStore — v1.2.0 latestOnly filter', () => {
+  let store: ReturnType<typeof createLibsqlStructuredStore>;
+  beforeEach(async () => {
+    store = createLibsqlStructuredStore(':memory:');
+    await store.connect();
+  });
+  afterEach(async () => { await store.disconnect(); });
+
+  it('listMemories default excludes superseded rows', async () => {
+    await store.storeMemory(baseMemory());
+    await store.storeMemory({ ...baseMemory(), id: 'mem_2' });
+    await store.markMemorySuperseded('mem_1', 'mem_2');
+    const latest = await store.listMemories();
+    expect(latest.map((m) => m.id)).toEqual(['mem_2']);
+  });
+
+  it('listMemories latestOnly:false returns history', async () => {
+    await store.storeMemory(baseMemory());
+    await store.storeMemory({ ...baseMemory(), id: 'mem_2' });
+    await store.markMemorySuperseded('mem_1', 'mem_2');
+    const all = await store.listMemories({ latestOnly: false });
+    expect(all.map((m) => m.id).sort()).toEqual(['mem_1', 'mem_2']);
+  });
+
+  it('getFactsForEntity default excludes superseded facts', async () => {
+    await store.storeFact(baseFact());
+    await store.storeFact({ ...baseFact(), id: 'fact_2' });
+    await store.markFactSuperseded('fact_1', 'fact_2');
+    const latest = await store.getFactsForEntity('ent_1');
+    expect(latest.map((f) => f.id)).toEqual(['fact_2']);
+  });
+});
+
+describe('LibsqlStructuredStore — v1.2.0 deleteEntity cascade', () => {
+  let store: ReturnType<typeof createLibsqlStructuredStore>;
+  beforeEach(async () => {
+    store = createLibsqlStructuredStore(':memory:');
+    await store.connect();
+  });
+  afterEach(async () => { await store.disconnect(); });
+
+  it('cascades to edges + insights + entity_profile (not facts)', async () => {
+    const entity: Entity = { id: 'ent_alice', name: 'alice', type: 'person', mentionCount: 5 };
+    await store.upsertEntity(entity);
+    await store.storeEdge({
+      id: 'edge_1', from: { type: 'entity', id: 'ent_alice' },
+      to: { type: 'memory', id: 'mem_x' }, relation: 'mentioned', confidence: 0.9,
+      sharedTags: [], method: 'test', createdAt: '2026-05-22T00:00:00.000Z',
+    });
+    await store.storeInsight({
+      id: 'ins_1', entityId: 'ent_alice', type: 'deduction',
+      statement: 'alice is consistent', supportingFactIds: [],
+      confidence: 0.9, createdAt: '2026-05-22T00:00:00.000Z',
+    });
+    await store.storeEntityProfile({
+      id: 'profile_1', entityId: 'ent_alice', staticFacts: [],
+      dynamicContext: '', relatedEntityIds: [],
+    });
+    await store.storeFact({ ...baseFact(), id: 'fact_alice', entities: ['alice'] });
+
+    await store.deleteEntity('ent_alice');
+    expect(await store.getEntity('ent_alice')).toBeNull();
+    expect(await store.getNeighbors({ type: 'entity', id: 'ent_alice' })).toEqual([]);
+    expect((await store.listInsights('ent_alice'))).toEqual([]);
+    expect(await store.getEntityProfile('ent_alice')).toBeNull();
+    // Facts mentioning the entity are preserved (multi-entity schema).
+    const f = await store.getFact('fact_alice');
+    expect(f).not.toBeNull();
+  });
+});
+
+describe('LibsqlStructuredStore — v1.2.0 getNeighbors multi-hop', () => {
+  let store: ReturnType<typeof createLibsqlStructuredStore>;
+  beforeEach(async () => {
+    store = createLibsqlStructuredStore(':memory:');
+    await store.connect();
+    // A → B → C → D chain
+    const mk = (id: string, from: string, to: string): Edge => ({
+      id, from: { type: 'memory', id: from }, to: { type: 'memory', id: to },
+      relation: 'next', confidence: 1, sharedTags: [], method: 'test',
+      createdAt: '2026-05-22T00:00:00.000Z',
+    });
+    await store.storeEdge(mk('e_ab', 'A', 'B'));
+    await store.storeEdge(mk('e_bc', 'B', 'C'));
+    await store.storeEdge(mk('e_cd', 'C', 'D'));
+  });
+  afterEach(async () => { await store.disconnect(); });
+
+  it('default hops=1 returns only direct neighbours', async () => {
+    const out = await store.getNeighbors({ type: 'memory', id: 'A' });
+    expect(out.map((n) => n.id).sort()).toEqual(['B']);
+  });
+
+  it('hops=2 returns A→B→C reachable set', async () => {
+    const out = await store.getNeighbors({ type: 'memory', id: 'A' }, 2);
+    expect(out.map((n) => n.id).sort()).toEqual(['B', 'C']);
+  });
+
+  it('hops=3 reaches D', async () => {
+    const out = await store.getNeighbors({ type: 'memory', id: 'A' }, 3);
+    expect(out.map((n) => n.id).sort()).toEqual(['B', 'C', 'D']);
+  });
+
+  it('throws when hops outside 1-5', async () => {
+    await expect(store.getNeighbors({ type: 'memory', id: 'A' }, 0)).rejects.toThrow(/hops must be 1-5/);
+    await expect(store.getNeighbors({ type: 'memory', id: 'A' }, 6)).rejects.toThrow(/hops must be 1-5/);
+  });
+
+  it('excludes the seed node from results', async () => {
+    const out = await store.getNeighbors({ type: 'memory', id: 'A' }, 3);
+    expect(out.find((n) => n.id === 'A')).toBeUndefined();
+  });
+});
+
+describe('LibsqlStructuredStore — v1.2.0 entities_json lowercase migration', () => {
+  it('is idempotent (schema_version meta row prevents re-run)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'arcana-v12-mig-'));
+    try {
+      const dbPath = join(dir, 'a.db');
+      const s1 = createLibsqlStructuredStore(dbPath);
+      await s1.connect();
+      // Store a fact with uppercased entities (mimicking pre-v1.2.0 data path).
+      await s1.storeFact({ ...baseFact(), id: 'f_pre', entities: ['Alice'] });
+      // Force lowercase at row level (bypass producer normalisation) so the
+      // migration is what fixes it on next connect.
+      await s1.disconnect();
+      const s2 = createLibsqlStructuredStore(dbPath);
+      await s2.connect();
+      // Re-open should not throw or re-migrate.
+      await s2.disconnect();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

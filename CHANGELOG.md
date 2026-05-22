@@ -7,6 +7,41 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## v1.2.0 — 2026-05-22
+
+System Health Phase 1 — eight production-blocker fixes from [docs/SYSTEM-HEALTH.md](./docs/SYSTEM-HEALTH.md) plus two doc closeouts. All 6 packages bumped to v1.2.0.
+
+### Added — `@kybernesis/arcana-contracts`
+
+- **`StructuredStore.transaction<T>(fn)`** — atomic multi-step write primitive. Every provider impl wraps `fn` in BEGIN/COMMIT (libsql) or no-op (testkit fake). Used by `ingest.storeMemory` to atomically commit memory + chunks (forward-compatible for future composite writes), and by libsql's `deleteEntity` cascade.
+- **`getFactsForEntity(entity, attribute?, asOf?, latestOnly?)`** — fourth positional arg `latestOnly` (default `true`). Set to `false` for history queries.
+- **`MemoryFilter.latestOnly`** — optional boolean (default `true`). Default behaviour now filters out superseded rows; set `false` for history queries.
+
+### Changed — behaviour visible to consumers
+
+- **Fact entities stored lowercased + trimmed** — `ingest.extractFacts`, `command.recordFact`, and `maintain.observeConversations` normalise `entities[]` before persistence. Existing libsql databases get a one-time idempotent migration (`schema_version=2` meta row) that lowercases `entities_json` on next `connect()`. `getFactsForEntity` lookup is now case-insensitive and case-tolerant on the query side.
+- **Default `latestOnly=true`** on `listMemories` and `getFactsForEntity` — superseded rows are excluded by default; callers can opt back in with `latestOnly: false`.
+
+### Fixed — System Health Phase 1 production blockers
+
+1. **Entity name normalisation (audit BH-4)** — closes the observe→profile→reasoning silent failure where the pipeline ran green but produced zero insights because of case mismatch between extracted "caroline" and entity-table "Caroline".
+2. **`is_latest` filter default** — `getFactsForEntity` and `listMemories` no longer leak historical/superseded rows by default (audit BH-L6-005).
+3. **`transaction()` primitive** — `ingest.storeMemory` is now atomically wrapped; `deleteEntity` cascade uses the same primitive (audit BH-L6-003).
+4. **`deleteEntity` cascades** to edges + insights + entity_profile, leaving facts intact (multi-entity schema preserved). Wrapped in `transaction()` (audit BH-L6-001).
+5. **`getNeighbors` multi-hop** — libsql implements `WITH RECURSIVE` for hops 1-5; testkit fake implements BFS-from-seed. Throws outside the valid range. The contract has been lying about multi-hop since v0.1; now honest (audit EC-L6-011).
+6. **`runSleepPipeline` single-flight guard** — concurrent calls share the same in-flight promise rather than racing closure state (audit BH-1).
+7. **Partial-failure checkpoint state** — steps that complete with non-empty `errors[]` are checkpointed as `'partial'` and re-attempted on `runSleepPipeline({resume: true})`. `SleepRunResult` gains `partialSteps: SleepStep[]` so callers see partial failures without log-diving (audit BH-2).
+
+### Doc closeouts
+
+- **ADR 010** marked `Superseded by ADR 011 + v1.1.0` with a resolution epilogue explaining the port-first reframing (KB has 10 sleep steps, not 9 — Arcana's 4 extra step ideas deferred to v2 sleep).
+- **ADR 011** gains §"Status of parity verification" — converts the aspirational "100% parity" into auditable accounting (target / measured / gap table per ported capability; known divergences explicitly named).
+- **docs/decisions/README.md** index updated to list ADRs 008-013 (previously stopped at 007).
+
+### Deferred to Phase 2 / Phase 3
+
+The remaining 19 strong recommendations + lower-priority hygiene from the system health audit (see SYSTEM-HEALTH.md §"Phase 2" and §"Phase 3"). Notable items not addressed here: contracts surface split (god-interface), retrieve layer's `tokenBudget` enforcement on `assembledContext`, sqlite-vec score-semantics, SPEC/README/full-mochaccino refresh.
+
 ## v1.1.0 — 2026-05-22
 
 Sleep pipeline implementation. All 6 packages bumped to v1.1.0. Resolves [ADR 010](./docs/decisions/010-sleep-pipeline-step-reconciliation.md) step-count gap under [ADR 011](./docs/decisions/011-port-first-improve-later.md) (port-first). KB source of truth: `kyberbot/packages/cli/src/brain/sleep/index.ts` + `config.ts` + `steps/`.

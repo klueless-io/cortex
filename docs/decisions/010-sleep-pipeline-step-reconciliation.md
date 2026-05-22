@@ -1,9 +1,22 @@
 # ADR 010: Sleep Pipeline Step Reconciliation — KyberBot 9 vs Arcana 13
 
 **Date:** 2026-05-20
-**Status:** Open — design decision deferred
+**Status:** Superseded by ADR 011 + v1.1.0
 **Deciders:** David Cruwys
-**Related:** docs/plans/2026-05-20-fts-and-hybridsearch.md, ADR 008, packages/arcana-core/src/maintain/index.ts
+**Related:** docs/plans/2026-05-20-fts-and-hybridsearch.md, ADR 008, ADR 011, packages/arcana-core/src/maintain/index.ts
+
+---
+
+## Resolution (2026-05-22, v1.1.0)
+
+Resolved under port-first (ADR 011). v1.1.0 ships KB's 10-step pipeline verbatim
+(audit later confirmed KB has 10 steps, not 9 — `reasoning` was uncounted in
+the original analysis below): `decayMemories → refreshTags → consolidateMemories
+→ linkMemories → tierMemories → summarizeMemories → observeConversations →
+rebuildUserProfile → runReasoning → cleanEntityGraph`. The five Arcana-invented
+steps (`collectCandidates`, `ingestionValidation`, `extractFacts`-in-sleep,
+`detectContradictions`, `computeSurprisal`) are deferred to v2 sleep, to be
+considered only after KB consumes the v1 pipeline and a concrete consumer asks.
 
 ---
 

@@ -248,7 +248,7 @@ function rowToEntityProfile(row: Row): EntityProfile {
 export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
   let db: Database.Database | null = null;
 
-  return {
+  const store: StructuredStore = {
     // ── lifecycle ─────────────────────────────────────────────────────────
 
     connect: async () => {
@@ -267,6 +267,25 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
         db.exec(
           `ALTER TABLE memories ADD COLUMN created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`,
         );
+      }
+
+      // v1.2.0 — meta table + idempotent entity-normalisation migration.
+      // schema_version 2 = facts.entities_json values are stored lowercased.
+      db.exec(
+        `CREATE TABLE IF NOT EXISTS _arcana_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
+      );
+      const versionRow = db
+        .prepare("SELECT value FROM _arcana_meta WHERE key = 'schema_version'")
+        .get() as { value: string } | undefined;
+      const schemaVersion = versionRow ? Number(versionRow.value) : 1;
+      if (schemaVersion < 2) {
+        // LOWER on the JSON text lowercases the entity-name string values.
+        // JSON syntax tokens (brackets, commas, quotes) are all ASCII-stable
+        // under LOWER. The AFTER UPDATE trigger keeps facts_fts in sync.
+        db.exec(`UPDATE facts SET entities_json = LOWER(entities_json)`);
+        db.prepare(
+          "INSERT OR REPLACE INTO _arcana_meta (key, value) VALUES ('schema_version', '2')",
+        ).run();
       }
     },
 
@@ -302,6 +321,10 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
       assertConnected(db);
       let sql = 'SELECT * FROM memories WHERE 1=1';
       const params: unknown[] = [];
+      // v1.2.0 — default latestOnly=true; only superseded callers opt out.
+      if (filter?.latestOnly !== false) {
+        sql += ' AND is_latest = 1';
+      }
       if (filter?.tier) { sql += ' AND tier = ?'; params.push(filter.tier); }
       if (filter?.isPinned !== undefined) { sql += ' AND is_pinned = ?'; params.push(int(filter.isPinned)); }
       if (filter?.limit !== undefined) { sql += ' LIMIT ?'; params.push(filter.limit); }
@@ -428,7 +451,23 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
 
     deleteEntity: async (id: string) => {
       assertConnected(db);
-      db.prepare('DELETE FROM entities WHERE id=?').run(id);
+      // v1.2.0 — cascade edges + insights + entity_profiles, then the entity
+      // row itself. Facts mentioning this entity are preserved per the
+      // multi-entity schema (v1.0.0 Fact.entities is a list — deleting one
+      // entity must not invalidate facts that also reference others).
+      db!.exec('BEGIN');
+      try {
+        db!.prepare(
+          "DELETE FROM edges WHERE (from_type='entity' AND from_id=?) OR (to_type='entity' AND to_id=?)",
+        ).run(id, id);
+        db!.prepare('DELETE FROM insights WHERE entity_id=?').run(id);
+        db!.prepare('DELETE FROM entity_profiles WHERE entity_id=?').run(id);
+        db!.prepare('DELETE FROM entities WHERE id=?').run(id);
+        db!.exec('COMMIT');
+      } catch (err) {
+        try { db!.exec('ROLLBACK'); } catch { /* already rolled back */ }
+        throw err;
+      }
     },
 
     // ── Edge ──────────────────────────────────────────────────────────────
@@ -458,21 +497,38 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
       });
     },
 
-    getNeighbors: async (node: NodeRef, _hops?: number) => {
+    getNeighbors: async (node: NodeRef, hops?: number) => {
       assertConnected(db);
-      const rows = db.prepare(`
-        SELECT from_type, from_id, to_type, to_id FROM edges
-        WHERE (from_type=? AND from_id=?) OR (to_type=? AND to_id=?)
-      `).all(node.type, node.id, node.type, node.id) as Row[];
-      const out: NodeRef[] = [];
-      for (const row of rows) {
-        if (row.from_type === node.type && row.from_id === node.id) {
-          out.push({ type: row.to_type as NodeRef['type'], id: row.to_id as string });
-        } else {
-          out.push({ type: row.from_type as NodeRef['type'], id: row.from_id as string });
-        }
+      const h = hops ?? 1;
+      if (h < 1 || h > 5) {
+        throw new Error(
+          `LibsqlStructuredStore: getNeighbors hops must be 1-5 (got ${h})`,
+        );
       }
-      return out;
+      // v1.2.0 — recursive CTE for multi-hop neighbour traversal.
+      // Edges are undirected for this purpose, so we union both directions
+      // into a `bidir` synthetic relation, then BFS from the seed.
+      // UNION (not UNION ALL) auto-dedupes to prevent cycles.
+      const rows = db.prepare(`
+        WITH RECURSIVE
+          bidir(a_type, a_id, b_type, b_id) AS (
+            SELECT from_type, from_id, to_type, to_id FROM edges
+            UNION ALL
+            SELECT to_type, to_id, from_type, from_id FROM edges
+          ),
+          reach(type, id, depth) AS (
+            SELECT b_type, b_id, 1 FROM bidir
+             WHERE a_type = ? AND a_id = ?
+            UNION
+            SELECT b.b_type, b.b_id, r.depth + 1
+              FROM bidir b
+              JOIN reach r ON b.a_type = r.type AND b.a_id = r.id
+             WHERE r.depth < ?
+          )
+        SELECT DISTINCT type, id FROM reach
+         WHERE NOT (type = ? AND id = ?)
+      `).all(node.type, node.id, h, node.type, node.id) as Array<{ type: string; id: string }>;
+      return rows.map((r) => ({ type: r.type as NodeRef['type'], id: r.id }));
     },
 
     // ── Fact ──────────────────────────────────────────────────────────────
@@ -527,13 +583,13 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
       entity: string,
       attribute?: string,
       asOf?: string,
+      latestOnly?: boolean,
     ) => {
       assertConnected(db);
-      // v1.0.0: facts denormalise entities into entities_json. Match
-      // case-insensitively against the JSON list, then re-validate against
-      // the parsed array to drop substring false positives (e.g. "Bob"
-      // matching "Bobby"). Mirrors KB fact-store.ts:448-475.
-      const needle = entity.toLowerCase();
+      // v1.2.0: entities_json is stored lowercased (migration on connect).
+      // Match exact (after the JSON-LIKE prefilter); no more case-coercion
+      // needed since storage is canonical.
+      const needle = entity.trim().toLowerCase();
       let sql = "SELECT * FROM facts WHERE LOWER(entities_json) LIKE ? ESCAPE '\\'";
       const params: unknown[] = [`%${escapeLike(needle)}%`];
       if (attribute !== undefined) {
@@ -544,10 +600,17 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
         sql += ' AND (expires_at IS NULL OR expires_at > ?)';
         params.push(asOf);
       }
+      // v1.2.0 — default latestOnly=true.
+      if (latestOnly !== false) {
+        sql += ' AND is_latest = 1';
+      }
       const rows = db.prepare(sql).all(...params) as Row[];
+      // Post-filter is case-insensitive for defense-in-depth: producers
+      // (ingest/command/observe) normalise to lowercase before storeFact, but
+      // direct storeFact callers (tests, pre-swap KB) may not.
       return rows
         .map(rowToFact)
-        .filter((f) => f.entities.some((e) => e.toLowerCase() === needle));
+        .filter((f) => f.entities.some((e) => e.trim().toLowerCase() === needle));
     },
 
     markFactSuperseded: async (oldFactId: string, newFactId: string) => {
@@ -791,5 +854,25 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
         history: j(self.history),
       });
     },
+
+    // ── Transaction ───────────────────────────────────────────────────────
+    // v1.2.0 — atomic multi-step writes. better-sqlite3's underlying
+    // statements are synchronous so we drive BEGIN/COMMIT manually around
+    // the async `fn` body. fn receives the same store instance; nested
+    // transactions are not supported (libsql/SQLite has no SAVEPOINT-style
+    // nesting in this wrapper).
+    transaction: async <T>(fn: (tx: StructuredStore) => Promise<T>): Promise<T> => {
+      assertConnected(db);
+      db.exec('BEGIN');
+      try {
+        const result = await fn(store);
+        db.exec('COMMIT');
+        return result;
+      } catch (err) {
+        try { db.exec('ROLLBACK'); } catch { /* already rolled back */ }
+        throw err;
+      }
+    },
   };
+  return store;
 }

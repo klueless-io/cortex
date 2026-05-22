@@ -121,7 +121,13 @@ export function createIngest(deps: IngestDeps): IngestApi {
         scopes: input.scopes,
       });
 
-      await deps.structured.storeMemory(memory);
+      // v1.2.0 — wrap in transaction so any future chunk/fact writes added
+      // to this method commit atomically with the memory row. Even with just
+      // the single write today, this establishes the pattern that the libsql
+      // provider's transaction wrapper rolls back if anything inside fails.
+      await deps.structured.transaction(async (tx) => {
+        await tx.storeMemory(memory);
+      });
       deps.logger.debug('arcana.ingest.storeMemory', { id: memory.id });
       return memory.id;
     },
@@ -187,6 +193,12 @@ export function createIngest(deps: IngestDeps): IngestApi {
       for (const raw of rawFacts.slice(0, 3)) {
         if (!raw.content || raw.content.length < 10 || raw.content.length > 200) continue;
         if (!raw.entities || raw.entities.length === 0) continue;
+        // v1.2.0 — entities normalised at storage: lowercase + trim. Reject if
+        // the normalised list is empty (would violate FactSchema.entities.min(1)).
+        const normalisedEntities = raw.entities
+          .map((e) => (typeof e === 'string' ? e.trim().toLowerCase() : ''))
+          .filter((e) => e.length > 0);
+        if (normalisedEntities.length === 0) continue;
         const category: FactCategory = VALID_CATEGORIES.has(raw.category as FactCategory)
           ? (raw.category as FactCategory)
           : 'general';
@@ -196,7 +208,7 @@ export function createIngest(deps: IngestDeps): IngestApi {
         const candidate: Fact = {
           id: randomUUID(),
           fact: raw.content,
-          entities: raw.entities,
+          entities: normalisedEntities,
           category,
           confidence,
           sourceType: 'ai-extraction',

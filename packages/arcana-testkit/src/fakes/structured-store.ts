@@ -37,7 +37,7 @@ export function createFakeStructuredStore(): StructuredStore {
   let agentSelf: AgentSelf | null = null;
   let connected = false;
 
-  return {
+  const store: StructuredStore = {
     connect: async () => {
       connected = true;
     },
@@ -52,6 +52,11 @@ export function createFakeStructuredStore(): StructuredStore {
     getMemory: async (id: string) => memories.get(id) ?? null,
     listMemories: async (filter?: MemoryFilter) => {
       let results = [...memories.values()];
+      // v1.2.0 — default latestOnly=true. Treat undefined isLatest as
+      // latest (forgiving — test fixtures often omit the field).
+      if (filter?.latestOnly !== false) {
+        results = results.filter((m) => m.isLatest !== false);
+      }
       if (filter?.tier) results = results.filter((m) => m.tier === filter.tier);
       if (filter?.isPinned !== undefined) {
         results = results.filter((m) => m.isPinned === filter.isPinned);
@@ -126,35 +131,83 @@ export function createFakeStructuredStore(): StructuredStore {
       return results;
     },
     deleteEntity: async (id: string) => {
+      // v1.2.0 — cascade edges + insights + entity_profile (NOT facts).
+      for (const [edgeId, edge] of edges) {
+        if (
+          (edge.from.type === 'entity' && edge.from.id === id) ||
+          (edge.to.type === 'entity' && edge.to.id === id)
+        ) {
+          edges.delete(edgeId);
+        }
+      }
+      for (const [insightId, insight] of insights) {
+        if (insight.entityId === id) insights.delete(insightId);
+      }
+      entityProfiles.delete(id);
       entities.delete(id);
     },
 
     storeEdge: async (edge: Edge) => {
       edges.set(edge.id, edge);
     },
-    getNeighbors: async (node: NodeRef, _hops?: number) => {
-      const out: NodeRef[] = [];
-      for (const edge of edges.values()) {
-        if (edge.from.type === node.type && edge.from.id === node.id) out.push(edge.to);
-        if (edge.to.type === node.type && edge.to.id === node.id) out.push(edge.from);
+    getNeighbors: async (node: NodeRef, hops?: number) => {
+      // v1.2.0 — BFS-from-seed up to `hops` levels (default 1, max 5).
+      const h = hops ?? 1;
+      if (h < 1 || h > 5) {
+        throw new Error(`fake StructuredStore: getNeighbors hops must be 1-5 (got ${h})`);
       }
-      return out;
+      const seen = new Set<string>();
+      const seedKey = `${node.type}:${node.id}`;
+      seen.add(seedKey);
+      const visited = new Set<string>();
+      let frontier: NodeRef[] = [node];
+      const result: NodeRef[] = [];
+      for (let depth = 0; depth < h && frontier.length > 0; depth++) {
+        const nextFrontier: NodeRef[] = [];
+        for (const cur of frontier) {
+          const curKey = `${cur.type}:${cur.id}`;
+          if (visited.has(curKey)) continue;
+          visited.add(curKey);
+          for (const edge of edges.values()) {
+            let neighbor: NodeRef | null = null;
+            if (edge.from.type === cur.type && edge.from.id === cur.id) {
+              neighbor = edge.to;
+            } else if (edge.to.type === cur.type && edge.to.id === cur.id) {
+              neighbor = edge.from;
+            }
+            if (!neighbor) continue;
+            const nKey = `${neighbor.type}:${neighbor.id}`;
+            if (seen.has(nKey)) continue;
+            seen.add(nKey);
+            result.push(neighbor);
+            nextFrontier.push(neighbor);
+          }
+        }
+        frontier = nextFrontier;
+      }
+      return result;
     },
 
     storeFact: async (fact: Fact) => {
       facts.set(fact.id, fact);
     },
     getFact: async (id: string) => facts.get(id) ?? null,
-    getFactsForEntity: async (entity: string, attribute?: string, asOf?: string) => {
-      // v1.0.0: entity match is against the denormalised entities[] list,
-      // case-insensitive.
-      const needle = entity.toLowerCase();
+    getFactsForEntity: async (
+      entity: string,
+      attribute?: string,
+      asOf?: string,
+      latestOnly?: boolean,
+    ) => {
+      // v1.2.0: entity match is case-insensitive (defense-in-depth — producers
+      // normalise to lowercase at storage, but direct storeFact callers may not).
+      const needle = entity.trim().toLowerCase();
       return [...facts.values()].filter((f) => {
-        if (!f.entities.some((e) => e.toLowerCase() === needle)) return false;
+        if (!f.entities.some((e) => e.trim().toLowerCase() === needle)) return false;
         if (attribute !== undefined && f.attribute !== attribute) return false;
         if (asOf !== undefined && f.expiresAt !== undefined && f.expiresAt <= asOf) {
           return false;
         }
+        if (latestOnly !== false && f.isLatest === false) return false;
         return true;
       });
     },
@@ -282,5 +335,15 @@ export function createFakeStructuredStore(): StructuredStore {
     updateAgentSelf: async (self: AgentSelf) => {
       agentSelf = self;
     },
+
+    // v1.2.0 — trivial transaction: the fake is single-threaded and has no
+    // BEGIN/COMMIT semantics, so we just call fn(this). This satisfies the
+    // contract for tests; real providers (libsql, postgres) wrap a real
+    // transaction. Note: if fn throws, no rollback — caller is responsible
+    // for handling that in tests if they specifically need rollback behaviour.
+    transaction: async <T>(fn: (tx: StructuredStore) => Promise<T>): Promise<T> => {
+      return fn(store);
+    },
   };
+  return store;
 }

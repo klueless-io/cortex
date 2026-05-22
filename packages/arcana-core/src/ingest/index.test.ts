@@ -138,7 +138,8 @@ describe('ingest.extractFacts (v1.0.0)', () => {
     const memId = await seedMemory({ tags: ['conversation:conv_99'] });
     const facts = await api.extractFacts(memId);
     expect(facts).toHaveLength(1);
-    expect(facts[0]!.entities).toEqual(['Alice', 'Bob', 'Paris']);
+    // v1.2.0 — entities normalised to lowercase + trim at storage.
+    expect(facts[0]!.entities).toEqual(['alice', 'bob', 'paris']);
     expect(facts[0]!.category).toBe('event');
     expect(facts[0]!.sourceMemoryId).toBe(memId);
     expect(facts[0]!.sourceConversationId).toBe('conv_99');
@@ -154,7 +155,8 @@ describe('ingest.extractFacts (v1.0.0)', () => {
     const memId = await seedMemory();
     const facts = await api.extractFacts(memId);
     expect(facts).toHaveLength(1);
-    expect(facts[0]!.entities).toEqual(['Carol']);
+    // v1.2.0 — entities normalised to lowercase.
+    expect(facts[0]!.entities).toEqual(['carol']);
   });
 
   it('defaults invalid/unknown category to "general"', async () => {

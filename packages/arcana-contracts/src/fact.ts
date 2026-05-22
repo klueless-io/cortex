@@ -45,7 +45,14 @@ export const FactSchema = z
   .object({
     id: z.string().min(1),
     fact: z.string().min(1),
-    /** Denormalised list of entity names this fact mentions. v1.0.0 — replaces single `entity`. */
+    /**
+     * Denormalised list of entity names this fact mentions. v1.0.0 — replaces
+     * single `entity`. v1.2.0 — stored lowercased + trimmed for canonical matching;
+     * the Entity row preserves original casing for display. Producers
+     * (ingest.extractFacts, command.recordFact, maintain.observeConversations)
+     * normalise before storage; consumers may pass any casing to
+     * `getFactsForEntity` which normalises the lookup key.
+     */
     entities: z.array(z.string().min(1)).min(1),
     attribute: z.string().optional(),
     value: z.string().optional(),

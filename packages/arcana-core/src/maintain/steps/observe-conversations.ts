@@ -103,12 +103,18 @@ export async function runObserveConversations(
           ? (raw.category as FactCategory)
           : 'general';
 
+        // v1.2.0 — entities normalised at storage: lowercase + trim.
+        const normalisedEntities = raw.entities
+          .map((e: unknown) => (typeof e === 'string' ? e.trim().toLowerCase() : ''))
+          .filter((e: string) => e.length > 0);
+        if (normalisedEntities.length === 0) continue;
+
         const fact: Fact = {
           id: randomUUID(),
           fact: raw.content,
           category,
           confidence: Math.min(0.9, Math.max(0, raw.confidence ?? 0.7)),
-          entities: raw.entities.filter((e: unknown) => typeof e === 'string' && e.length > 0),
+          entities: normalisedEntities,
           sourceType: 'ai-extraction',
           sourceMemoryId: memory.id,
           isLatest: true,

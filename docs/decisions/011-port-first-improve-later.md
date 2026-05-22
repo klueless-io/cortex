@@ -104,3 +104,22 @@ For every new brain capability proposed in Arcana:
 See `docs/plans/2026-05-21-hybrid-search-rebase.md`. Replaces the v0.2.0 3-channel + graph-BFS topology with KyberBot's 4-channel (semantic + keyword + temporal + entity-name-filter) topology. The graph-BFS retrieval becomes the deferred v2 hybridSearch. `HybridSearchResult.graphHops` input and `graphScore` output fields are kept for shape stability but emit as no-op/zero respectively, with deprecation notes.
 
 This sprint also adds the `Memory.createdAt` schema field needed by the temporal channel — a contract addition that's intrinsic to KyberBot-faithful behaviour, not a separable concern.
+
+---
+
+## Status of parity verification
+
+Per the system-health audit (docs/SYSTEM-HEALTH.md), the "100% parity" bar set above is the *target*. Actual measured parity against KyberBot fixtures is *pending* — no consumer has yet run the parity harness with real KB fixtures. This section converts the aspirational "100%" into auditable accounting and will be updated as fixtures land.
+
+| Ported capability | Target | Measured | Gap |
+|---|---|---|---|
+| `hybridSearch` (v0.4.0) | 100% memory-id overlap on KB fixtures | pending KB fixtures | TBD |
+| `factRetrieval` (v0.4.1 → v1.0.0) | 100% memory-id + fact-id overlap | pending KB fixtures | TBD |
+| Sleep pipeline (v1.1.0) | All 10 KB steps run end-to-end against a real arcana instance | pending KB integration | TBD |
+
+Known port-time divergences (not parity misses — deliberate or non-blocking):
+- `FactSourceType` enum (Arcana-only — KB has no `sourceType` column; v1.0.0 kept for source-traceability)
+- `rebuildUserProfile` uses "top entity by mentionCount" heuristic vs KB's explicit user-profile module (v2 sleep candidate)
+- v1.1.0 sleep omits KB's AI-merge phases in `cleanEntityGraph` and its `sleep.db` telemetry tables (v2 sleep)
+
+When KyberBot's `arcana-adoption` branch runs the parity harness with real fixtures, update this table with the measured numbers. Anything below 100% becomes a Phase-2 fix ticket against the next minor release.

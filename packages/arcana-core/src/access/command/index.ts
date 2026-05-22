@@ -198,10 +198,15 @@ export function createCommand(deps: CommandDeps): CommandApi {
     },
 
     recordFact: async (input: RecordFactInput): Promise<string> => {
+      // v1.2.0 — entities normalised at storage: lowercase + trim. Empty
+      // strings dropped. FactSchema enforces min(1) entity at validate time.
+      const normalisedEntities = input.entities
+        .map((e) => (typeof e === 'string' ? e.trim().toLowerCase() : ''))
+        .filter((e) => e.length > 0);
       const candidate: Fact = {
         id: randomUUID(),
         fact: input.fact,
-        entities: input.entities,
+        entities: normalisedEntities,
         attribute: input.attribute,
         value: input.value,
         confidence: input.confidence,

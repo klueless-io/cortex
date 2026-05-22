@@ -375,7 +375,8 @@ describe('command.markFactSuperseded', () => {
       sourceType: 'chat',
     });
     await api.markFactSuperseded(oldId, newId);
-    const facts = await structured.getFactsForEntity('David');
+    // v1.2.0 — explicit latestOnly:false to see the superseded row.
+    const facts = await structured.getFactsForEntity('David', undefined, undefined, false);
     const old = facts.find((f) => f.id === oldId);
     const updated = facts.find((f) => f.id === newId);
     expect(old?.isLatest).toBe(false);
