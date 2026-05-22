@@ -90,13 +90,10 @@ describe('createArcana', () => {
   });
 
   it('still-stubbed zone methods throw NotImplementedError', async () => {
-    // storeMemory + hybridSearch have been implemented (v0.x); sleep
-    // pipeline + ingestDocument remain stubs.
-    // See packages/arcana-core/src/{ingest,retrieve}/ for the live tests.
+    // storeMemory + hybridSearch + sleep pipeline have been implemented (v1.1.0).
+    // ingestDocument remains a stub.
+    // See packages/arcana-core/src/{ingest,retrieve,maintain}/ for the live tests.
     const arcana = createArcana(makeFakes());
-    await expect(arcana.maintain.runSleepPipeline()).rejects.toBeInstanceOf(
-      NotImplementedError,
-    );
     await expect(
       arcana.ingest.ingestDocument({ format: 'markdown', content: '# x' }),
     ).rejects.toBeInstanceOf(NotImplementedError);

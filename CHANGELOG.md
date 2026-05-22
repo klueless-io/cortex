@@ -7,6 +7,37 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## v1.1.0 — 2026-05-22
+
+Sleep pipeline implementation. All 6 packages bumped to v1.1.0. Resolves [ADR 010](./docs/decisions/010-sleep-pipeline-step-reconciliation.md) step-count gap under [ADR 011](./docs/decisions/011-port-first-improve-later.md) (port-first). KB source of truth: `kyberbot/packages/cli/src/brain/sleep/index.ts` + `config.ts` + `steps/`.
+
+### Added — `@kybernesis/arcana-core`
+
+- **`SLEEP_STEPS` enum** — updated to KB's 10 steps in execution order: `decayMemories → refreshTags → consolidateMemories → linkMemories → tierMemories → summarizeMemories → observeConversations → rebuildUserProfile → runReasoning → cleanEntityGraph`. Five Arcana-invented steps from the v0.1 scaffold (`collectCandidates`, `ingestionValidation`, `extractFacts`-in-sleep, `detectContradictions`, `computeSurprisal`) are deferred to v2 sleep per ADR 011.
+- **`SleepConfig` + `DEFAULT_CONFIG`** — ported verbatim from KB `config.ts`. Controls batch sizes, LLM cost caps, tier thresholds, enable flags per step.
+- **`runSleepPipeline(input?)`** — orchestrates all 10 steps in KB order. Respects `input.steps` filter. Continues past failing steps (each step is idempotent). Returns `SleepRunResult { startedAt, finishedAt, stepsRun, candidatesProcessed }`.
+- **`startSleepSchedule(intervalMs)`** — delegates to `deps.scheduler.schedule('arcana:sleep-pipeline', ...)`.
+- **`stopSleepSchedule()`** — delegates to `deps.scheduler.cancel('arcana:sleep-pipeline')`.
+- **10 step files** in `packages/arcana-core/src/maintain/steps/`:
+  - `decay-memories.ts` — age-based decay on `decayScore` + `priority` (access count counteracts decay; pinned memories exempt)
+  - `refresh-tags.ts` — LLM refreshes stale/missing tags (Haiku; merges with existing)
+  - `consolidate-memories.ts` — deduplicates memories by normalized title; keeps newest; applies decay multiplier to repetitive content
+  - `link-memories.ts` — Jaccard tag similarity → `StructuredStore.storeEdge`; semantic relation type detection
+  - `tier-memories.ts` — promotes/demotes memories between hot/warm/archive tiers
+  - `summarize-memories.ts` — LLM regenerates tier-appropriate summaries for missing/short/raw-JSON summaries
+  - `observe-conversations.ts` — LLM extracts facts from recent chat memories → `storeFact`; prompt ported verbatim from KB `fact-extractor.ts:20-31`
+  - `rebuild-user-profile.ts` — aggregates facts for top entity via LLM → `storeEntityProfile`; freshness gate via `profileRefreshMinutes`
+  - `run-reasoning.ts` — deduction + induction passes per entity (3+ mentions threshold); insights stored via `storeInsight`; prompts ported verbatim from KB `reasoning.ts`
+  - `clean-entity-graph.ts` — removes artifact entities (Speaker 0, Unknown, etc.); prunes 1-mention entities with no facts
+
+### Adapter pattern — `root: string` → injected providers
+
+KB's sleep steps access the database directly via `getTimelineDb(root)` and `getSleepDb(root)`. Arcana's port replaces all direct DB access with `deps.structured` (StructuredStore), `deps.vector` (VectorStore), `deps.embed` (EmbeddingProvider), `deps.llm` (LLMProvider), `deps.scheduler` (Scheduler). No new contract methods were needed — `updateMemory` and `deleteMemory` were already in StructuredStore since v0.5.0.
+
+### Deferred to v2 sleep
+
+KB's `sleep.db` telemetry table (`sleep_runs`, `sleep_telemetry`, `maintenance_queue`). Arcana v1 uses in-memory step metrics only. AI-powered entity merge detection (KB's entity-hygiene step 2/3) — v1 implements automatic artifact deletion and low-mention pruning only.
+
 ## v1.0.0 — 2026-05-22
 
 Schema deepening + Layer 0 fact-FTS + rich-bundle retrieval. All 6 packages bumped to v1.0.0 as one cohort. Per [ADR 013](./docs/decisions/013-fact-schema-deepening-before-sleep.md) (sequencing) and [ADR 011](./docs/decisions/011-port-first-improve-later.md) (port-first). KB sources of truth: `kyberbot/packages/cli/src/brain/fact-store.ts` + `fact-retrieval.ts` + `fact-extractor.ts`.

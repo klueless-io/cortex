@@ -125,9 +125,9 @@
       "methods": [
         {
           "name": "runSleepPipeline",
-          "status": "stubbed",
-          "driven_by": null,
-          "notes": "13-step pipeline; entirely stubbed. ADR 010 records the unresolved step-list reconciliation between KyberBot's 9 steps and Arcana's 13 (consolidate, observe). Implementation deferred to next sprint.",
+          "status": "implemented",
+          "driven_by": "v1.1.0 — ADR 010 resolution + ADR 011 port-first",
+          "notes": "10-step pipeline (KB's steps verbatim, camelCase renamed). Steps: decayMemories→refreshTags→consolidateMemories→linkMemories→tierMemories→summarizeMemories→observeConversations→rebuildUserProfile→runReasoning→cleanEntityGraph. 5 Arcana-invented steps deferred to v2 sleep.",
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/sleep/index.ts", "migration_debt": true, "notes": "9-step pipeline in production; swap blocked on ADR 010 resolution + parity gate" },
             "kyberagent-desktop": { "mode": "unused" },
@@ -136,9 +136,9 @@
         },
         {
           "name": "startSleepSchedule",
-          "status": "stubbed",
-          "driven_by": null,
-          "notes": "Scheduler provider integration; entirely stubbed",
+          "status": "implemented",
+          "driven_by": "v1.1.0",
+          "notes": "Delegates to deps.scheduler.schedule('arcana:sleep-pipeline', intervalMs, cb). Scheduler.cancel on stopSleepSchedule.",
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/runtime/fleet-sleep-scheduler.ts", "migration_debt": true },
             "kyberagent-desktop": { "mode": "unused" },
@@ -147,8 +147,8 @@
         },
         {
           "name": "stopSleepSchedule",
-          "status": "stubbed",
-          "driven_by": null,
+          "status": "implemented",
+          "driven_by": "v1.1.0",
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/runtime/fleet-sleep-scheduler.ts", "migration_debt": true },
             "kyberagent-desktop": { "mode": "unused" },
@@ -207,7 +207,7 @@
     "total_kernel_methods_catalogued": 28,
     "write_parity_percent": 100,
     "read_parity_percent": 100,
-    "test_counts": { "tests": 301, "files": 26, "packages": 6, "all_passing": true },
+    "test_counts": { "tests": 328, "files": 26, "packages": 6, "all_passing": true },
     "v1_0_0_sprint": "v1.0.0 sprint 2026-05-22 landed: Fact schema deepening + Layer 0 fact-FTS + rich-bundle factRetrieval. Per ADR 013 (sequencing) + ADR 011 (port-first). BREAKING — all 6 packages bumped 0.5.0 → 1.0.0 as one cohort. Contracts: FactSchema.entity (string) → entities (string[]); FactCategorySchema 8-member enum added; sourceMemoryId/sourcePath/sourceConversationId optional source backlinks; StructuredStore.searchFactsFulltext + getFact added. libsql: facts table widened with new columns + 3 indices + facts_fts FTS5 virtual table + triggers; storeFact issues explicit pre-DELETE on FTS shadow row before INSERT OR REPLACE (libsql FTS5 doesn't reliably clear shadow rows on conflict-replace). Core: factRetrieval returns FactRetrievalResult { facts, supportingMemories, assembledContext, tokenEstimate, stats } — field names verbatim from KB fact-retrieval.ts:31-59. Layer 0 (direct fact-FTS via searchFactsFulltext) runs before existing 4 layers; Layer 0 hits with sourceMemoryId fan out into supportingMemories. tokenEstimate = ceil(assembledContext.length / 4) per KB convention. Ingest: extractFacts(memoryId) port of KB fact-extractor.ts (REALTIME_FACT_PROMPT verbatim); caps to 3 facts/memory; rejects empty entities[]; defaults invalid category to 'general'. Tests 290 → 301 (+11). widenLegacyFact helper exported for in-code migration.",
     "llm_provider_sprint": "v0.5.0 sprint 2026-05-21 landed: arcana-provider-llm-claude-code (new package). Subprocess transport per ADR 012. Faithful port of KyberBot claude.ts → completeSubprocess. No API key — uses local Claude Code subscription. First concrete LLMProvider impl. Unblocks sleep pipeline. Sibling arcana-provider-llm-http (multi-backend HTTP) queued, separate sprint.",
     "arcana_config_merge": "arcana-config package DELETED 2026-05-19; merged into arcana-core src/config/.",
