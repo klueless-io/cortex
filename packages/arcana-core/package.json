@@ -1,6 +1,6 @@
 {
   "name": "@kybernesis/arcana-core",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "Arcana kernel — portable-cortex pattern (ingest, retrieve, maintain, access zones)",
   "license": "MIT",
   "author": "David Cruwys (AppyDave)",

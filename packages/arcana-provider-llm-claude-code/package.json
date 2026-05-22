@@ -1,6 +1,6 @@
 {
   "name": "@kybernesis/arcana-provider-llm-claude-code",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "LLM provider for Arcana — subprocess-based Claude Code CLI wrapper (no API key)",
   "license": "MIT",
   "author": "David Cruwys (AppyDave)",

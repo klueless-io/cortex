@@ -1,6 +1,6 @@
 {
   "name": "@kybernesis/arcana-provider-libsql",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "LibSQL/SQLite StructuredStore provider for Arcana",
   "license": "MIT",
   "author": "David Cruwys (AppyDave)",

@@ -1,6 +1,6 @@
 {
   "name": "@kybernesis/arcana-testkit",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "description": "In-memory fake providers for testing Arcana consumers",
   "license": "MIT",
   "author": "David Cruwys (AppyDave)",
