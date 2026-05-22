@@ -94,4 +94,51 @@ Implement `runSleepPipeline(input?)`, `startSleepSchedule(intervalMs)`, `stopSle
 
 _Populated during the port. Each resolution cites KB file:line + Arcana code location._
 
-(To be populated by goal-runner.)
+### 1. KB step count was 10, not 9 (ADR 010 correction)
+
+ADR 010 counted 9 KB steps (missed `reasoning`). KB `sleep/index.ts:28-30` imports `runReasoningStep` from `steps/reasoning.ts` and runs it between `profile` and `entity-hygiene`. Arcana `SLEEP_STEPS` now has 10 entries matching KB's actual count. The 13-entry v0.1 scaffold (which included the 5 Arcana-invented steps) is replaced.
+
+### 2. `root: string` → injected providers adapter pattern
+
+KB's steps call `getTimelineDb(root)` and `getSleepDb(root)` to get direct better-sqlite3 handles. Arcana's port replaces every DB read/write with the matching `StructuredStore` method:
+- `timeline.prepare(SELECT ...).all()` → `deps.structured.listMemories(filter)`
+- `timeline.prepare(UPDATE ...).run()` → `deps.structured.updateMemory(id, fields)`
+- `timeline.prepare(DELETE ...).run()` → `deps.structured.deleteMemory(id)`
+- `sleep.prepare(INSERT INTO memory_edges ...).run()` → `deps.structured.storeEdge(edge)`
+- `getEntityGraphDb()` entity operations → `deps.structured.listEntities()` + `deleteEntity()`
+- `getClaudeClient().complete(prompt, opts)` → `deps.llm.complete(prompt, opts)`
+
+Arcana location: all 10 files in `packages/arcana-core/src/maintain/steps/`.
+
+### 3. Step name mapping (KB snake_case → Arcana camelCase)
+
+| KB step | Arcana step | Notes |
+|---------|-------------|-------|
+| decay | decayMemories | |
+| tag | refreshTags | |
+| consolidate | consolidateMemories | |
+| link | linkMemories | |
+| tier | tierMemories | |
+| summarize | summarizeMemories | |
+| observe | observeConversations | KB's observe.ts = fact extraction; same REALTIME_FACT_PROMPT as KB fact-extractor.ts:20-31 |
+| profile | rebuildUserProfile | KB uses generateUserProfile/cacheProfile from user-profile.ts; Arcana uses storeEntityProfile |
+| reasoning | runReasoning | |
+| entity-hygiene | cleanEntityGraph | |
+
+### 4. Checkpoint mechanism — in-memory Map instead of sleep.db
+
+KB tracks run state in `sleep_runs` + `sleep_telemetry` tables in a separate `sleep.db` file (KB `sleep/db.ts`). Arcana v1 uses an in-memory `Map<SleepStep, boolean>` within the closure. Resume support (`input.resume = true`) skips already-completed steps within the same process lifetime. Cross-process resume (surviving restart) is v2 sleep — requires a telemetry store, likely added to `StructuredStore`.
+
+Arcana location: `packages/arcana-core/src/maintain/index.ts` — `checkpoints` Map in `createMaintain`.
+
+### 5. Scheduler contract usage
+
+KB's `startSleepAgent(root, config)` manages a `setInterval` + `setTimeout` directly (KB `sleep/index.ts:150-180`). Arcana delegates to `deps.scheduler.schedule('arcana:sleep-pipeline', intervalMs, cb)` and `deps.scheduler.cancel('arcana:sleep-pipeline')`. When `createArcana()` is called without a scheduler, the stub scheduler throws `NotImplementedError` on invocation — same fail-fast behaviour as the rest of the stub ring.
+
+Arcana location: `packages/arcana-core/src/maintain/index.ts:startSleepSchedule/stopSleepSchedule`.
+
+### 6. Non-greedy regex bug in observeConversations — caught during test
+
+KB's `observe.ts` extracts JSON with `/\[[\s\S]*?\]/` (non-greedy). When the LLM response contains nested arrays (e.g. `"entities": ["Alice"]`), the non-greedy match fires on the inner `["Alice"]` instead of the outer fact array, causing every item to be a bare string and failing the `entities.length === 0` guard. Fixed to greedy (`/\[[\s\S]*\]/`) in Arcana's port. KB hasn't hit this in production because its real LLM responses don't have nested arrays in the first position — the outer `[{...}]` always starts before any inner array.
+
+Arcana location: `packages/arcana-core/src/maintain/steps/observe-conversations.ts:72`.
