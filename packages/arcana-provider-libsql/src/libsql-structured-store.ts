@@ -740,6 +740,9 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
           factId: row.fact_id as string,
           score: normalizeRank(row.rank as number),
           matchedFields: matched,
+          // v1.2.1 — pass content through so the kernel can compute content-only
+          // word-match-ratio scoring (KB-faithful, per ADR 011 port-first).
+          content: String(row.content ?? ''),
         };
       });
     },

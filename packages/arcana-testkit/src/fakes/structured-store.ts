@@ -221,6 +221,7 @@ export function createFakeStructuredStore(): StructuredStore {
         factId: string;
         score: number;
         matchedFields: ('content' | 'entities')[];
+        content: string;
       }> = [];
       for (const f of facts.values()) {
         if (latestOnly && !f.isLatest) continue;
@@ -249,6 +250,7 @@ export function createFakeStructuredStore(): StructuredStore {
           factId: f.id,
           score: Math.min(1, hits / (tokens.length * selectedFields.length)),
           matchedFields,
+          content: f.fact,
         });
       }
       matches.sort((a, b) => b.score - a.score);

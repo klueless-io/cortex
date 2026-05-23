@@ -344,6 +344,75 @@ describe('factRetrieval', () => {
     expect(hit!.score).toBeGreaterThan(0.5);
   });
 
+  // v1.2.1 — KB-faithful Layer 0 scoring per ADR 011 (port-first). KB
+  // `fact-retrieval.ts:159-178` scores by content-keyword-overlap-ratio only.
+  // Entity matches still cause inclusion (FTS5 MATCH hits the entities column)
+  // but they do NOT boost the score. See comms 2026-05-23 09:00.
+
+  it('layer 0 score uses content-only word-match-ratio (KB-faithful, v1.2.1)', async () => {
+    // Fact A: query word "hiking" is in entities[] but NOT in content.
+    await structured.storeFact({
+      id: 'f_entity_only',
+      fact: 'Alice prefers Postgres over MySQL',
+      entities: ['Alice', 'hiking'], // hiking shoved in to exercise the case
+      category: 'preference',
+      confidence: 0.9,
+      sourceType: 'ai-extraction',
+      createdAt: '2026-05-22T00:00:00.000Z',
+      isLatest: true,
+    });
+    // Fact B: query word "hiking" is in content. (Single-token query → ratio=1.)
+    await structured.storeFact({
+      id: 'f_content_match',
+      fact: 'Alice enjoys hiking on weekends',
+      entities: ['Alice'],
+      category: 'preference',
+      confidence: 0.9,
+      sourceType: 'ai-extraction',
+      createdAt: '2026-05-22T00:00:00.000Z',
+      isLatest: true,
+    });
+
+    const api = createRetrieve(deps);
+    const result = await api.factRetrieval({ query: 'hiking' });
+
+    const entityOnly = result.data.facts.find((f) => f.fact.id === 'f_entity_only');
+    const contentMatch = result.data.facts.find((f) => f.fact.id === 'f_content_match');
+
+    // Both should be returned (FTS5 MATCH inclusive across columns).
+    expect(contentMatch).toBeDefined();
+    // Entity-only match scores 0.5 floor (wordMatchRatio = 0/1 = 0 → 0.5 + 0*0.5).
+    if (entityOnly) {
+      expect(entityOnly.score).toBeCloseTo(0.5, 5);
+    }
+    // Content-match scores 1.0 (wordMatchRatio = 1/1 = 1 → 0.5 + 1*0.5).
+    expect(contentMatch!.score).toBeCloseTo(1.0, 5);
+    // And critically: content-match must outrank entity-only when both present.
+    if (entityOnly) {
+      expect(contentMatch!.score).toBeGreaterThan(entityOnly.score);
+    }
+  });
+
+  it('layer 0 score = 0.5 + (matched/total) * 0.5 for multi-token queries', async () => {
+    // 3 query tokens; 2 match in content → ratio 2/3 → score 0.5 + 2/3 * 0.5 ≈ 0.833
+    await structured.storeFact({
+      id: 'f_partial',
+      fact: 'Alice attended the Berkeley conference yesterday',
+      entities: ['Alice'],
+      category: 'event',
+      confidence: 0.9,
+      sourceType: 'ai-extraction',
+      createdAt: '2026-05-22T00:00:00.000Z',
+      isLatest: true,
+    });
+    const api = createRetrieve(deps);
+    // Tokens: ['alice','berkeley','sydney']. Content matches 'alice'+'berkeley', not 'sydney'.
+    const result = await api.factRetrieval({ query: 'alice berkeley sydney' });
+    const hit = result.data.facts.find((f) => f.fact.id === 'f_partial');
+    expect(hit).toBeDefined();
+    expect(hit!.score).toBeCloseTo(0.5 + (2 / 3) * 0.5, 3);
+  });
+
   it('returns rich-bundle shape — facts, supportingMemories, assembledContext, tokenEstimate, stats', async () => {
     await structured.storeFact({
       id: 'f_rich',

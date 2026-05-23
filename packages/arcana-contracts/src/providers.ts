@@ -231,6 +231,15 @@ export interface FactsFulltextMatch {
   /** Normalized 0..1 — higher is more relevant. */
   score: number;
   matchedFields: FactsFulltextField[];
+  /**
+   * v1.2.1 — the fact's content string passed through from the FTS row. Used
+   * by `factRetrieval` Layer 0 to compute KB-faithful word-match-ratio
+   * scoring (content-only, ignoring entity matches in the score). Per ADR 011
+   * port-first — KB's `fact-retrieval.ts:159-178` scores by content overlap
+   * only; BM25 ranking over both columns gave entity-only matches an unfair
+   * boost (see comms 2026-05-23 09:00).
+   */
+  content: string;
 }
 
 /**

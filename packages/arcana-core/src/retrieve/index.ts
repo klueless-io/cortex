@@ -469,9 +469,18 @@ export function createRetrieve(deps: RetrieveDeps): RetrieveApi {
       };
 
       // ── Layer 0: direct fact-FTS (v1.0.0 — KB fact-retrieval.ts:113-280) ──
-      // Direct hits on the facts_fts index. Scored 0.5 + matchRatio*0.5
-      // (KB scoring convention). Bridges memories via Fact.sourceMemoryId
-      // when set.
+      // Direct hits on the facts_fts index. Scored by **content-only**
+      // word-match-ratio per KB convention (fact-retrieval.ts:159-178):
+      //
+      //   wordMatchRatio = (query tokens present in fact.content) / total tokens
+      //   score = 0.5 + wordMatchRatio * 0.5
+      //
+      // v1.2.1 fix per ADR 011: the prior BM25-derived score gave entity-only
+      // matches an unfair boost (BM25 favours short haystacks → entities
+      // column wins over content). Switching to content-only ratio makes
+      // Arcana Layer 0 score-identical to KB's `searchFactsDirect`.
+      // The FTS5 MATCH still considers both columns for *inclusion*; only
+      // the *score* is content-only.
       if (tokens.length > 0) {
         try {
           const factMatches = await deps.structured.searchFactsFulltext(input.query, {
@@ -480,7 +489,11 @@ export function createRetrieve(deps: RetrieveDeps): RetrieveApi {
             category: input.category,
           });
           for (const m of factMatches) {
-            bumpFact(m.factId, 0.5 + m.score * 0.5, 'direct_facts');
+            const contentLower = m.content.toLowerCase();
+            const matchedTokens = tokens.filter((t) => contentLower.includes(t));
+            const wordMatchRatio = matchedTokens.length / tokens.length;
+            const score = 0.5 + wordMatchRatio * 0.5;
+            bumpFact(m.factId, score, 'direct_facts');
             perLayerCounts.fact_direct_facts++;
           }
         } catch (err) {

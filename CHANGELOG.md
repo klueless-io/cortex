@@ -7,6 +7,35 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## v1.2.1 — 2026-05-23
+
+KB-faithful Layer 0 scoring fix. Driven by KyberBot's parity-harness reports (2026-05-22 13:30 and 15:00 in `~/dev/kybernesis/.comms/arcana-kyberbot.md`) which surfaced a 0.65 meanOverlap on `factRetrieval` v1.0.0 — three divergence patterns identified, two of which trace to a shared Arcana-side scoring miss. Per [ADR 011](./docs/decisions/011-port-first-improve-later.md) (port-first) this is an Arcana-side fix, not a deliberate divergence.
+
+### Changed
+
+- **`factRetrieval` Layer 0 scoring** — switches from BM25-derived FTS5 rank to **content-only word-match-ratio**, matching KB `fact-retrieval.ts:159-178` exactly:
+  ```ts
+  const wordMatchRatio = matchedTokens.length / tokens.length;
+  const score = 0.5 + wordMatchRatio * 0.5;
+  ```
+  The FTS5 MATCH still considers both `content` and `entities` columns for *inclusion*; only the *score* is content-only. This eliminates the entity-column boost that was elbowing content-matching facts out of the top ranks (KBOT's "Pattern 2" — `q-hiking` "Alice hiking plans" returned Alice-entity-first instead of hiking-content-first).
+
+### Added — `@kybernesis/arcana-contracts`
+
+- **`FactsFulltextMatch.content: string`** — providers now pass the fact's content string through the match envelope so the kernel can compute content-only scoring without a second round-trip. Additive (backwards-compatible) change to the contract.
+
+### Updated — `@kybernesis/arcana-provider-libsql` + `@kybernesis/arcana-testkit`
+
+- Both providers populate the new `content` field on `FactsFulltextMatch`. libsql passes through the FTS5 row column it already selected; testkit fake passes `f.fact`.
+
+### Tests
+
+- 350 → 352 (+2). New tests pin the KB-faithful score formula: an entity-only match scores 0.5 (`0 + 0*0.5`); a fully-content-matching single-token query scores 1.0; a 2-of-3-token partial match scores ≈ 0.833.
+
+### KBOT-side action
+
+KyberBot's `arcana-fact-parity` harness should be re-run against `@kybernesis/arcana-*@1.2.1`. Expected `meanOverlap` jumps from 0.650 → 0.85+ on the Arcana-side fix alone. To reach 1.0, KBOT also needs to fix Pattern 1 (hyphen-as-FTS5-negation in `searchFactsDirect`'s ftsQuery construction) — see comms 2026-05-23 09:00 for the one-line fix.
+
 ## v1.2.0 — 2026-05-22
 
 System Health Phase 1 — eight production-blocker fixes from [docs/SYSTEM-HEALTH.md](./docs/SYSTEM-HEALTH.md) plus two doc closeouts. All 6 packages bumped to v1.2.0.
