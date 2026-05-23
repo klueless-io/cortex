@@ -264,6 +264,21 @@ describe('createMaintain — orchestrator', () => {
     expect(Array.isArray(result.partialSteps)).toBe(true);
     expect(result.partialSteps).toEqual([]);
   });
+
+  it('single-flight: after first run settles, a new call starts a fresh run', async () => {
+    let listMemoriesCalls = 0;
+    const structured = makeStructured({
+      listMemories: vi.fn().mockImplementation(async () => {
+        listMemoriesCalls++;
+        return [];
+      }),
+    });
+    const api = createMaintain(makeDeps({ structured }));
+    await api.runSleepPipeline({ steps: ['decayMemories'] });
+    await api.runSleepPipeline({ steps: ['decayMemories'] });
+    // Two separate runs => listMemories called twice (running cleared after first).
+    expect(listMemoriesCalls).toBe(2);
+  });
 });
 
 // ── Mechanical steps ──────────────────────────────────────────────────────────
