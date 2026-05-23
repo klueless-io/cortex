@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arcana // Provider Landscape</title>
+<title>Cortex // Provider Landscape</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -73,9 +73,9 @@
 </div>
 
 <div class="legend">
-  <div class="legend-item"><div class="legend-dot ld-real"></div> real provider (Arcana package)</div>
-  <div class="legend-item"><div class="legend-dot ld-fake"></div> in-memory fake (arcana-testkit)</div>
-  <div class="legend-item"><div class="legend-dot ld-consumer"></div> consumer adapter (not Arcana)</div>
+  <div class="legend-item"><div class="legend-dot ld-real"></div> real provider (Cortex package)</div>
+  <div class="legend-item"><div class="legend-dot ld-fake"></div> in-memory fake (cortex-testkit)</div>
+  <div class="legend-item"><div class="legend-dot ld-consumer"></div> consumer adapter (not Cortex)</div>
   <div class="legend-item"><div class="legend-dot ld-planned"></div> planned (not built)</div>
 </div>
 
@@ -91,17 +91,17 @@
     </div>
     <div class="impl-list">
       <div class="impl">
-        <div class="impl-name">arcana-provider-libsql</div>
+        <div class="impl-name">cortex-provider-libsql</div>
         <div class="impl-detail">SQLite via better-sqlite3. ~55 tests. mkdirSync fix. All 9 entity types covered.</div>
         <div class="impl-badge badge-real">real</div>
       </div>
       <div class="impl">
         <div class="impl-name">FakeStructuredStore</div>
-        <div class="impl-detail">In-memory Map per entity type. Used in arcana-core tests + KyberBot test suite (724 tests).</div>
+        <div class="impl-detail">In-memory Map per entity type. Used in cortex-core tests + KyberBot test suite (724 tests).</div>
         <div class="impl-badge badge-fake">fake · testkit</div>
       </div>
       <div class="impl">
-        <div class="impl-name">arcana-provider-postgres</div>
+        <div class="impl-name">cortex-provider-postgres</div>
         <div class="impl-detail">Not built. Required for Kyber in Cloud migration — Brain is on Convex/PostgreSQL. Brain migration gate.</div>
         <div class="impl-badge badge-planned">planned</div>
       </div>
@@ -116,7 +116,7 @@
     </div>
     <div class="impl-list">
       <div class="impl">
-        <div class="impl-name">arcana-provider-sqlite-vec</div>
+        <div class="impl-name">cortex-provider-sqlite-vec</div>
         <div class="impl-detail">sqlite-vec virtual table (vec0). No Docker. :memory: support. rowid_ref companion pattern. 11 tests.</div>
         <div class="impl-badge badge-real">real</div>
         <div class="impl-badge badge-new">new v0.1.1</div>
@@ -128,7 +128,7 @@
       </div>
       <div class="impl">
         <div class="impl-name">ChromaDBVectorStore</div>
-        <div class="impl-detail">KyberBot consumer adapter. ChromaDB via Docker. Not an Arcana package — lives in KyberBot repo. Being replaced by sqlite-vec.</div>
+        <div class="impl-detail">KyberBot consumer adapter. ChromaDB via Docker. Not a Cortex package — lives in KyberBot repo. Being replaced by sqlite-vec.</div>
         <div class="impl-badge badge-consumer">consumer adapter</div>
       </div>
     </div>
@@ -148,10 +148,10 @@
       </div>
       <div class="impl">
         <div class="impl-name">OpenAIEmbeddingProvider</div>
-        <div class="impl-detail">KyberBot consumer adapter. Calls text-embedding-3-small. Not an Arcana package — lives in KyberBot repo.</div>
+        <div class="impl-detail">KyberBot consumer adapter. Calls text-embedding-3-small. Not a Cortex package — lives in KyberBot repo.</div>
         <div class="impl-badge badge-consumer">consumer adapter</div>
       </div>
-      <div class="impl-none">No real Arcana provider yet — consumer-side adapters cover this in v0.1.x.</div>
+      <div class="impl-none">No real Cortex provider yet — consumer-side adapters cover this in v0.1.x.</div>
     </div>
   </div>
 
@@ -167,7 +167,7 @@
         <div class="impl-detail">Returns static fixture responses. Sleep pipeline is entirely stubbed so LLM calls never fire in tests.</div>
         <div class="impl-badge badge-fake">fake · testkit</div>
       </div>
-      <div class="impl-none">No real Arcana provider yet — sleep pipeline is stubbed, so no consumer demand. KyberBot wires its own LLM adapter.</div>
+      <div class="impl-none">No real Cortex provider yet — sleep pipeline is stubbed, so no consumer demand. KyberBot wires its own LLM adapter.</div>
     </div>
   </div>
 
@@ -180,7 +180,7 @@
     <div class="impl-list">
       <div class="impl-none">No implementation — fake or real. hybridSearch is stubbed, so no consumer demand yet.</div>
       <div class="impl">
-        <div class="impl-name">arcana-provider-cohere-rerank</div>
+        <div class="impl-name">cortex-provider-cohere-rerank</div>
         <div class="impl-detail">Not built. Will be demanded when hybridSearch layer 4 is implemented.</div>
         <div class="impl-badge badge-planned">planned</div>
       </div>
@@ -196,7 +196,7 @@
     <div class="impl-list">
       <div class="impl-none">No implementations. Sleep pipeline is entirely stubbed (13 steps). Both interfaces will be demanded together when sleep implementation begins.</div>
       <div class="impl">
-        <div class="impl-name">arcana-provider-bun-scheduler</div>
+        <div class="impl-name">cortex-provider-bun-scheduler</div>
         <div class="impl-detail">Not built. Candidate for KyberBot-native sleep scheduling (Bun.cron / Bun.sleep).</div>
         <div class="impl-badge badge-planned">planned</div>
       </div>
@@ -208,23 +208,23 @@
 <div class="section-title">// NOTES</div>
 <div class="stories">
   <div class="story">
-    <div class="story-title">Consumer adapters vs Arcana providers</div>
+    <div class="story-title">Consumer adapters vs Cortex providers</div>
     <div class="story-body">
-      <strong>OpenAIEmbeddingProvider</strong> and <strong>ChromaDBVectorStore</strong> live in KyberBot's repo — they're not Arcana packages. They implement Arcana interfaces but are consumer-side wiring. The distinction matters: Arcana can't break them with an interface change unless it's additive.
-      <br><br>KyberBot's ChromaDB adapter is being replaced by <code>arcana-provider-sqlite-vec</code> — no Docker dependency, same :memory: test pattern as libsql.
+      <strong>OpenAIEmbeddingProvider</strong> and <strong>ChromaDBVectorStore</strong> live in KyberBot's repo — they're not Cortex packages. They implement Cortex interfaces but are consumer-side wiring. The distinction matters: Cortex can't break them with an interface change unless it's additive.
+      <br><br>KyberBot's ChromaDB adapter is being replaced by <code>cortex-provider-sqlite-vec</code> — no Docker dependency, same :memory: test pattern as libsql.
     </div>
   </div>
   <div class="story">
     <div class="story-title">Testkit as specification</div>
     <div class="story-body">
-      Every <strong>FakeXxx</strong> in arcana-testkit is both a test double and a living specification: it shows exactly what a real provider must implement. The compliance harness in <code>runComplianceSuite</code> is the formal gate — any real provider must pass it before shipping.
-      <br><br>arcana-provider-sqlite-vec passes its own 11-test suite; compliance harness integration is T17.
+      Every <strong>FakeXxx</strong> in cortex-testkit is both a test double and a living specification: it shows exactly what a real provider must implement. The compliance harness in <code>runComplianceSuite</code> is the formal gate — any real provider must pass it before shipping.
+      <br><br>cortex-provider-sqlite-vec passes its own 11-test suite; compliance harness integration is T17.
     </div>
   </div>
   <div class="story">
     <div class="story-title">Next provider: postgres</div>
     <div class="story-body">
-      <strong>arcana-provider-postgres</strong> is the Brain migration gate. Brain runs on Convex (a serverless cloud DB). Migration shape: shed 5 Convex artifacts (4-flat-ID edges, shadow entity rows, _creationTime, reactive queries, loose enum vocab) → swap to <code>arcana-provider-postgres</code>.
+      <strong>cortex-provider-postgres</strong> is the Brain migration gate. Brain runs on Convex (a serverless cloud DB). Migration shape: shed 5 Convex artifacts (4-flat-ID edges, shadow entity rows, _creationTime, reactive queries, loose enum vocab) → swap to <code>cortex-provider-postgres</code>.
       <br><br>Not started. Depends on KyberBot merge first.
     </div>
   </div>

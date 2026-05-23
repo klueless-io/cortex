@@ -1,10 +1,10 @@
 {
   "angle": "matrix",
-  "title": "Arcana Contracts Surface",
+  "title": "Cortex Contracts Surface",
   "subtitle": "Every Zod schema and provider interface — v1.0.0 cohort",
-  "purpose": "Tracks what's defined in @kybernesis/arcana-contracts. Source of truth is arcana-spec.md §10 in the brain. Status flips to 'complete' when the Zod schema validates sample data round-trips in a test.",
+  "purpose": "Tracks what's defined in @kybernesis/cortex-contracts. Source of truth is arcana-spec.md §10 in the brain. Status flips to 'complete' when the Zod schema validates sample data round-trips in a test.",
   "generated": "2026-05-20",
-  "system": "arcana",
+  "system": "cortex",
   "milestone": "v0.2.0",
   "status_legend": [
     { "id": "not_started", "symbol": "○", "label": "Not started" },
@@ -37,7 +37,7 @@
         { "name": "StructuredStore", "status": "complete", "test_file": "providers.test.ts", "evolution": ["v0.1 initial", "v0.x: +deleteEntity (ADR 002, 2026-05-18, driven by kyberbot module #2)", "v0.x: +updateMemory (ADR 005, 2026-05-18, Memory not append-only; unblocks pin/moveToTier and orphan-mirror fix)", "v0.x: +markFactSuperseded (ADR 006, 2026-05-18, driven by kyberbot module #11 supersede write-path)", "v0.x: +markMemorySuperseded (ADR 007 §3.2, 2026-05-19, memory-level supersession mirroring the fact-level pattern)", "v0.2.0: +searchFulltext (2026-05-20, FTS+hybrid sprint) — provider-owned full-text index with normalized 0..1 score and matchedFields; libsql uses FTS5 virtual table, future postgres uses tsvector", "v0.2.0: getFactsForEntity gained optional asOf: string ISO-8601 (2026-05-20) — bitemporal valid-time filter; backward compatible", "v1.0.0: BREAKING — getFactsForEntity now matches v1.0.0 Fact.entities[] denormalised list (case-insensitive LIKE + post-filter); +searchFactsFulltext(query, opts) — direct fact-level FTS over content + entities, with category + latestOnly filters (libsql uses facts_fts FTS5 virtual table); +getFact(id) — single-fact lookup needed by factRetrieval Layer 0."] },
         { "name": "VectorStore", "status": "complete", "test_file": "providers.test.ts" },
         { "name": "EmbeddingProvider", "status": "complete", "test_file": "providers.test.ts" },
-        { "name": "LLMProvider", "status": "complete", "test_file": "providers.test.ts", "concrete_impl": "v0.5.0 — first concrete implementation ships as @kybernesis/arcana-provider-llm-claude-code (subprocess transport, no API key). HTTP-transport sibling (arcana-provider-llm-http: Anthropic/OpenAI/Gemini/Ollama/OpenRouter) queued, separate sprint per ADR 012." },
+        { "name": "LLMProvider", "status": "complete", "test_file": "providers.test.ts", "concrete_impl": "v0.5.0 — first concrete implementation ships as @kybernesis/cortex-provider-llm-claude-code (subprocess transport, no API key). HTTP-transport sibling (cortex-provider-llm-http: Anthropic/OpenAI/Gemini/Ollama/OpenRouter) queued, separate sprint per ADR 012." },
         { "name": "RerankerProvider", "status": "complete", "test_file": "providers.test.ts" },
         { "name": "Scheduler", "status": "complete", "test_file": "providers.test.ts" },
         { "name": "JobQueue", "status": "complete", "test_file": "providers.test.ts" }

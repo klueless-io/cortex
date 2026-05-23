@@ -1,0 +1,64 @@
+{
+  "name": "@kybernesis/cortex-core",
+  "version": "2.0.0",
+  "description": "Cortex kernel — portable-cortex pattern (ingest, retrieve, maintain, access zones)",
+  "license": "MIT",
+  "author": "David Cruwys (AppyDave)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "default": "./dist/errors.js"
+    },
+    "./ingest": {
+      "types": "./dist/ingest/index.d.ts",
+      "default": "./dist/ingest/index.js"
+    },
+    "./retrieve": {
+      "types": "./dist/retrieve/index.d.ts",
+      "default": "./dist/retrieve/index.js"
+    },
+    "./maintain": {
+      "types": "./dist/maintain/index.d.ts",
+      "default": "./dist/maintain/index.js"
+    },
+    "./access/bindings": {
+      "types": "./dist/access/bindings/index.d.ts",
+      "default": "./dist/access/bindings/index.js"
+    },
+    "./access/query": {
+      "types": "./dist/access/query/index.d.ts",
+      "default": "./dist/access/query/index.js"
+    },
+    "./access/command": {
+      "types": "./dist/access/command/index.d.ts",
+      "default": "./dist/access/command/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@kybernesis/cortex-contracts": "workspace:*",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@kybernesis/cortex-testkit": "workspace:*",
+    "@types/node": "^20.11.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

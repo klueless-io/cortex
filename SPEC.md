@@ -1,16 +1,16 @@
-# Spec: Arcana
+# Spec: Cortex
 
 ## Objective
 
-Arcana defines the canonical knowledge-brain kernel for the Kybernesis product family — **KyberBot** (local agent runtime), **Kybernesis cloud** (multi-tenant memory SaaS), and future consumers (Kyber Desktop, embedded-in-Skills). Today KyberBot and Kybernesis cloud independently implement the same concepts — memory storage, fact extraction, sleep-pipeline maintenance, hybrid retrieval — with measurable drift (decay rates differ 2.5×, retrieval fusion algorithms differ, relation vocabularies are 15 vs 6). Arcana collapses that into one library all current and future Kybernesis products depend on.
+Cortex defines the canonical knowledge-brain kernel for the Kybernesis product family — **KyberBot** (local agent runtime), **Kybernesis cloud** (multi-tenant memory SaaS), and future consumers (Kyber Desktop, embedded-in-Skills). Today KyberBot and Kybernesis cloud independently implement the same concepts — memory storage, fact extraction, sleep-pipeline maintenance, hybrid retrieval — with measurable drift (decay rates differ 2.5×, retrieval fusion algorithms differ, relation vocabularies are 15 vs 6). Cortex collapses that into one library all current and future Kybernesis products depend on.
 
-**Authoring approach** (revised 2026-05-21 per [ADR 011](./docs/decisions/011-port-first-improve-later.md)): code is **ported from KyberBot's empirical `packages/cli/src/brain/*`** — same algorithm shapes, same scoring constants, same step orders, same SQL/FTS semantics. KyberBot is the harness whose brain code already works in production; Arcana is the portable extraction of that brain. Port-first; improvements are queued as v2 work behind a flag, never bundled with the initial port. The parity gate ([ADR 009](./docs/decisions/009-parity-gate-for-consumer-swaps.md)) is how we know a port is faithful.
+**Authoring approach** (revised 2026-05-21 per [ADR 011](./docs/decisions/011-port-first-improve-later.md)): code is **ported from KyberBot's empirical `packages/cli/src/brain/*`** — same algorithm shapes, same scoring constants, same step orders, same SQL/FTS semantics. KyberBot is the harness whose brain code already works in production; Cortex is the portable extraction of that brain. Port-first; improvements are queued as v2 work behind a flag, never bundled with the initial port. The parity gate ([ADR 009](./docs/decisions/009-parity-gate-for-consumer-swaps.md)) is how we know a port is faithful.
 
 It implements the **portable-cortex pattern**: a `kernel` (data model + sleep pipeline + retrieval logic) wrapped by pluggable `providers` (embedding, LLM, vector store, structured store, scheduler, queue) and `interfaces` (CLI, MCP, HTTP, channels, ingestion).
 
 **Users**: KyberBot (Ian) and Kybernesis cloud (David, Martin). Secondary: any future Kybernesis product that needs the same memory primitives.
 
-**Success looks like**: both consumers depend on `@kybernesis/arcana-*` for memory primitives; the next decay-semantics or relation-vocab change is made in one place, not two; drift between the two products stops compounding.
+**Success looks like**: both consumers depend on `@kybernesis/cortex-*` for memory primitives; the next decay-semantics or relation-vocab change is made in one place, not two; drift between the two products stops compounding.
 
 The architectural design source is `~/dev/ad/brains/kybernesis/arcana-spec.md` (kernel surface, sleep pipeline, gap analysis). This document is the **build contract**.
 
@@ -22,12 +22,12 @@ The architectural design source is `~/dev/ad/brains/kybernesis/arcana-spec.md` (
 | Runtime | Node 20+ (also: Convex runtime, Cloudflare Workers) |
 | Build | Plain `tsc -b` per package — no bundler |
 | Package mgr | Bun ≥ 1.3 (workspaces, install, test, build); **pnpm** for `publish -r` (workspace `:*` deps rewrite correctly) |
-| Validation | Zod 3 (re-exported from `arcana-contracts`) |
-| Tests | Vitest 4.x + `@kybernesis/arcana-testkit` (in-memory fakes + parity harness) |
+| Validation | Zod 3 (re-exported from `cortex-contracts`) |
+| Tests | Vitest 4.x + `@kybernesis/cortex-testkit` (in-memory fakes + parity harness) |
 | Logging | Injected `Logger` interface — no logger dependency |
 | Publish | Manual: bump versions → `pnpm publish -r --otp <code>` (OTP-gated). CI publish workflow is queued. |
 | License | MIT |
-| npm scope | `@kybernesis/arcana-*`, public registry |
+| npm scope | `@kybernesis/cortex-*`, public registry |
 | Repo | `klueless-io/arcana` on GitHub, public |
 
 ## Commands
@@ -48,8 +48,8 @@ bun run lint               # eslint . --fix
 bun run typecheck          # tsc --noEmit
 
 # Per-package
-bun --filter @kybernesis/arcana-core run build
-bun --filter @kybernesis/arcana-core run test
+bun --filter @kybernesis/cortex-core run build
+bun --filter @kybernesis/cortex-core run test
 
 # Release (manual)
 bun run version:bump       # interactive version bump
@@ -61,7 +61,7 @@ git push --follow-tags     # CI takes over: tag → publish
 ```
 arcana/
 ├── packages/
-│   ├── arcana-contracts/         → Zod schemas, TS types, Logger interface, QueryResult envelope
+│   ├── cortex-contracts/         → Zod schemas, TS types, Logger interface, QueryResult envelope
 │   │   └── src/
 │   │       ├── memory.ts           Memory / Chunk
 │   │       ├── entity.ts           Entity
@@ -74,21 +74,21 @@ arcana/
 │   │       ├── logger.ts           Logger interface
 │   │       └── query-result.ts     QueryResult<T> freshness envelope
 │   │
-│   ├── arcana-core/              → Kernel — pure logic, no I/O
+│   ├── cortex-core/              → Kernel — pure logic, no I/O
 │   │   └── src/
-│   │       ├── config/             Zod-validated config loader (defaults → file → env). Absorbed from arcana-config (v0.x consolidation).
+│   │       ├── config/             Zod-validated config loader (defaults → file → env). Absorbed from cortex-config (v0.x consolidation).
 │   │       ├── ingest/             storeMemory (transaction-wrapped), extractFacts (entity-normalised), ingestDocument (stub)
 │   │       ├── retrieve/           hybridSearch (4-channel RRF), factRetrieval (5-layer incl. direct fact-FTS)
 │   │       ├── maintain/           Sleep pipeline (10 KB-faithful steps, single-flight-guarded, partial-failure-aware) + config.ts + steps/
 │   │       └── access/
-│   │           ├── bindings/       createArcana() factory
+│   │           ├── bindings/       createCortex() factory
 │   │           ├── query/          read-side facade (queryFacts, getNeighbors, listContradictions, listInsights, readBlock, getBlockHistory)
 │   │           └── command/        write-side facade (recordFact, linkNodes, storeContradiction, updateMemory, markMemorySuperseded, markFactSuperseded)
 │   │
-│   ├── arcana-testkit/           → In-memory fakes + parity harness (runParityHarness for consumer swaps per ADR 009)
-│   ├── arcana-provider-libsql/   → REFERENCE: StructuredStore impl — libsql + FTS5 + recursive-CTE multi-hop + transaction primitive
-│   ├── arcana-provider-sqlite-vec/ → REFERENCE: VectorStore impl via sqlite-vec extension
-│   └── arcana-provider-llm-claude-code/ → REFERENCE: LLMProvider impl — subprocess to local claude CLI (no API key; uses Claude Code subscription)
+│   ├── cortex-testkit/           → In-memory fakes + parity harness (runParityHarness for consumer swaps per ADR 009)
+│   ├── cortex-provider-libsql/   → REFERENCE: StructuredStore impl — libsql + FTS5 + recursive-CTE multi-hop + transaction primitive
+│   ├── cortex-provider-sqlite-vec/ → REFERENCE: VectorStore impl via sqlite-vec extension
+│   └── cortex-provider-llm-claude-code/ → REFERENCE: LLMProvider impl — subprocess to local claude CLI (no API key; uses Claude Code subscription)
 │
 ├── docs/
 │   ├── SYSTEM-HEALTH.md            System-health audit (cross-layer patterns, phased remediation plan)
@@ -113,16 +113,16 @@ arcana/
 Factory functions return plain objects with escape-hatch properties. No classes. DI through options.
 
 ```ts
-// packages/arcana-core/src/access/bindings/createArcana.ts
+// packages/cortex-core/src/access/bindings/createCortex.ts
 import type {
   Logger,
   StructuredStore,
   VectorStore,
   EmbeddingProvider,
   LLMProvider,
-} from '@kybernesis/arcana-contracts';
+} from '@kybernesis/cortex-contracts';
 
-export interface ArcanaOptions {
+export interface CortexOptions {
   structured: StructuredStore;
   vector: VectorStore;
   embed: EmbeddingProvider;
@@ -132,16 +132,16 @@ export interface ArcanaOptions {
   installSignalHandlers?: boolean;  // false in tests
 }
 
-export interface Arcana {
+export interface Cortex {
   ingest: IngestApi;
   retrieve: RetrieveApi;
   maintain: MaintainApi;
   // Public escape hatches
-  readonly providers: Readonly<ArcanaOptions>;
+  readonly providers: Readonly<CortexOptions>;
   readonly logger: Logger;
 }
 
-export function createArcana(opts: ArcanaOptions): Arcana {
+export function createCortex(opts: CortexOptions): Cortex {
   const logger = opts.logger ?? noopLogger;
   // ... wire up zones
   return { ingest, retrieve, maintain, providers: opts, logger };
@@ -173,25 +173,25 @@ export function createArcana(opts: ArcanaOptions): Arcana {
 - **Framework**: Vitest 4.x, one config at repo root, per-package overrides allowed.
 - **Location**: `packages/<pkg>/src/**/*.test.ts` co-located with sources.
 - **Levels**:
-  - **Unit** (kernel): pure-function tests against fakes from `arcana-testkit`. Cover decay math, RRF, Jaccard, tier classification.
-  - **Compliance** (providers): every provider runs the `@kybernesis/arcana-testkit` suite. Same assertions across libsql / Convex / Chroma / OpenAI — that's how we know the contract holds.
-  - **Integration**: one smoke test per provider that exercises createArcana() with real backends (libsql in tmpfile, etc.). Off the default CI path; run via `bun run test:integration`.
+  - **Unit** (kernel): pure-function tests against fakes from `cortex-testkit`. Cover decay math, RRF, Jaccard, tier classification.
+  - **Compliance** (providers): every provider runs the `@kybernesis/cortex-testkit` suite. Same assertions across libsql / Convex / Chroma / OpenAI — that's how we know the contract holds.
+  - **Integration**: one smoke test per provider that exercises createCortex() with real backends (libsql in tmpfile, etc.). Off the default CI path; run via `bun run test:integration`.
 - **Coverage**: not enforced at v0.1.0. Targets land at v0.2.
-- **No mocks of internals** — provide a fake adapter via `arcana-testkit` instead.
+- **No mocks of internals** — provide a fake adapter via `cortex-testkit` instead.
 
 ## Boundaries
 
 **Always**
 - Run `bun run typecheck && bun run lint && bun run test` before commit
-- All public APIs typed with Zod schema or explicit TS types from `arcana-contracts`
-- Provider implementations live in their own package, never reach into `arcana-core`
+- All public APIs typed with Zod schema or explicit TS types from `cortex-contracts`
+- Provider implementations live in their own package, never reach into `cortex-core`
 - Logger always injected, never imported from a logging library
 - Subpath exports declared in `package.json` for every public entry point
-- New provider → must pass the `arcana-testkit` compliance suite
+- New provider → must pass the `cortex-testkit` compliance suite
 - **Build-as-documented**: when closing a task, refresh affected `.mochaccino/data/*.json` files and regenerate Mocha views. Treated with the same status as "run tests before commit" — non-optional.
 
 **Ask first**
-- Adding any runtime dependency to `arcana-core` or `arcana-contracts`
+- Adding any runtime dependency to `cortex-core` or `cortex-contracts`
 - Changing a provider interface (breaks every implementation)
 - Adding a new top-level package
 - Changing the sleep pipeline step order or signatures
@@ -200,10 +200,10 @@ export function createArcana(opts: ArcanaOptions): Arcana {
 
 **Never**
 - Import a concrete logger (Pino, Winston, etc.) anywhere in the library
-- Bundle providers into `arcana-core`
+- Bundle providers into `cortex-core`
 - Commit secrets, `.env`, or npm tokens
 - Skip the compliance suite to "ship faster"
-- Add code to consume Arcana inside this repo (consumers live elsewhere)
+- Add code to consume Cortex inside this repo (consumers live elsewhere)
 - Mix ESM and CJS — ESM-only, no dual builds
 - Rename public API names *post-publish* without a major version bump and a deprecation cycle (pre-publish, renames are free — see [ADR 001](./docs/decisions/001-method-renames-before-publish.md))
 
@@ -216,8 +216,8 @@ The current health bar:
 - [x] `bun run build` exits 0
 - [x] `bun run test` exits 0 with 350+ tests across all 6 packages
 - [x] All six packages published to npm at v1.2.0
-- [x] `createArcana()` wires ingest/retrieve/maintain/access zones; `arcana-testkit` provides in-memory fakes + parity harness
-- [x] All data-model types from `arcana-spec.md` §10 exist as Zod schemas in `arcana-contracts`
+- [x] `createCortex()` wires ingest/retrieve/maintain/access zones; `cortex-testkit` provides in-memory fakes + parity harness
+- [x] All data-model types from `arcana-spec.md` §10 exist as Zod schemas in `cortex-contracts`
 - [x] No package depends on Pino or any concrete logger
 - [ ] GH Actions `publish.yml` (queued — manual `pnpm publish -r --otp` works today)
 - [ ] Provider compliance suite (queued — see [docs/SYSTEM-HEALTH.md](./docs/SYSTEM-HEALTH.md) L8 UT-001)
@@ -229,8 +229,8 @@ Tracked here so they don't get lost. See [docs/SYSTEM-HEALTH.md](./docs/SYSTEM-H
 1. **ARP scoping** — promote `project_id`, `connection_id`, `source_did`, `classification` to first-class kernel scoping vocabulary? Needs Martin (ARP steward) sign-off.
 2. **Relation vocabulary** — unify the 15-type KyberBot vocab with the 6-type cloud vocab. Current proposal: 6 core + 9 extended.
 3. **Identity layer** — `AgentSelf` supports Letta-style `memoryBlocks`; markdown `SOUL.md` integration shape TBD.
-4. **Local-first default** — `arcana-provider-libsql` + `arcana-provider-sqlite-vec` is the "just works" stack today. Embedded HNSW package not on the roadmap unless a consumer needs it.
+4. **Local-first default** — `cortex-provider-libsql` + `cortex-provider-sqlite-vec` is the "just works" stack today. Embedded HNSW package not on the roadmap unless a consumer needs it.
 5. **Postgres provider** — gated on Kyber-in-Cloud migration off libsql. Consumer-driven; no work scheduled.
-6. **HTTP LLM provider** — `arcana-provider-llm-http` is queued per [ADR 012](./docs/decisions/012-llm-provider-architecture.md). Consumer-driven.
+6. **HTTP LLM provider** — `cortex-provider-llm-http` is queued per [ADR 012](./docs/decisions/012-llm-provider-architecture.md). Consumer-driven.
 7. **`ingestDocument`** — still stubbed in `ingest`; Ian (Kyber in Cloud) has implemented it on the cloud side. Spec sync pending.
-8. **Sleep pipeline v2** — five Arcana-invented steps (`collectCandidates`, `ingestionValidation`, `extractFacts`-in-sleep, `detectContradictions`, `computeSurprisal`) are deferred from v1.1.0 per [ADR 011](./docs/decisions/011-port-first-improve-later.md). Schedule after KyberBot consumes v1 sleep.
+8. **Sleep pipeline v2** — five Cortex-invented steps (`collectCandidates`, `ingestionValidation`, `extractFacts`-in-sleep, `detectContradictions`, `computeSurprisal`) are deferred from v1.1.0 per [ADR 011](./docs/decisions/011-port-first-improve-later.md). Schedule after KyberBot consumes v1 sleep.

@@ -1,10 +1,10 @@
 {
   "angle": "card-grid",
-  "title": "Arcana Package Graph",
+  "title": "Cortex Package Graph",
   "subtitle": "Six packages, their dependencies, and current build state",
-  "purpose": "Shows the v0.5.0 package layout and dependency direction. NOTE: arcana-config was merged into arcana-core (src/config/) on 2026-05-19. arcana-provider-sqlite-vec was added 2026-05-20 (vector). arcana-provider-llm-claude-code was added 2026-05-21 (LLM, subprocess transport per ADR 012).",
+  "purpose": "Shows the v0.5.0 package layout and dependency direction. NOTE: cortex-config was merged into cortex-core (src/config/) on 2026-05-19. cortex-provider-sqlite-vec was added 2026-05-20 (vector). cortex-provider-llm-claude-code was added 2026-05-21 (LLM, subprocess transport per ADR 012).",
   "generated": "2026-05-21",
-  "system": "arcana",
+  "system": "cortex",
   "milestone": "v0.5.0",
   "package_count": 6,
   "status_legend": [
@@ -14,8 +14,8 @@
   ],
   "packages": [
     {
-      "id": "arcana-contracts",
-      "npm_name": "@kybernesis/arcana-contracts",
+      "id": "cortex-contracts",
+      "npm_name": "@kybernesis/cortex-contracts",
       "version": "0.1.1",
       "role": "Base — Zod schemas, provider interfaces, Logger, QueryResult envelope, ARP scopes",
       "depends_on": ["zod@^3.23.0"],
@@ -28,40 +28,40 @@
       "v0_1_status": "complete"
     },
     {
-      "id": "arcana-core",
-      "npm_name": "@kybernesis/arcana-core",
+      "id": "cortex-core",
+      "npm_name": "@kybernesis/cortex-core",
       "version": "0.1.1",
-      "role": "Kernel — createArcana() factory + ingest/retrieve/maintain/access zones + config loader (arcana-config merged in 2026-05-19) + getEntityProfile + factRetrieval implementations",
-      "depends_on": ["@kybernesis/arcana-contracts (workspace)", "zod@^3.23.0"],
+      "role": "Kernel — createCortex() factory + ingest/retrieve/maintain/access zones + config loader (cortex-config merged in 2026-05-19) + getEntityProfile + factRetrieval implementations",
+      "depends_on": ["@kybernesis/cortex-contracts (workspace)", "zod@^3.23.0"],
       "status": "complete",
       "tasks": ["T6", "T7", "T8", "T11", "T12"],
-      "config_merge_note": "arcana-config package DELETED on 2026-05-19. loadConfig/getDefaultConfig/ENV_MAP/ConfigSchema all now export from @kybernesis/arcana-core (src/config/). This reduces the package graph from 5 to 4.",
+      "config_merge_note": "cortex-config package DELETED on 2026-05-19. loadConfig/getDefaultConfig/ENV_MAP/ConfigSchema all now export from @kybernesis/cortex-core (src/config/). This reduces the package graph from 5 to 4.",
       "v0_1_progress": {
         "T6_load_config": "merged in — three-layer loader (defaults → file → env), 28 config tests, deep-frozen result, 7 nested sections with locked-in defaults from arcana-spec.md §11",
         "T7_skeleton_zones": "complete (zones throw NotImplementedError; SLEEP_STEPS const; access/bindings/ placeholder)",
-        "T8_createArcana_factory": "complete (.providers frozen; logger defaults to createNoopLogger(); scheduler/queue fallback stubs; vector is now optional — createMissingVectorStore() fallback added same pattern as scheduler/queue)",
+        "T8_createCortex_factory": "complete (.providers frozen; logger defaults to createNoopLogger(); scheduler/queue fallback stubs; vector is now optional — createMissingVectorStore() fallback added same pattern as scheduler/queue)",
         "T11_getEntityProfile": "implemented (commit 7bb12c4) — assembles from live facts/insights/neighbors; stores result; returns from storage on second call; QueryResult envelope",
         "T12_factRetrieval": "implemented (commit 7bb12c4) — structured-only text-match; scores by word-hit ratio; annotates with why field; hybridSearch path deferred until sqlite-vec + FTS5 ready"
       },
       "v0_1_status": "complete"
     },
     {
-      "id": "arcana-testkit",
-      "npm_name": "@kybernesis/arcana-testkit",
+      "id": "cortex-testkit",
+      "npm_name": "@kybernesis/cortex-testkit",
       "version": "0.1.1",
       "role": "In-memory fake providers for consumer integration tests (compliance harness deferred until second real provider)",
-      "depends_on": ["@kybernesis/arcana-contracts (workspace)"],
+      "depends_on": ["@kybernesis/cortex-contracts (workspace)"],
       "status": "complete",
       "tasks": ["T9"],
-      "note": "4 fake providers shipped (StructuredStore, VectorStore, EmbeddingProvider, LLMProvider). FakeStructuredStore updated with throw-on-unknown-id semantics for markMemorySuperseded. Compliance harness runComplianceSuite() deferred until arcana-provider-sqlite-vec or Convex provider joins libsql.",
+      "note": "4 fake providers shipped (StructuredStore, VectorStore, EmbeddingProvider, LLMProvider). FakeStructuredStore updated with throw-on-unknown-id semantics for markMemorySuperseded. Compliance harness runComplianceSuite() deferred until cortex-provider-sqlite-vec or Convex provider joins libsql.",
       "v0_1_status": "complete"
     },
     {
-      "id": "arcana-provider-libsql",
-      "npm_name": "@kybernesis/arcana-provider-libsql",
+      "id": "cortex-provider-libsql",
+      "npm_name": "@kybernesis/cortex-provider-libsql",
       "version": "0.1.1",
-      "role": "Full StructuredStore implementation over libsql (same sync SQLite binding as KyberBot). All 9 entity types. In-memory integration tests. mkdirSync fix for file-path databases (DVR-EC-001). Unblocks KyberBot wiring initArcana().",
-      "depends_on": ["@kybernesis/arcana-contracts (workspace)", "libsql@0.5.x"],
+      "role": "Full StructuredStore implementation over libsql (same sync SQLite binding as KyberBot). All 9 entity types. In-memory integration tests. mkdirSync fix for file-path databases (DVR-EC-001). Unblocks KyberBot wiring initCortex().",
+      "depends_on": ["@kybernesis/cortex-contracts (workspace)", "libsql@0.5.x"],
       "status": "complete",
       "tasks": ["T10"],
       "closed": "2026-05-19",
@@ -71,11 +71,11 @@
       "v0_1_status": "complete"
     },
     {
-      "id": "arcana-provider-sqlite-vec",
-      "npm_name": "@kybernesis/arcana-provider-sqlite-vec",
+      "id": "cortex-provider-sqlite-vec",
+      "npm_name": "@kybernesis/cortex-provider-sqlite-vec",
       "version": "0.1.1",
       "role": "VectorStore over sqlite-vec (no Docker, :memory: support). vec0 virtual table with rowid_ref companion pattern. Unblocks hybridSearch and enables ChromaDB removal from KyberBot.",
-      "depends_on": ["@kybernesis/arcana-contracts (workspace)", "sqlite-vec"],
+      "depends_on": ["@kybernesis/cortex-contracts (workspace)", "sqlite-vec"],
       "status": "complete",
       "tasks": ["T13"],
       "closed": "2026-05-20",
@@ -85,16 +85,16 @@
       "v0_1_status": "complete"
     },
     {
-      "id": "arcana-provider-llm-claude-code",
-      "npm_name": "@kybernesis/arcana-provider-llm-claude-code",
+      "id": "cortex-provider-llm-claude-code",
+      "npm_name": "@kybernesis/cortex-provider-llm-claude-code",
       "version": "0.5.0",
       "role": "LLMProvider via Claude Code CLI subprocess (claude -p). No API key — uses local subscription. Faithful port of KyberBot claude.ts → completeSubprocess per ADR 011. First concrete LLMProvider impl, unblocks the sleep pipeline.",
-      "depends_on": ["@kybernesis/arcana-contracts (workspace)"],
+      "depends_on": ["@kybernesis/cortex-contracts (workspace)"],
       "status": "complete",
       "tasks": ["T-LLM-1"],
       "closed": "2026-05-21",
       "test_count": 13,
-      "note": "Subprocess transport per ADR 012. Sibling package arcana-provider-llm-http (multi-backend HTTP: Anthropic/OpenAI/Gemini/Ollama/OpenRouter) is queued, separate sprint."
+      "note": "Subprocess transport per ADR 012. Sibling package cortex-provider-llm-http (multi-backend HTTP: Anthropic/OpenAI/Gemini/Ollama/OpenRouter) is queued, separate sprint."
     }
   ]
 }

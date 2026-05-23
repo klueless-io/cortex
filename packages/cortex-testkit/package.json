@@ -1,0 +1,39 @@
+{
+  "name": "@kybernesis/cortex-testkit",
+  "version": "2.0.0",
+  "description": "In-memory fake providers for testing Cortex consumers",
+  "license": "MIT",
+  "author": "David Cruwys (AppyDave)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./fakes": {
+      "types": "./dist/fakes/index.d.ts",
+      "default": "./dist/fakes/index.js"
+    },
+    "./parity": {
+      "types": "./dist/parity/index.d.ts",
+      "default": "./dist/parity/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@kybernesis/cortex-contracts": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -7,6 +7,52 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## v2.0.0 — 2026-05-23
+
+**Library rename: Arcana → Cortex.** Driven by [ADR 014](./docs/decisions/014-library-rename-arcana-to-cortex.md) — `KybernesisAI/arcana` (Ian's cloud brain at `arcana.kybernesis.ai`) and `klueless-io/arcana` (this library) can't coexist under the same name. The library is renamed to **Cortex**, which maps cleanly to what it is (the brain kernel) — the README already called the design pattern "portable cortex".
+
+**This is a hard breaking change for every consumer.** KyberBot is the only consumer today; they signed off in advance (comms 2026-05-23 10:30). No functional changes — code behaviour is byte-identical to v1.2.1.
+
+### Renamed
+
+- **npm packages** (all 6):
+  - `@kybernesis/arcana-contracts` → `@kybernesis/cortex-contracts`
+  - `@kybernesis/arcana-core` → `@kybernesis/cortex-core`
+  - `@kybernesis/arcana-testkit` → `@kybernesis/cortex-testkit`
+  - `@kybernesis/arcana-provider-libsql` → `@kybernesis/cortex-provider-libsql`
+  - `@kybernesis/arcana-provider-sqlite-vec` → `@kybernesis/cortex-provider-sqlite-vec`
+  - `@kybernesis/arcana-provider-llm-claude-code` → `@kybernesis/cortex-provider-llm-claude-code`
+- **Package directories**: `packages/arcana-*/` → `packages/cortex-*/`
+- **Factory**: `createArcana()` → `createCortex()`
+- **Types**: `Arcana` → `Cortex`, `ArcanaOptions` → `CortexOptions`, `ArcanaApi` → `CortexApi`
+- **Logger debug strings**: `'arcana.X'` → `'cortex.X'` (observable in consumer logs)
+- **Error messages**: `'arcana-core: …'` → `'cortex-core: …'`
+
+### Migration recipe
+
+```bash
+# in your consumer codebase:
+find . -name '*.ts' -not -path '*/node_modules/*' -exec sed -i '' 's|@kybernesis/arcana-|@kybernesis/cortex-|g' {} +
+find . -name '*.ts' -not -path '*/node_modules/*' -exec sed -i '' 's/createArcana/createCortex/g; s/Arcana/Cortex/g' {} +
+sed -i '' 's|@kybernesis/arcana-|@kybernesis/cortex-|g' package.json
+npm install   # or pnpm / bun
+```
+
+### Updated — active documentation
+
+- README.md, SPEC.md, PLAN.md, docs/SYSTEM-HEALTH.md — all active project-name references switched to "Cortex".
+- New ADR 014 documenting the rename + migration recipe.
+- docs/decisions/README.md indexes ADR 014.
+- Mochaccino data + views refreshed for the new package names + v2.0.0.
+
+### Untouched — historical record
+
+Historical sprint plans (`docs/plans/2026-05-2X-*.md` with `[SHIPPED]` headers), older ADRs 001-013, session-checkpoint reviews, and audits all retain their original "Arcana" references. They're point-in-time records dated at time of writing; rewriting them would be revisionism. The CHANGELOG entry serves as the trail back from historical references to the rename rationale.
+
+### KyberBot-side action
+
+Bump `@kybernesis/arcana-*` deps to `@kybernesis/cortex-*` on the `arcana-adoption` branch once v2.0.0 lands on npm. Same dep version pattern as before (`^2.0.0`).
+
 ## v1.2.1 — 2026-05-23
 
 KB-faithful Layer 0 scoring fix. Driven by KyberBot's parity-harness reports (2026-05-22 13:30 and 15:00 in `~/dev/kybernesis/.comms/arcana-kyberbot.md`) which surfaced a 0.65 meanOverlap on `factRetrieval` v1.0.0 — three divergence patterns identified, two of which trace to a shared Arcana-side scoring miss. Per [ADR 011](./docs/decisions/011-port-first-improve-later.md) (port-first) this is an Arcana-side fix, not a deliberate divergence.

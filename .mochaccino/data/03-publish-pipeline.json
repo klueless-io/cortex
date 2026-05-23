@@ -1,25 +1,25 @@
 {
   "angle": "data-flow",
-  "title": "Arcana Publish Pipeline",
+  "title": "Cortex Publish Pipeline",
   "subtitle": "From commit to npm \u2014 v0.1.0 partial; v0.1.1 fixed; v0.2.0 FTS+hybrid; v0.2.1 query facades",
   "purpose": "Shows the publish path for v0.x. v0.1.0 was partial (workspace:* not rewritten). v0.1.1 corrected via pnpm publish -r. v0.2.0 shipped the FTS+hybrid sprint (minor bump \u2014 additive contract methods). v0.2.1 shipped three query-zone kernel facades + defensive FTS5 input cap (patch bump \u2014 code-additive only).",
   "npm_org": "kybernesis",
   "npm_scope": "@kybernesis/*",
   "package_count": 6,
   "packages_to_publish": [
-    "@kybernesis/arcana-contracts",
-    "@kybernesis/arcana-core",
-    "@kybernesis/arcana-testkit",
-    "@kybernesis/arcana-provider-libsql",
-    "@kybernesis/arcana-provider-sqlite-vec",
-    "@kybernesis/arcana-provider-llm-claude-code"
+    "@kybernesis/cortex-contracts",
+    "@kybernesis/cortex-core",
+    "@kybernesis/cortex-testkit",
+    "@kybernesis/cortex-provider-libsql",
+    "@kybernesis/cortex-provider-sqlite-vec",
+    "@kybernesis/cortex-provider-llm-claude-code"
   ],
   "publish_order": "contracts first (no workspace deps), then core, testkit, provider-libsql, provider-sqlite-vec in any order",
-  "publish_status": "v1.1.0 live since 2026-05-22; v1.2.0 staged 2026-05-22 (System Health Phase 1 — 8 production-blocker fixes + transaction primitive + latestOnly default + entity normalisation + getNeighbors multi-hop + single-flight guard) — NOT YET PUBLISHED (awaits OTP)",
+  "publish_status": "v1.2.1 live since 2026-05-23 (Layer 0 KB-faithful fix); v2.0.0 staged 2026-05-23 — RENAME cortex → cortex (npm scope change, factory+types renamed; functionally identical to v1.2.1) per ADR 014. NOT YET PUBLISHED (awaits OTP). KyberBot dep bump pending.",
   "publish_command": "pnpm publish -r --filter='./packages/*' --access public",
   "generated": "2026-05-21",
-  "system": "arcana",
-  "milestone": "v1.2.0",
+  "system": "cortex",
+  "milestone": "v2.0.0",
   "status_legend": [
     {
       "id": "not_started",
@@ -49,8 +49,8 @@
       "status": "partial",
       "issues": [
         "Used npm publish instead of pnpm publish -r \u2014 workspace:* deps were NOT rewritten to real version numbers",
-        "arcana-provider-libsql was missed entirely",
-        "arcana-provider-sqlite-vec did not exist yet at time of v0.1.0 attempt"
+        "cortex-provider-libsql was missed entirely",
+        "cortex-provider-sqlite-vec did not exist yet at time of v0.1.0 attempt"
       ],
       "stages": [
         {
@@ -73,25 +73,25 @@
         },
         {
           "id": "publish_contracts",
-          "label": "npm publish @kybernesis/arcana-contracts",
+          "label": "npm publish @kybernesis/cortex-contracts",
           "status": "partial",
           "note": "Attempted; workspace:* not rewritten"
         },
         {
           "id": "publish_core",
-          "label": "npm publish @kybernesis/arcana-core (includes merged config loader)",
+          "label": "npm publish @kybernesis/cortex-core (includes merged config loader)",
           "status": "partial",
           "note": "Attempted; workspace:* not rewritten"
         },
         {
           "id": "publish_testkit",
-          "label": "npm publish @kybernesis/arcana-testkit",
+          "label": "npm publish @kybernesis/cortex-testkit",
           "status": "partial",
           "note": "Attempted; workspace:* not rewritten"
         },
         {
           "id": "publish_libsql",
-          "label": "npm publish @kybernesis/arcana-provider-libsql",
+          "label": "npm publish @kybernesis/cortex-provider-libsql",
           "status": "not_started",
           "note": "MISSED in v0.1.0 publish attempt"
         },
@@ -110,8 +110,8 @@
       "stages": [
         { "id": "login", "label": "npm login (OTP flow)", "status": "green" },
         { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "green", "note": "All 5 packages live; workspace:* deps rewritten" },
-        { "id": "verify_contracts", "label": "npm view @kybernesis/arcana-contracts@0.1.1", "status": "green" },
-        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/arcana-provider-sqlite-vec@0.1.1", "status": "green" },
+        { "id": "verify_contracts", "label": "npm view @kybernesis/cortex-contracts@0.1.1", "status": "green" },
+        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/cortex-provider-sqlite-vec@0.1.1", "status": "green" },
         { "id": "tag", "label": "git tag v0.1.1 && git push --tags", "status": "wired", "note": "Tag may be pending; non-blocking" }
       ]
     },
@@ -125,11 +125,11 @@
         { "id": "version_bump", "label": "Bump all 5 packages to 0.2.0", "status": "green", "note": "committed 950d55e" },
         { "id": "dry_run", "label": "pnpm publish -r --dry-run (verify workspace:* rewrites)", "status": "green", "note": "all 5 packages cleanly resolved workspace:* \u2192 ^0.2.0" },
         { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "green", "note": "OTP browser flow completed by user; all 5 packages live" },
-        { "id": "verify_contracts", "label": "npm view @kybernesis/arcana-contracts@0.2.0", "status": "green" },
-        { "id": "verify_core", "label": "npm view @kybernesis/arcana-core@0.2.0", "status": "green" },
-        { "id": "verify_libsql", "label": "npm view @kybernesis/arcana-provider-libsql@0.2.0", "status": "green" },
-        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/arcana-provider-sqlite-vec@0.2.0", "status": "green" },
-        { "id": "verify_testkit", "label": "npm view @kybernesis/arcana-testkit@0.2.0", "status": "green" },
+        { "id": "verify_contracts", "label": "npm view @kybernesis/cortex-contracts@0.2.0", "status": "green" },
+        { "id": "verify_core", "label": "npm view @kybernesis/cortex-core@0.2.0", "status": "green" },
+        { "id": "verify_libsql", "label": "npm view @kybernesis/cortex-provider-libsql@0.2.0", "status": "green" },
+        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/cortex-provider-sqlite-vec@0.2.0", "status": "green" },
+        { "id": "verify_testkit", "label": "npm view @kybernesis/cortex-testkit@0.2.0", "status": "green" },
         { "id": "tag", "label": "git tag v0.2.0 && git push --tags", "status": "green", "note": "tagged + pushed 2026-05-20" }
       ]
     },
@@ -138,16 +138,16 @@
       "label": "v0.2.1 \u2014 Query-zone facades + FTS5 input cap publish",
       "status": "green",
       "closed": "2026-05-20",
-      "semver_rationale": "Patch bump \u2014 code-additive only, no contract changes. Three thin kernel facades (query.getNeighbors, query.listContradictions, query.listInsights) over StructuredStore provider methods that already shipped in v0.2.0. Plus a defensive 10 KB input cap on buildFtsQuery in arcana-provider-libsql.",
+      "semver_rationale": "Patch bump \u2014 code-additive only, no contract changes. Three thin kernel facades (query.getNeighbors, query.listContradictions, query.listInsights) over StructuredStore provider methods that already shipped in v0.2.0. Plus a defensive 10 KB input cap on buildFtsQuery in cortex-provider-libsql.",
       "stages": [
         { "id": "version_bump", "label": "Bump all 5 packages to 0.2.1", "status": "green", "note": "committed 282ffa7" },
         { "id": "dry_run", "label": "pnpm publish -r --dry-run (verify workspace:* rewrites)", "status": "green", "note": "all 5 packages cleanly resolved workspace:* \u2192 ^0.2.1" },
         { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "green", "note": "OTP browser flow completed by user; all 5 packages live" },
-        { "id": "verify_contracts", "label": "npm view @kybernesis/arcana-contracts@0.2.1", "status": "green" },
-        { "id": "verify_core", "label": "npm view @kybernesis/arcana-core@0.2.1", "status": "green" },
-        { "id": "verify_libsql", "label": "npm view @kybernesis/arcana-provider-libsql@0.2.1", "status": "green" },
-        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/arcana-provider-sqlite-vec@0.2.1", "status": "green" },
-        { "id": "verify_testkit", "label": "npm view @kybernesis/arcana-testkit@0.2.1", "status": "green" },
+        { "id": "verify_contracts", "label": "npm view @kybernesis/cortex-contracts@0.2.1", "status": "green" },
+        { "id": "verify_core", "label": "npm view @kybernesis/cortex-core@0.2.1", "status": "green" },
+        { "id": "verify_libsql", "label": "npm view @kybernesis/cortex-provider-libsql@0.2.1", "status": "green" },
+        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/cortex-provider-sqlite-vec@0.2.1", "status": "green" },
+        { "id": "verify_testkit", "label": "npm view @kybernesis/cortex-testkit@0.2.1", "status": "green" },
         { "id": "tag", "label": "git tag v0.2.1 && git push --tags", "status": "green", "note": "tagged + pushed 2026-05-20" }
       ]
     },
@@ -156,16 +156,16 @@
       "label": "v0.3.0 — Parity harness publish",
       "status": "green",
       "closed": "2026-05-20",
-      "semver_rationale": "Minor bump — new public API export at @kybernesis/arcana-testkit/parity. No existing contract changes; pure additive surface.",
+      "semver_rationale": "Minor bump — new public API export at @kybernesis/cortex-testkit/parity. No existing contract changes; pure additive surface.",
       "stages": [
         { "id": "version_bump", "label": "Bump all 5 packages to 0.3.0", "status": "green", "note": "committed 97b78bb" },
         { "id": "dry_run", "label": "pnpm publish -r --dry-run (verify workspace:* rewrites)", "status": "green" },
         { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "green", "note": "OTP browser flow completed by user; all 5 packages live" },
-        { "id": "verify_contracts", "label": "npm view @kybernesis/arcana-contracts@0.3.0", "status": "green" },
-        { "id": "verify_core", "label": "npm view @kybernesis/arcana-core@0.3.0", "status": "green" },
-        { "id": "verify_testkit", "label": "npm view @kybernesis/arcana-testkit@0.3.0", "status": "green", "note": "carries the new ./parity export" },
-        { "id": "verify_libsql", "label": "npm view @kybernesis/arcana-provider-libsql@0.3.0", "status": "green" },
-        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/arcana-provider-sqlite-vec@0.3.0", "status": "green" },
+        { "id": "verify_contracts", "label": "npm view @kybernesis/cortex-contracts@0.3.0", "status": "green" },
+        { "id": "verify_core", "label": "npm view @kybernesis/cortex-core@0.3.0", "status": "green" },
+        { "id": "verify_testkit", "label": "npm view @kybernesis/cortex-testkit@0.3.0", "status": "green", "note": "carries the new ./parity export" },
+        { "id": "verify_libsql", "label": "npm view @kybernesis/cortex-provider-libsql@0.3.0", "status": "green" },
+        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/cortex-provider-sqlite-vec@0.3.0", "status": "green" },
         { "id": "tag", "label": "git tag v0.3.0 && git push --tags", "status": "green", "note": "tagged + pushed 2026-05-20" }
       ]
     },
@@ -179,11 +179,11 @@
         { "id": "version_bump", "label": "Bump all 5 packages to 0.4.0", "status": "green", "note": "committed a9ae9f7" },
         { "id": "dry_run", "label": "pnpm publish -r --dry-run (verify workspace:* rewrites)", "status": "green" },
         { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "green", "note": "OTP browser flow completed by user; all 5 packages live" },
-        { "id": "verify_contracts", "label": "npm view @kybernesis/arcana-contracts@0.4.0", "status": "green" },
-        { "id": "verify_core", "label": "npm view @kybernesis/arcana-core@0.4.0", "status": "green" },
-        { "id": "verify_libsql", "label": "npm view @kybernesis/arcana-provider-libsql@0.4.0", "status": "green" },
-        { "id": "verify_testkit", "label": "npm view @kybernesis/arcana-testkit@0.4.0", "status": "green" },
-        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/arcana-provider-sqlite-vec@0.4.0", "status": "green" },
+        { "id": "verify_contracts", "label": "npm view @kybernesis/cortex-contracts@0.4.0", "status": "green" },
+        { "id": "verify_core", "label": "npm view @kybernesis/cortex-core@0.4.0", "status": "green" },
+        { "id": "verify_libsql", "label": "npm view @kybernesis/cortex-provider-libsql@0.4.0", "status": "green" },
+        { "id": "verify_testkit", "label": "npm view @kybernesis/cortex-testkit@0.4.0", "status": "green" },
+        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/cortex-provider-sqlite-vec@0.4.0", "status": "green" },
         { "id": "tag", "label": "git tag v0.4.0 && git push --tags", "status": "green", "note": "tagged + pushed 2026-05-21" }
       ]
     },
@@ -197,25 +197,25 @@
         { "id": "version_bump", "label": "Bump all 5 packages to 0.4.1", "status": "green", "note": "committed aa87f38" },
         { "id": "dry_run", "label": "pnpm publish -r --dry-run", "status": "green" },
         { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "green", "note": "OTP completed by user; all 5 packages live" },
-        { "id": "verify_core", "label": "npm view @kybernesis/arcana-core@0.4.1", "status": "green" },
+        { "id": "verify_core", "label": "npm view @kybernesis/cortex-core@0.4.1", "status": "green" },
         { "id": "tag", "label": "git tag v0.4.1 && git push --tags", "status": "green", "note": "tagged + pushed 2026-05-21" }
       ]
     },
     {
       "id": "v0_5_0_manual",
-      "label": "v0.5.0 — New package arcana-provider-llm-claude-code + 5-pkg version-align bump",
+      "label": "v0.5.0 — New package cortex-provider-llm-claude-code + 5-pkg version-align bump",
       "status": "not_started",
       "semver_rationale": "Minor bump. New public API package (additive). Existing 5 packages bump 0.4.1 → 0.5.0 for workspace coherence; no contract changes to existing packages.",
       "stages": [
         { "id": "version_bump", "label": "Bump all 6 packages to 0.5.0 (5 existing + 1 new)", "status": "not_started" },
         { "id": "dry_run", "label": "pnpm publish -r --dry-run (verify workspace:* rewrites)", "status": "not_started" },
         { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "not_started", "note": "Awaits OTP from user" },
-        { "id": "verify_contracts", "label": "npm view @kybernesis/arcana-contracts@0.5.0", "status": "not_started" },
-        { "id": "verify_core", "label": "npm view @kybernesis/arcana-core@0.5.0", "status": "not_started" },
-        { "id": "verify_libsql", "label": "npm view @kybernesis/arcana-provider-libsql@0.5.0", "status": "not_started" },
-        { "id": "verify_testkit", "label": "npm view @kybernesis/arcana-testkit@0.5.0", "status": "not_started" },
-        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/arcana-provider-sqlite-vec@0.5.0", "status": "not_started" },
-        { "id": "verify_llm_cc", "label": "npm view @kybernesis/arcana-provider-llm-claude-code@0.5.0", "status": "not_started", "note": "NEW package" },
+        { "id": "verify_contracts", "label": "npm view @kybernesis/cortex-contracts@0.5.0", "status": "not_started" },
+        { "id": "verify_core", "label": "npm view @kybernesis/cortex-core@0.5.0", "status": "not_started" },
+        { "id": "verify_libsql", "label": "npm view @kybernesis/cortex-provider-libsql@0.5.0", "status": "not_started" },
+        { "id": "verify_testkit", "label": "npm view @kybernesis/cortex-testkit@0.5.0", "status": "not_started" },
+        { "id": "verify_sqlite_vec", "label": "npm view @kybernesis/cortex-provider-sqlite-vec@0.5.0", "status": "not_started" },
+        { "id": "verify_llm_cc", "label": "npm view @kybernesis/cortex-provider-llm-claude-code@0.5.0", "status": "not_started", "note": "NEW package" },
         { "id": "tag", "label": "git tag v0.5.0 && git push --tags", "status": "not_started" }
       ]
     },

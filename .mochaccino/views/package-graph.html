@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arcana // Package Graph</title>
+<title>Cortex // Package Graph</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -81,7 +81,7 @@
 
   <div class="node" id="n-contracts" data-id="contracts">
     <div class="node-accent" style="background:var(--accent-emerald)"></div>
-    <div class="node-name">arcana-contracts</div>
+    <div class="node-name">cortex-contracts</div>
     <div class="node-version">v1.0.0</div>
     <div class="node-role">Zod schemas · provider interfaces · QueryResult · ARP scopes</div>
     <div class="node-badge badge-foundation">foundation</div>
@@ -90,16 +90,16 @@
 
   <div class="node" id="n-core" data-id="core">
     <div class="node-accent" style="background:var(--accent-cyan)"></div>
-    <div class="node-name">arcana-core</div>
+    <div class="node-name">cortex-core</div>
     <div class="node-version">v1.0.0</div>
-    <div class="node-role">Kernel · zones · createArcana() · config loader (merged from arcana-config)</div>
+    <div class="node-role">Kernel · zones · createCortex() · config loader (merged from cortex-config)</div>
     <div class="node-badge badge-kernel">kernel</div>
     <div class="node-tests">~120 tests</div>
   </div>
 
   <div class="node" id="n-testkit" data-id="testkit">
     <div class="node-accent" style="background:#a855f7"></div>
-    <div class="node-name">arcana-testkit</div>
+    <div class="node-name">cortex-testkit</div>
     <div class="node-version">v1.0.0</div>
     <div class="node-role">In-memory fakes for all 4 provider interfaces</div>
     <div class="node-badge badge-testkit">testkit</div>
@@ -108,7 +108,7 @@
 
   <div class="node" id="n-libsql" data-id="libsql">
     <div class="node-accent" style="background:var(--status-warning)"></div>
-    <div class="node-name">arcana-provider-libsql</div>
+    <div class="node-name">cortex-provider-libsql</div>
     <div class="node-version">v1.0.0</div>
     <div class="node-role">StructuredStore over libsql · 9 entity types · mkdirSync fix</div>
     <div class="node-badge badge-provider">provider</div>
@@ -117,7 +117,7 @@
 
   <div class="node" id="n-sqlitevec" data-id="sqlitevec">
     <div class="node-accent" style="background:var(--status-warning)"></div>
-    <div class="node-name">arcana-provider-sqlite-vec</div>
+    <div class="node-name">cortex-provider-sqlite-vec</div>
     <div class="node-version">v1.0.0</div>
     <div class="node-role">VectorStore over sqlite-vec · no Docker · :memory: support</div>
     <div class="node-badge badge-provider">provider · added v0.1.1</div>
@@ -126,7 +126,7 @@
 
   <div class="node" id="n-llmcc" data-id="llmcc">
     <div class="node-accent" style="background:var(--status-warning)"></div>
-    <div class="node-name">arcana-provider-llm-claude-code</div>
+    <div class="node-name">cortex-provider-llm-claude-code</div>
     <div class="node-version">v1.0.0</div>
     <div class="node-role">LLMProvider via Claude Code CLI subprocess · no API key · port of KyberBot claude.ts</div>
     <div class="node-badge badge-provider">provider · added v1.0.0</div>
@@ -139,15 +139,15 @@
   <div class="story">
     <div class="story-title">Publish order</div>
     <div class="story-body">
-      <strong>arcana-contracts</strong> must publish first — all other packages reference it.
+      <strong>cortex-contracts</strong> must publish first — all other packages reference it.
       The other 4 publish in any order. Previous v0.1.0 used <code>npm publish</code>
       leaving <code>workspace:*</code> in manifests. v0.2.0 fixed with <code>pnpm publish -r</code>.
     </div>
   </div>
   <div class="story">
-    <div class="story-title">arcana-config absorbed</div>
+    <div class="story-title">cortex-config absorbed</div>
     <div class="story-body">
-      A 5th package <strong>arcana-config</strong> existed briefly. Merged into arcana-core
+      A 5th package <strong>cortex-config</strong> existed briefly. Merged into cortex-core
       (src/config/) on 2026-05-19 — it had no external consumers and only added zod transitively.
       Simplification with no API change.
     </div>
@@ -157,8 +157,8 @@
     <div class="story-body">
       <strong>StructuredStore</strong>: libsql (real) + testkit (fake).
       <strong>VectorStore</strong>: sqlite-vec (real) + testkit (fake).
-      KyberBot's ChromaDB is a consumer adapter, not an Arcana package.
-      <strong>arcana-provider-postgres</strong> is next — Brain migration gate.
+      KyberBot's ChromaDB is a consumer adapter, not a Cortex package.
+      <strong>cortex-provider-postgres</strong> is next — Brain migration gate.
     </div>
   </div>
 </div>

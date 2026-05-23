@@ -1,15 +1,15 @@
 {
   "angle": "matrix",
-  "title": "Arcana Kernel Method Status",
+  "title": "Cortex Kernel Method Status",
   "subtitle": "Which methods are implemented vs stubbed; demand-driven by KyberBot adoption",
   "purpose": "Tracks the demand-driven implementation trail. Each method is either stubbed (throws NotImplementedError) or implemented with a real body. The 'driven_by' field names the consumer module that triggered the implementation. The 'consumers' field captures each downstream system's integration state per method.",
   "generated": "2026-05-20",
-  "system": "arcana",
+  "system": "cortex",
   "status_legend": [
     { "id": "stubbed", "symbol": "○", "label": "NotImplementedError stub" },
     { "id": "implemented", "symbol": "✓", "label": "Real implementation + tests" },
     { "id": "deferred", "symbol": "⊘", "label": "Deferred until demand surfaces" },
-    { "id": "missing", "symbol": "✗", "label": "Not in Arcana yet — identified gap, not even stubbed" }
+    { "id": "missing", "symbol": "✗", "label": "Not in Cortex yet — identified gap, not even stubbed" }
   ],
   "consumer_state_legend": [
     { "id": "wired", "symbol": "→", "label": "Consumer calls the kernel directly" },
@@ -19,9 +19,9 @@
     { "id": "unused", "symbol": "·", "label": "Method exists but this consumer has no use for it" }
   ],
   "consumers_tracked": [
-    { "id": "kyberbot", "label": "KyberBot", "status": "active adoption — arcana-adoption branch, 22 commits, 724 tests" },
+    { "id": "kyberbot", "label": "KyberBot", "status": "active adoption — cortex-adoption branch, 22 commits, 724 tests" },
     { "id": "kyberagent-desktop", "label": "KyberAgent Desktop", "status": "not yet adopting; 5 schema gaps identified; codebase in flux (TCP auth, tunnels, SSE proxy just added) — adopt after stabilisation" },
-    { "id": "kyber-in-cloud", "label": "Kyber in Cloud", "status": "blocked on shedding 5 Convex artifacts; needs arcana-provider-postgres before any swap; possible takeover scenario in play" }
+    { "id": "kyber-in-cloud", "label": "Kyber in Cloud", "status": "blocked on shedding 5 Convex artifacts; needs cortex-provider-postgres before any swap; possible takeover scenario in play" }
   ],
   "zones": [
     {
@@ -74,7 +74,7 @@
           "status": "implemented",
           "driven_by": "v0.4.1 rebase 2026-05-21 (per ADR 011 port-first principle, 2nd application)",
           "commit": "TBD",
-          "scope_notes": "KyberBot-faithful 4-layer port: direct FTS via searchFulltext (Layer 1) + entity-name match via listEntities (Layer 2, hop 0) + 1-hop entity-graph traversal (Layer 3) + bridge memories linked to ≥ 2 seed entities (Layer 4). why field is layer-tagged. Source-layer priority bridge > direct > entity_expansion > graph_expansion. Schema-depth divergence (KB facts table has fields Arcana's Fact doesn't; KB returns rich bundle, Arcana returns memory-shaped HybridSearchResult[]) documented in plan Findings appendix; rich-bundle return is v2 work.",
+          "scope_notes": "KyberBot-faithful 4-layer port: direct FTS via searchFulltext (Layer 1) + entity-name match via listEntities (Layer 2, hop 0) + 1-hop entity-graph traversal (Layer 3) + bridge memories linked to ≥ 2 seed entities (Layer 4). why field is layer-tagged. Source-layer priority bridge > direct > entity_expansion > graph_expansion. Schema-depth divergence (KB facts table has fields Cortex's Fact doesn't; KB returns rich bundle, Cortex returns memory-shaped HybridSearchResult[]) documented in plan Findings appendix; rich-bundle return is v2 work.",
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/fact-retrieval.ts", "migration_debt": true, "notes": "Swap pending parity gate" },
             "kyberagent-desktop": { "mode": "unused" },
@@ -84,7 +84,7 @@
         {
           "name": "getEntityProfile",
           "status": "implemented",
-          "driven_by": "arcana-core internal (T11)",
+          "driven_by": "cortex-core internal (T11)",
           "commit": "7bb12c4",
           "scope_notes": "assembles from live facts/insights/neighbors; stores result; returns from storage on second call; QueryResult envelope",
           "consumers": {
@@ -114,7 +114,7 @@
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/hybrid-search.ts (timeline_fts MATCH)", "migration_debt": true, "notes": "KyberBot has its own FTS5 query — swap with hybridSearch swap" },
             "kyberagent-desktop": { "mode": "unused" },
-            "kyber-in-cloud": { "mode": "needs", "notes": "blocked on arcana-provider-postgres impl of this method" }
+            "kyber-in-cloud": { "mode": "needs", "notes": "blocked on cortex-provider-postgres impl of this method" }
           }
         }
       ]
@@ -127,7 +127,7 @@
           "name": "runSleepPipeline",
           "status": "implemented",
           "driven_by": "v1.1.0 — ADR 010 resolution + ADR 011 port-first",
-          "notes": "10-step pipeline (KB's steps verbatim, camelCase renamed). Steps: decayMemories→refreshTags→consolidateMemories→linkMemories→tierMemories→summarizeMemories→observeConversations→rebuildUserProfile→runReasoning→cleanEntityGraph. 5 Arcana-invented steps deferred to v2 sleep.",
+          "notes": "10-step pipeline (KB's steps verbatim, camelCase renamed). Steps: decayMemories→refreshTags→consolidateMemories→linkMemories→tierMemories→summarizeMemories→observeConversations→rebuildUserProfile→runReasoning→cleanEntityGraph. 5 Cortex-invented steps deferred to v2 sleep.",
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/brain/sleep/index.ts", "migration_debt": true, "notes": "9-step pipeline in production; swap blocked on ADR 010 resolution + parity gate" },
             "kyberagent-desktop": { "mode": "unused" },
@@ -138,7 +138,7 @@
           "name": "startSleepSchedule",
           "status": "implemented",
           "driven_by": "v1.1.0",
-          "notes": "Delegates to deps.scheduler.schedule('arcana:sleep-pipeline', intervalMs, cb). Scheduler.cancel on stopSleepSchedule.",
+          "notes": "Delegates to deps.scheduler.schedule('cortex:sleep-pipeline', intervalMs, cb). Scheduler.cancel on stopSleepSchedule.",
           "consumers": {
             "kyberbot": { "mode": "parallel", "location": "kyberbot/packages/cli/src/runtime/fleet-sleep-scheduler.ts", "migration_debt": true },
             "kyberagent-desktop": { "mode": "unused" },
@@ -209,25 +209,25 @@
     "read_parity_percent": 100,
     "test_counts": { "tests": 345, "files": 27, "packages": 6, "all_passing": true },
     "v1_0_0_sprint": "v1.0.0 sprint 2026-05-22 landed: Fact schema deepening + Layer 0 fact-FTS + rich-bundle factRetrieval. Per ADR 013 (sequencing) + ADR 011 (port-first). BREAKING — all 6 packages bumped 0.5.0 → 1.0.0 as one cohort. Contracts: FactSchema.entity (string) → entities (string[]); FactCategorySchema 8-member enum added; sourceMemoryId/sourcePath/sourceConversationId optional source backlinks; StructuredStore.searchFactsFulltext + getFact added. libsql: facts table widened with new columns + 3 indices + facts_fts FTS5 virtual table + triggers; storeFact issues explicit pre-DELETE on FTS shadow row before INSERT OR REPLACE (libsql FTS5 doesn't reliably clear shadow rows on conflict-replace). Core: factRetrieval returns FactRetrievalResult { facts, supportingMemories, assembledContext, tokenEstimate, stats } — field names verbatim from KB fact-retrieval.ts:31-59. Layer 0 (direct fact-FTS via searchFactsFulltext) runs before existing 4 layers; Layer 0 hits with sourceMemoryId fan out into supportingMemories. tokenEstimate = ceil(assembledContext.length / 4) per KB convention. Ingest: extractFacts(memoryId) port of KB fact-extractor.ts (REALTIME_FACT_PROMPT verbatim); caps to 3 facts/memory; rejects empty entities[]; defaults invalid category to 'general'. Tests 290 → 301 (+11). widenLegacyFact helper exported for in-code migration.",
-    "llm_provider_sprint": "v0.5.0 sprint 2026-05-21 landed: arcana-provider-llm-claude-code (new package). Subprocess transport per ADR 012. Faithful port of KyberBot claude.ts → completeSubprocess. No API key — uses local Claude Code subscription. First concrete LLMProvider impl. Unblocks sleep pipeline. Sibling arcana-provider-llm-http (multi-backend HTTP) queued, separate sprint.",
-    "arcana_config_merge": "arcana-config package DELETED 2026-05-19; merged into arcana-core src/config/.",
+    "llm_provider_sprint": "v0.5.0 sprint 2026-05-21 landed: cortex-provider-llm-claude-code (new package). Subprocess transport per ADR 012. Faithful port of KyberBot claude.ts → completeSubprocess. No API key — uses local Claude Code subscription. First concrete LLMProvider impl. Unblocks sleep pipeline. Sibling cortex-provider-llm-http (multi-backend HTTP) queued, separate sprint.",
+    "cortex_config_merge": "cortex-config package DELETED 2026-05-19; merged into cortex-core src/config/.",
     "fts_hybridsearch_sprint": "Sprint 2026-05-20 landed: searchFulltext contract + libsql FTS5 impl + kernel hybridSearch (RRF k=60) + queryFacts asOf + ADR 009 (parity gate) + ADR 010 (sleep step gap). KyberBot untouched per ADR 009 deferred-swap principle.",
-    "easy_facade_sprint": "Follow-on sprint 2026-05-20 (v0.2.1) landed: getNeighbors + listContradictions + listInsights kernel facades (thin wrappers over already-implemented provider methods). Tier 2 audits run in parallel: (a) FTS5 syntax-injection audit — clean, 10KB input cap added defensively; (b) hybridSearch vs KyberBot parity cross-check — shape parity holds, channel topology diverges (Arcana 3-channel vs KyberBot 4-channel), top-N overlap expected 60–75% on parity test, documented in docs/plans/2026-05-20-tier1-tier2-facades-and-audits.md.",
-    "parity_harness_sprint": "v0.3.0 sprint 2026-05-20 landed: runParityHarness shared utility in @kybernesis/arcana-testkit/parity — the comparison engine required by ADR 009 for any consumer swap. Generic top-N overlap test with configurable threshold + per-query diff tracking + error capture. 11 new tests. Unblocks the KyberBot hybrid-search swap (whenever KyberBot brings fixtures + invokes the harness).",
+    "easy_facade_sprint": "Follow-on sprint 2026-05-20 (v0.2.1) landed: getNeighbors + listContradictions + listInsights kernel facades (thin wrappers over already-implemented provider methods). Tier 2 audits run in parallel: (a) FTS5 syntax-injection audit — clean, 10KB input cap added defensively; (b) hybridSearch vs KyberBot parity cross-check — shape parity holds, channel topology diverges (Cortex 3-channel vs KyberBot 4-channel), top-N overlap expected 60–75% on parity test, documented in docs/plans/2026-05-20-tier1-tier2-facades-and-audits.md.",
+    "parity_harness_sprint": "v0.3.0 sprint 2026-05-20 landed: runParityHarness shared utility in @kybernesis/cortex-testkit/parity — the comparison engine required by ADR 009 for any consumer swap. Generic top-N overlap test with configurable threshold + per-query diff tracking + error capture. 11 new tests. Unblocks the KyberBot hybrid-search swap (whenever KyberBot brings fixtures + invokes the harness).",
     "parity_fill_sprint": "v0.3.1 sprint 2026-05-21 landed: readBlock + getBlockHistory kernel facades (thin wrappers over structured.getAgentSelf). No active consumer demand — implemented for surface completeness ahead of Kyber-in-Cloud migration. Matrix moves to 22/28 implemented; read parity hits 100%. Only remaining stubs: sleep pipeline (3) + 3 no-demand items. Also: docs/audits/sleep-pipeline-gap-analysis.md added — decision-support analysis for ADR 010 with concrete runtime impact of each option; recommends Option A (add consolidate + observe as steps 14/15).",
     "hybrid_rebase_sprint": "v0.4.0 sprint 2026-05-21 landed: ADR 011 (port-first-improve-later) as governing principle + first application — hybridSearch rebased to KyberBot's empirical 4-channel topology (semantic + keyword + temporal + entity-name-filter), replacing the v0.2.0 invented 3-channel topology (semantic + keyword + graph-BFS). Memory.createdAt schema field added (required, ISO 8601, libsql migration on connect). StructuredStore.listEntities contract method added. matchType vocab restored to KB-faithful 'semantic'|'keyword'|'both'. graphHops/graphScore deprecated (kept for shape stability). Future capability rebases (factRetrieval, sleep pipeline) follow same playbook.",
-    "fact_retrieval_rebase_sprint": "v0.4.1 sprint 2026-05-21 landed: 2nd ADR 011 application — factRetrieval rebased to KyberBot's 4-layer flow (direct FTS → entity-name expansion → 1-hop graph → bridge for multi-entity-linked memories). Removed Arcana-invented memory-expansion via getNeighbors. Schema-depth divergence from KB (no fact-level FTS5; no rich return bundle) documented in plan Findings appendix; rich-bundle return is v2 work. Tests 258→262. Patch bump — no contract changes.",
+    "fact_retrieval_rebase_sprint": "v0.4.1 sprint 2026-05-21 landed: 2nd ADR 011 application — factRetrieval rebased to KyberBot's 4-layer flow (direct FTS → entity-name expansion → 1-hop graph → bridge for multi-entity-linked memories). Removed Cortex-invented memory-expansion via getNeighbors. Schema-depth divergence from KB (no fact-level FTS5; no rich return bundle) documented in plan Findings appendix; rich-bundle return is v2 work. Tests 258→262. Patch bump — no contract changes.",
     "delivery_review_status": "CONDITIONAL PASS r2 (2026-05-20). EC-015 in-flight guard needed before merge. 4 KyberBot-side patches still remaining.",
-    "consumers_actively_adopting": ["kyberbot (arcana-adoption branch)"],
+    "consumers_actively_adopting": ["kyberbot (cortex-adoption branch)"],
     "kyberbot_modules_closed": 10,
     "kyberbot_modules_remaining": 5,
     "kyberbot_provider_adapters_built": ["OpenAIEmbeddingProvider", "ChromaDBVectorStore"],
     "contracts_ahead_of_kernel": ["expiresAt — now surfaced via queryFacts asOf (2026-05-20)", "surprisalScore — still unreachable; lands with sleep pipeline", "lastReinforcedAt — still unreachable; lands with sleep pipeline"],
-    "providers_shipping": ["arcana-provider-libsql (StructuredStore + FTS5)", "arcana-provider-sqlite-vec (VectorStore)", "arcana-provider-llm-claude-code (LLMProvider, subprocess)"],
-    "providers_planned": ["arcana-provider-postgres (Brain migration blocker; FTS via tsvector to satisfy searchFulltext contract)"],
+    "providers_shipping": ["cortex-provider-libsql (StructuredStore + FTS5)", "cortex-provider-sqlite-vec (VectorStore)", "cortex-provider-llm-claude-code (LLMProvider, subprocess)"],
+    "providers_planned": ["cortex-provider-postgres (Brain migration blocker; FTS via tsvector to satisfy searchFulltext contract)"],
     "brain_migration_blockers": [
       "5 Convex artifacts to shed (4-flat-ID edges, shadow rows, _creationTime, reactive queries, loose enum vocab)",
-      "arcana-provider-postgres does not yet exist",
+      "cortex-provider-postgres does not yet exist",
       "possible Brain takeover scenario — central vs distributed migration shape TBD"
     ],
     "contract_evolutions": [

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arcana // Publish Pipeline</title>
+<title>Cortex // Publish Pipeline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -75,27 +75,27 @@
 
 <div class="pkg-strip">
   <div class="pkg-item">
-    <div class="pkg-name">@kybernesis/arcana-contracts</div>
+    <div class="pkg-name">@kybernesis/cortex-contracts</div>
     <div class="pkg-ver">v0.4.1</div>
   </div>
   <div class="pkg-item">
-    <div class="pkg-name">@kybernesis/arcana-core</div>
+    <div class="pkg-name">@kybernesis/cortex-core</div>
     <div class="pkg-ver">v0.4.1</div>
   </div>
   <div class="pkg-item">
-    <div class="pkg-name">@kybernesis/arcana-testkit</div>
+    <div class="pkg-name">@kybernesis/cortex-testkit</div>
     <div class="pkg-ver">v0.4.1</div>
   </div>
   <div class="pkg-item">
-    <div class="pkg-name">@kybernesis/arcana-provider-libsql</div>
+    <div class="pkg-name">@kybernesis/cortex-provider-libsql</div>
     <div class="pkg-ver">v0.4.1</div>
   </div>
   <div class="pkg-item">
-    <div class="pkg-name">@kybernesis/arcana-provider-sqlite-vec</div>
+    <div class="pkg-name">@kybernesis/cortex-provider-sqlite-vec</div>
     <div class="pkg-ver">v0.4.1</div>
   </div>
   <div class="pkg-item">
-    <div class="pkg-name">@kybernesis/arcana-provider-llm-claude-code</div>
+    <div class="pkg-name">@kybernesis/cortex-provider-llm-claude-code</div>
     <div class="pkg-ver">v1.2.0 (latest)</div>
     <span class="pkg-new">new</span>
   </div>
@@ -181,12 +181,12 @@
     <div class="issue-body"><code>npm publish</code> bypasses pnpm's workspace protocol rewrite. Published manifests had literal <code>"workspace:*"</code> in dependencies — any consumer installing from npm got broken packages.</div>
   </div>
   <div class="issue-cell">
-    <div class="issue-label">Issue 2 — arcana-provider-libsql missed</div>
+    <div class="issue-label">Issue 2 — cortex-provider-libsql missed</div>
     <div class="issue-body">The 4th package was not published at all in v0.1.0. No tag was created. The v0.1.0 release is unusable and should not be pinned by any consumer.</div>
   </div>
   <div class="issue-cell">
     <div class="issue-label">Issue 3 — sqlite-vec did not exist yet</div>
-    <div class="issue-body"><code>arcana-provider-sqlite-vec</code> was not built until the v0.1.1 sprint. v0.1.0 only had 4 packages.</div>
+    <div class="issue-body"><code>cortex-provider-sqlite-vec</code> was not built until the v0.1.1 sprint. v0.1.0 only had 4 packages.</div>
   </div>
 </div>
 
@@ -349,7 +349,7 @@
 
 <div class="lane">
   <div class="lane-header">
-    <div class="lane-label">v0.3.0 — pnpm publish -r — minor bump (new arcana-testkit/parity export)</div>
+    <div class="lane-label">v0.3.0 — pnpm publish -r — minor bump (new cortex-testkit/parity export)</div>
     <div class="lane-status ls-done">COMPLETE</div>
   </div>
   <div class="pipeline">
@@ -449,7 +449,7 @@
 
 <div class="lane">
   <div class="lane-header">
-    <div class="lane-label">v0.5.0 — pnpm publish -r — minor bump (new package @kybernesis/arcana-provider-llm-claude-code + 5-pkg version-align)</div>
+    <div class="lane-label">v0.5.0 — pnpm publish -r — minor bump (new package @kybernesis/cortex-provider-llm-claude-code + 5-pkg version-align)</div>
     <div class="lane-status ls-future">NOT STARTED</div>
   </div>
   <div class="pipeline">
@@ -481,7 +481,7 @@
       <div class="step">
         <div class="step-status ss-missing"></div>
         <div class="step-label">verify v0.5.0</div>
-        <div class="step-note">npm view × 6 — incl new @kybernesis/arcana-provider-llm-claude-code</div>
+        <div class="step-note">npm view × 6 — incl new @kybernesis/cortex-provider-llm-claude-code</div>
       </div>
       <div class="arrow">→</div>
     </div>

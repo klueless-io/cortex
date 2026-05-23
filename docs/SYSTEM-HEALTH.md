@@ -1,6 +1,6 @@
 # System Health Audit — 2026-05-22
 
-**Scope**: All 6 packages of the Arcana monorepo, all ADRs, all sprint plans, mochaccino dashboards, CHANGELOG, SPEC, PLAN, README. Conducted via 9 parallel layer agents.
+**Scope**: All 6 packages of the Cortex monorepo, all ADRs, all sprint plans, mochaccino dashboards, CHANGELOG, SPEC, PLAN, README. Conducted via 9 parallel layer agents.
 
 **Excluded**: 16 findings already raised in the delivery-review against the v0.5.0 + v1.0.0 + v1.1.0 sprint deltas (see `docs/audits/delivery-review-2026-05-22.md` — separate report).
 
@@ -74,7 +74,7 @@ Beyond the delivery-review's 56% LOC reduction finding, the system audit surface
 
 | Divergence | Location |
 |---|---|
-| `FactSourceType` enum entirely Arcana-invented (KB has no `sourceType` column) | L9 F2 |
+| `FactSourceType` enum entirely Cortex-invented (KB has no `sourceType` column) | L9 F2 |
 | `keywordScore` uses `Math.max` where KB sums | L2 BH-003 |
 | Bridge layer cannot fire with single-entity queries (KB has full neighbor closure) | L2 BH-007 |
 | `rebuild-user-profile` uses "most-mentioned entity" heuristic (KB has explicit user-profile module) | already in delivery-review |

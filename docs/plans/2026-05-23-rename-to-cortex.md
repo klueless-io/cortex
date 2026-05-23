@@ -122,6 +122,36 @@ User-driven, must happen separately:
 
 ## 7. Findings appendix
 
-_Populated during the work._
+### F1 — Prerequisite partially met when goal fired
 
-(To be populated by goal-runner.)
+The plan states v1.2.1 must be live on npm AND KyberBot must have confirmed near-1.0 meanOverlap on a post-v1.2.1 harness re-run. At fire time: v1.2.1 was live (`npm view @kybernesis/arcana-contracts@1.2.1` returned `1.2.1`); KyberBot's post-v1.2.1 re-run had not posted yet (their 09:45 entry was pre-publish, showed 0.769 with Pattern 1 fix only). David fired the goal anyway — the rename can be code-validated independently of parity (it's pure relabeling, no algorithm change). Proceeded; no fallout.
+
+### F2 — BSD sed `\b` word-boundary doesn't work on macOS
+
+First-pass `sed 's/\bArcana\b/Cortex/g'` left 31 matches in source. macOS BSD sed has no `\b` support. Switched to unconditional `s/Arcana/Cortex/g` after verifying no `ArcanaX`-composites remained (createArcana/Options/Api/etc. were already separately renamed first). Same lesson for the lowercase variable name — `\barcana\b` no-op, used plain `s/arcana/cortex/g` after confirming the namespace-prefixed `@kybernesis/arcana-` was already gone.
+
+### F3 — Bun workspace symlinks went stale across the rename
+
+After `git mv` of 6 package dirs + `bun install`, the build failed with `Cannot find module '@kybernesis/cortex-contracts'` everywhere. `node_modules/@kybernesis/` was missing entirely; per-package `node_modules/@kybernesis/` had a mix of stale `arcana-*` symlinks alongside new `cortex-*`. Fix: `rm -rf node_modules packages/*/node_modules bun.lock` then `bun install`. Lock + workspace links regenerated cleanly.
+
+### F4 — `tsc -b` incremental cache held stale references
+
+Even after the lock regenerated, `bun run build` still complained about unresolved imports. Cause: `*.tsbuildinfo` files cached the old `arcana-*` module resolution. Fix: `find packages -name '*.tsbuildinfo' -delete && rm -rf packages/*/dist`. Clean build green on next run.
+
+### F5 — Three classes of "arcana" references intentionally left in place
+
+The mochaccino + active docs were swept aggressively, but three reference patterns were preserved as accurate-at-time-of-writing:
+
+1. **`~/dev/ad/brains/kybernesis/arcana-spec.md`** — the brain doc lives outside this repo; rename is the user's call.
+2. **`klueless-io/arcana`** — GitHub repo URL; rename is a user-driven manual step (out of scope of this sprint).
+3. **`~/dev/kybernesis/arcana/`** — local working directory; rename is a user-driven manual step (syncthing-aware).
+
+Historical sprint plans (`docs/plans/2026-05-2[0-3]-*.md` with `[SHIPPED]` headers), old ADRs 001-013, audits, and session-checkpoint reviews were **not touched**. They're frozen point-in-time records; rewriting them would mislead future readers about what was decided when. The CHANGELOG v2.0.0 entry + this ADR 014 are the canonical pointers explaining the rename to anyone landing on those historical references.
+
+### F6 — Heavy mochaccino sweep used protect-replace-restore pattern
+
+Many mochaccino files reference `arcana` in narrative context that's still accurate (e.g., "config defaults from arcana-spec.md §11"). Direct `s/arcana/cortex/g` would corrupt those. Solution: temporarily replace the four protected patterns (`arcana-spec.md`, `klueless-io/arcana`, `kybernesis/arcana`, `arcana-kyberbot.md`) with sentinels, sweep, restore. Three residual occurrences remain across all mochaccino files — all `arcana-spec.md` brain-doc references, which is correct.
+
+### F7 — Logger debug strings: caller-visible breaking change
+
+Switched all `deps.logger.debug('arcana.command.X', ...)` → `'cortex.command.X'`. These show up in consumer log output, so KyberBot's log aggregation / debugging tools may have hardcoded patterns. Worth noting in the migration recipe but not a contract surface — KyberBot has full control over which strings their logger handler matches.

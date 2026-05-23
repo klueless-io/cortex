@@ -2,11 +2,11 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "files": [],
   "references": [
-    { "path": "packages/arcana-contracts" },
-    { "path": "packages/arcana-core" },
-    { "path": "packages/arcana-testkit" },
-    { "path": "packages/arcana-provider-libsql" },
-    { "path": "packages/arcana-provider-sqlite-vec" },
-    { "path": "packages/arcana-provider-llm-claude-code" }
+    { "path": "packages/cortex-contracts" },
+    { "path": "packages/cortex-core" },
+    { "path": "packages/cortex-testkit" },
+    { "path": "packages/cortex-provider-libsql" },
+    { "path": "packages/cortex-provider-sqlite-vec" },
+    { "path": "packages/cortex-provider-llm-claude-code" }
   ]
 }

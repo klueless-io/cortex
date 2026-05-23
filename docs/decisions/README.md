@@ -41,3 +41,4 @@ Standard sections:
 - [011 — Port first, improve later](./011-port-first-improve-later.md)
 - [012 — LLM provider architecture (subprocess + multi-backend HTTP)](./012-llm-provider-architecture.md)
 - [013 — Fact schema deepening before sleep](./013-fact-schema-deepening-before-sleep.md)
+- [014 — Library rename: Arcana → Cortex](./014-library-rename-arcana-to-cortex.md)

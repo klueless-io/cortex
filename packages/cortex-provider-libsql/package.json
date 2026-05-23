@@ -1,0 +1,32 @@
+{
+  "name": "@kybernesis/cortex-provider-libsql",
+  "version": "2.0.0",
+  "description": "LibSQL/SQLite StructuredStore provider for Cortex",
+  "license": "MIT",
+  "author": "David Cruwys (AppyDave)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@kybernesis/cortex-contracts": "workspace:*",
+    "libsql": "0.5.29"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
