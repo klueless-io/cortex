@@ -91,6 +91,14 @@ export interface StructuredStore {
   // Edge
   storeEdge(edge: Edge): Promise<void>;
   getNeighbors(node: NodeRef, hops?: number): Promise<NodeRef[]>;
+  /**
+   * Returns the Edge rows touching `node` in either direction, with full
+   * metadata: `confidence`, `method`, `rationale`, `lastVerifiedAt`,
+   * `sharedTags`. v2.1.3 — `getNeighbors` only returns connected NodeRefs
+   * (just `{type, id}`); this returns the edge records themselves so
+   * consumers can reason about *why* and *how* two nodes are related.
+   */
+  getEdgesFor(node: NodeRef): Promise<Edge[]>;
 
   // Fact
   storeFact(fact: Fact): Promise<void>;

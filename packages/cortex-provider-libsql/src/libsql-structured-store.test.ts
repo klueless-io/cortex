@@ -249,6 +249,29 @@ describe('LibsqlStructuredStore (in-memory SQLite)', () => {
     expect(neighbors[0]).toEqual({ type: 'entity', id: 'ent_1' });
   });
 
+  it('getEdgesFor returns full Edge objects with metadata', async () => {
+    const edge: Edge = {
+      id: 'edge_meta',
+      from: { type: 'memory', id: 'mem_meta' },
+      to: { type: 'entity', id: 'ent_meta' },
+      relation: 'mentions',
+      confidence: 0.82,
+      sharedTags: ['inferred', 'high-signal'],
+      rationale: 'co-occurred in 5 conversations',
+      method: 'co-occurred',
+      createdAt: '2026-05-24T00:00:00.000Z',
+      lastVerifiedAt: '2026-05-24T08:30:00.000Z',
+    };
+    await store.storeEdge(edge);
+    // Query from either side returns the same edge.
+    const fromMem = await store.getEdgesFor({ type: 'memory', id: 'mem_meta' });
+    const fromEnt = await store.getEdgesFor({ type: 'entity', id: 'ent_meta' });
+    expect(fromMem).toHaveLength(1);
+    expect(fromEnt).toHaveLength(1);
+    expect(fromMem[0]).toEqual(edge);
+    expect(fromEnt[0]).toEqual(edge);
+  });
+
   // ── Fact ──────────────────────────────────────────────────────────────────
 
   it('storeFact then getFactsForEntity round-trips', async () => {

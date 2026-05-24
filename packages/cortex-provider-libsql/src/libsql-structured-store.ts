@@ -604,6 +604,37 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
       return rows.map((r) => ({ type: r.type as NodeRef['type'], id: r.id }));
     },
 
+    getEdgesFor: async (node: NodeRef) => {
+      assertConnected(db);
+      const rows = db
+        .prepare(
+          `SELECT id, from_type, from_id, to_type, to_id, relation, confidence,
+                  shared_tags, rationale, method, created_at, last_verified_at
+             FROM edges
+            WHERE (from_type = ? AND from_id = ?)
+               OR (to_type = ? AND to_id = ?)`,
+        )
+        .all(node.type, node.id, node.type, node.id) as Row[];
+      return rows.map<Edge>((row) => ({
+        id: row.id as string,
+        from: {
+          type: row.from_type as NodeRef['type'],
+          id: row.from_id as string,
+        },
+        to: {
+          type: row.to_type as NodeRef['type'],
+          id: row.to_id as string,
+        },
+        relation: row.relation as string,
+        confidence: row.confidence as number,
+        sharedTags: p<string[]>(row.shared_tags as string) ?? [],
+        rationale: (row.rationale as string | null) ?? undefined,
+        method: row.method as string,
+        createdAt: row.created_at as string,
+        lastVerifiedAt: (row.last_verified_at as string | null) ?? undefined,
+      }));
+    },
+
     // ── Fact ──────────────────────────────────────────────────────────────
 
     storeFact: async (fact: Fact) => {

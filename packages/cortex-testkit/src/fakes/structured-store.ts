@@ -188,6 +188,19 @@ export function createFakeStructuredStore(): StructuredStore {
       return result;
     },
 
+    getEdgesFor: async (node: NodeRef) => {
+      const out: Edge[] = [];
+      for (const edge of edges.values()) {
+        if (
+          (edge.from.type === node.type && edge.from.id === node.id) ||
+          (edge.to.type === node.type && edge.to.id === node.id)
+        ) {
+          out.push(edge);
+        }
+      }
+      return out;
+    },
+
     storeFact: async (fact: Fact) => {
       facts.set(fact.id, fact);
     },
