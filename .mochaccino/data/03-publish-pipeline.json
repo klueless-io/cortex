@@ -1,8 +1,8 @@
 {
   "angle": "data-flow",
   "title": "Cortex Publish Pipeline",
-  "subtitle": "From commit to npm \u2014 v0.1.0 partial; v0.1.1 fixed; v0.2.0 FTS+hybrid; v0.2.1 query facades",
-  "purpose": "Shows the publish path for v0.x. v0.1.0 was partial (workspace:* not rewritten). v0.1.1 corrected via pnpm publish -r. v0.2.0 shipped the FTS+hybrid sprint (minor bump \u2014 additive contract methods). v0.2.1 shipped three query-zone kernel facades + defensive FTS5 input cap (patch bump \u2014 code-additive only).",
+  "subtitle": "From commit to npm \u2014 v0.x through v2.1.0",
+  "purpose": "Shows the publish history. v1.x: Layer 0 scoring fix (KB-faithful word-match-ratio). v2.0.0: library renamed Arcana \u2192 Cortex (BREAKING). v2.0.x: pre-Phase-2 fixes (CORTEX_* env vars, transaction guard). v2.1.0: Gap 1 layered defence (stopwords + minMatchRatio). PENDING: v2.1.0 publish awaits OTP from operator.",
   "npm_org": "kybernesis",
   "npm_scope": "@kybernesis/*",
   "package_count": 6,
@@ -17,9 +17,9 @@
   "publish_order": "contracts first (no workspace deps), then core, testkit, provider-libsql, provider-sqlite-vec in any order",
   "publish_status": "v1.2.1 live since 2026-05-23 (Layer 0 KB-faithful fix); v2.0.0 staged 2026-05-23 — RENAME cortex → cortex (npm scope change, factory+types renamed; functionally identical to v1.2.1) per ADR 014. NOT YET PUBLISHED (awaits OTP). KyberBot dep bump pending.",
   "publish_command": "pnpm publish -r --filter='./packages/*' --access public",
-  "generated": "2026-05-21",
+  "generated": "2026-05-24",
   "system": "cortex",
-  "milestone": "v2.0.0",
+  "milestone": "v2.1.0",
   "status_legend": [
     {
       "id": "not_started",
@@ -202,9 +202,55 @@
       ]
     },
     {
+      "id": "v1_2_1_manual",
+      "label": "v1.2.1 — KB-faithful Layer 0 scoring (content-only word-match-ratio)",
+      "status": "green",
+      "closed": "2026-05-23",
+      "semver_rationale": "Patch bump. Layer 0 scoring switched from BM25-derived FTS5 rank to content-only word-match-ratio (0.5 + ratio * 0.5). Matches KB's fact-retrieval.ts:159-178. FactsFulltextMatch gains content: string passthrough. 352 tests.",
+      "stages": [
+        { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public", "status": "green", "note": "All 6 packages live" },
+        { "id": "tag", "label": "git tag v1.2.1", "status": "green" }
+      ]
+    },
+    {
+      "id": "v2_0_0_manual",
+      "label": "v2.0.0 — Library renamed Arcana → Cortex (BREAKING)",
+      "status": "green",
+      "closed": "2026-05-23",
+      "semver_rationale": "Major bump. BREAKING: package names @kybernesis/arcana-* → @kybernesis/cortex-*. Factory createArcana() → createCortex(). Types Arcana → Cortex, ArcanaOptions → CortexOptions, ArcanaApi → CortexApi. Functionally identical to v1.2.1. ADR 014. Old arcana-* packages deprecated on npm with redirect message.",
+      "stages": [
+        { "id": "publish_all", "label": "pnpm publish -r (6 cortex-* packages)", "status": "green" },
+        { "id": "deprecate_arcana", "label": "npm deprecate x6 arcana-* packages", "status": "green", "note": "All pointing to github.com/klueless-io/cortex" },
+        { "id": "tag", "label": "git tag v2.0.0", "status": "green" }
+      ]
+    },
+    {
+      "id": "v2_0_x_manual",
+      "label": "v2.0.x — Pre-Phase-2 blockers (env vars + transaction safety)",
+      "status": "green",
+      "closed": "2026-05-24",
+      "semver_rationale": "Patch. Three fixes: (1) ARCANA_* env vars renamed CORTEX_*; (2) transaction() inFlight concurrency guard; (3) deleteEntity now uses store.transaction().",
+      "stages": [
+        { "id": "commit", "label": "git commit 6958010", "status": "green" },
+        { "id": "publish_all", "label": "pnpm publish -r (bundled into v2.1.0)", "status": "green", "note": "Included in v2.1.0 publish" }
+      ]
+    },
+    {
+      "id": "v2_1_0_manual",
+      "label": "v2.1.0 — Gap 1 layered defence (stopwords + minMatchRatio + configurability)",
+      "status": "partial",
+      "semver_rationale": "Minor bump. New configurable FTS filtering: DEFAULT_STOPWORDS in buildFtsQuery; minMatchRatio floor (default 0.2) in factRetrieval Layer 0; full operator configurability via FactRetrievalInput (stopwordsAdd, stopwordsRemove, minTokenLength, minMatchRatio). Closes q-events-april parity gap. ADR 011 updated with 0.958 measured result.",
+      "stages": [
+        { "id": "commit", "label": "git commit d9361b2 on main", "status": "green" },
+        { "id": "publish_all", "label": "pnpm publish -r --filter='./packages/*' --access public --otp <OTP>", "status": "not_started", "note": "AWAITING OPERATOR OTP — run: ! pnpm publish -r --access public --otp YOUR_CODE" },
+        { "id": "tag", "label": "git tag v2.1.0 && git push --tags", "status": "not_started" }
+      ]
+    },
+    {
       "id": "v0_5_0_manual",
       "label": "v0.5.0 — New package cortex-provider-llm-claude-code + 5-pkg version-align bump",
-      "status": "not_started",
+      "status": "green",
+      "closed": "2026-05-21",
       "semver_rationale": "Minor bump. New public API package (additive). Existing 5 packages bump 0.4.1 → 0.5.0 for workspace coherence; no contract changes to existing packages.",
       "stages": [
         { "id": "version_bump", "label": "Bump all 6 packages to 0.5.0 (5 existing + 1 new)", "status": "not_started" },

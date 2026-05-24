@@ -1,11 +1,11 @@
 {
   "angle": "matrix",
   "title": "Cortex Contracts Surface",
-  "subtitle": "Every Zod schema and provider interface — v1.0.0 cohort",
-  "purpose": "Tracks what's defined in @kybernesis/cortex-contracts. Source of truth is arcana-spec.md §10 in the brain. Status flips to 'complete' when the Zod schema validates sample data round-trips in a test.",
-  "generated": "2026-05-20",
+  "subtitle": "Every Zod schema and provider interface — v2.1.0 (Gap 1 layered defence)",
+  "purpose": "Tracks what's defined in @kybernesis/cortex-contracts. Source of truth is cortex-spec.md §10 in the brain. Status flips to 'complete' when the Zod schema validates sample data round-trips in a test. v2.1.0 adds Gap 1 layered defence types: stopword control + minMatchRatio on FactRetrievalInput and FactsFulltextSearchOpts.",
+  "generated": "2026-05-24",
   "system": "cortex",
-  "milestone": "v0.2.0",
+  "milestone": "v2.1.0",
   "status_legend": [
     { "id": "not_started", "symbol": "○", "label": "Not started" },
     { "id": "drafted", "symbol": "◐", "label": "TS draft only" },
@@ -59,6 +59,42 @@
         { "name": "FulltextSearchOpts", "status": "complete", "test_file": "providers.test.ts", "note": "scopes/tier/topK/fields filtering at the index layer" },
         { "name": "FulltextMatch", "status": "complete", "test_file": "providers.test.ts", "note": "{memoryId, score: 0..1, matchedFields: FulltextField[]}" },
         { "name": "FulltextField", "status": "complete", "test_file": "providers.test.ts", "note": "type alias: 'title' | 'summary' | 'content' | 'tags'" }
+      ]
+    },
+    {
+      "id": "layered_defence_types",
+      "label": "Layered defence types (v2.1.0 — Gap 1)",
+      "note": "Three-mechanism design: (1) stopwords remove noise tokens from FTS queries, (2) minMatchRatio floor drops facts below word-overlap threshold before scoring, (3) minTokenLength drops short tokens from FTS. Together these close the q-events-april parity gap.",
+      "rows": [
+        {
+          "name": "FactsFulltextSearchOpts",
+          "status": "complete",
+          "test_file": "providers.test.ts",
+          "note": "Extends StructuredStore.searchFactsFulltext opts. Added: stopwordsAdd?: string[] (merge with DEFAULT_STOPWORDS), stopwordsRemove?: string[] (carve-outs from default set), minTokenLength?: number (default 2, inherited from buildFtsQuery)",
+          "evolution": [
+            "v1.0.0: initial — category?: FactCategory, latestOnly?: boolean",
+            "v2.1.0: Gap 1 — +stopwordsAdd?, +stopwordsRemove?, +minTokenLength? (all optional; callers that pass nothing get DEFAULT_STOPWORDS + minTokenLength 2)"
+          ]
+        },
+        {
+          "name": "FactRetrievalInput",
+          "status": "complete",
+          "test_file": "cortex-core retrieve tests",
+          "note": "factRetrieval() input type in cortex-core. Added: minMatchRatio?: number (default 0.2, drops facts where wordMatchRatio below floor), stopwordsAdd?, stopwordsRemove?, minTokenLength? — all passed through to searchFactsFulltext",
+          "evolution": [
+            "v0.4.1: initial — query, topK, includeMemories?, tokenBudget?, category?",
+            "v2.1.0: Gap 1 — +minMatchRatio? (default 0.2), +stopwordsAdd?, +stopwordsRemove?, +minTokenLength?"
+          ]
+        },
+        {
+          "name": "DEFAULT_STOPWORDS",
+          "status": "complete",
+          "test_file": "libsql-structured-store.test.ts",
+          "note": "30 English common words exported from @kybernesis/cortex-provider-libsql. Applied to all buildFtsQuery calls. Callers can extend (stopwordsAdd) or carve out (stopwordsRemove).",
+          "evolution": [
+            "v2.1.0: initial — set of 30 words ('the','a','an','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','could','should','may','might','shall','can','need','this','that','these','those','it')"
+          ]
+        }
       ]
     }
   ]

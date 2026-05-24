@@ -1,11 +1,11 @@
 {
   "angle": "kanban",
-  "title": "Cortex v0.2.0 Build Progress",
-  "subtitle": "Task lifecycle across the scaffold + retrieve + FTS/hybrid sprint",
-  "purpose": "Live view of where v0.2.0 stands. Each task moves todo → in-progress → done. Updated after every Tn closes.",
-  "generated": "2026-05-20",
+  "title": "Cortex Build Progress",
+  "subtitle": "Current release: v2.1.0 — KyberBot parity 0.958, Gap 1 layered defence shipped",
+  "purpose": "Live view of shipped releases and next-phase work. v2.1.0 published pending OTP.",
+  "generated": "2026-05-24",
   "system": "cortex",
-  "milestone": "v0.2.0",
+  "milestone": "v2.1.0",
   "status_legend": [
     { "id": "todo", "symbol": "○", "label": "Not started" },
     { "id": "in_progress", "symbol": "◐", "label": "In progress" },
@@ -28,9 +28,23 @@
       ]
     },
     {
+      "id": "recent_shipped",
+      "label": "Recently Shipped (v1.2.1 → v2.1.0)",
+      "tasks": [
+        { "id": "v1.2.1", "title": "KB-faithful Layer 0 scoring fix", "closed": "2026-05-23", "note": "content-only word-match-ratio (0.5 + ratio*0.5) replaces BM25-derived FTS5 rank. Matches KB fact-retrieval.ts:159-178. FactsFulltextMatch.content passthrough added. ADR 011 port-first." },
+        { "id": "v2.0.0", "title": "Library rename Arcana → Cortex (BREAKING)", "closed": "2026-05-23", "note": "6 packages renamed @kybernesis/arcana-* → @kybernesis/cortex-*. Factory createArcana → createCortex. All 6 arcana-* packages deprecated on npm. ADR 014. GitHub repo, local dir, git remote updated." },
+        { "id": "v2.0.x-1", "title": "CORTEX_* env vars (was ARCANA_*)", "closed": "2026-05-24", "note": "All 13 ENV_MAP keys renamed CORTEX_*. Any deployment using ARCANA_* was silently ignored post-rename. Pre-Phase-2 blocker." },
+        { "id": "v2.0.x-2", "title": "transaction() inFlight concurrency guard", "closed": "2026-05-24", "note": "Throws 'concurrent or nested transactions not supported' immediately if called while a transaction is in flight. Prevents silent data corruption at await boundaries." },
+        { "id": "v2.0.x-3", "title": "deleteEntity uses store.transaction()", "closed": "2026-05-24", "note": "Replaced inline BEGIN/COMMIT/ROLLBACK with store.transaction() to use the guarded path." },
+        { "id": "v2.1.0", "title": "Gap 1 layered defence — stopwords + minMatchRatio", "closed": "2026-05-24", "note": "DEFAULT_STOPWORDS (~30 English commons) in buildFtsQuery. minMatchRatio floor (default 0.2) in factRetrieval Layer 0. Full configurability via FactRetrievalInput. Closes q-events-april gap. ADR 011 updated with measured 0.958 parity." }
+      ]
+    },
+    {
       "id": "in_progress",
       "label": "In Progress",
-      "tasks": []
+      "tasks": [
+        { "id": "PUBLISH-2.1.0", "title": "Publish v2.1.0 to npm", "note": "Awaiting OTP from David. Run: ! pnpm publish -r --access public --otp YOUR_CODE" }
+      ]
     },
     {
       "id": "blocked",
@@ -45,13 +59,15 @@
     },
     {
       "id": "todo",
-      "label": "Todo (next — after KyberBot merge + npm publish)",
+      "label": "Todo (Phase 2 retrieve correctness)",
       "tasks": [
-        { "id": "T15", "title": "npm publish v0.2.0 (pnpm publish -r)", "blocked_on": "npm login (user OTP flow)", "note": "5 packages. Contract additions (searchFulltext + asOf) and kernel hybridSearch warrant minor bump per semver. Use `pnpm publish -r --filter='./packages/*' --access public`. Dry-run first to verify workspace:* rewrites correctly (lesson from v0.1.0)." },
-        { "id": "T16", "title": "KyberBot cortex-adoption branch merge", "blocked_on": "EC-015 in-flight guard fix + npm publish (T15)", "note": "EC-015 is required before merge. EC-013/014 optional. 4 KyberBot-side patches still pending." },
-        { "id": "NS-005", "title": "Parity harness for KyberBot hybrid-search.ts swap", "blocked_on": "ADR 009 parity-gate methodology — implementation in KyberBot's repo against its fixture set", "note": "Per ADR 009, KyberBot cannot swap its parallel hybrid-search.ts to the kernel without a top-N overlap test. Lives in KyberBot's repo. Once threshold passes, the swap PR proceeds. Kernel hybridSearch shape was deliberately wave-1 matched to KyberBot to minimise the parity delta." },
-        { "id": "T17", "title": "Sleep pipeline step reconciliation + implementation", "blocked_on": "ADR 010 resolution + LLMProvider impl (e.g. cortex-provider-llm-openrouter/-ollama)", "note": "ADR 010 records the consolidate/observe gap between KyberBot's 9 steps and Cortex's 13. Implementation deferred to next sprint. Also unblocks expiresAt expiry sweeps and surprisalScore/lastReinforcedAt write paths." },
-        { "id": "T18", "title": "cortex-provider-postgres", "blocked_on": "Brain migration scoping (central vs distributed shape decision)", "note": "Required for Brain to swap off Convex. tsvector @@ to_tsquery impl of searchFulltext satisfying the same contract as libsql FTS5 impl. Driver decision: pg vs postgres (Porsager) vs drizzle." }
+        { "id": "PH2-1", "title": "Layer 0 priority comparator (equal-score ordering)", "note": "factRetrieval sort on line 640 has no secondary key. Equal-score ordering is arbitrary. Add MEMORY_PRIORITY as secondary comparator, then recency. Requires test first." },
+        { "id": "PH2-2", "title": "tokenBudget enforcement — truncate assembledContext", "note": "tokenBudget currently only derives topK. assembledContext is unbounded — can exceed budget by 25x. Truncate to tokenBudget * 4 chars after assembly, recompute tokenEstimate. Write test first." },
+        { "id": "PH2-3", "title": "BM25 sum vs max — verify correct aggregation", "note": "keywordScore uses Math.max per channel. KB sums. 1-line fix but must validate via parity harness before+after. Run harness before touching." },
+        { "id": "PH2-4", "title": "Write 5 missing tests (audit finding)", "note": "tokenBudget topK derivation; equal-score tiebreaker; searchFactsFulltext content passthrough; BM25 additive property; inactive/non-latest memory filter. All Phase 2 targets are currently untested." },
+        { "id": "PH2-5", "title": "Wire ConfigSchema or remove dead config", "note": "ConfigSchema.retrieval.rrfK etc are defined but never wired — RRF_K=60 is hardcoded in retrieve. Either wire the config or remove the dead schema fields. SleepConfig is the only config that actually runs." },
+        { "id": "MOCHACCINO-1", "title": "Mochaccino documentation — layered defence reasoning", "note": "KyberBot requested Mochaccino writeup of the three-mechanism design (why three not one). Capture: stopword list rationale, minMatchRatio rationale, layered-defence pattern, trade-offs. The WHY matters more than the config schema." },
+        { "id": "KBOT-PARITY-RERUN", "title": "Wait for KyberBot v2.1.0 parity re-run", "blocked_on": "KyberBot bump to cortex-*@^2.1.0", "note": "Expected meanOverlap ≈0.983 (q-events-april → 1.0; q-kube-outage still 0.83 pending KBOT workstream A/B seeding)." }
       ]
     },
     {

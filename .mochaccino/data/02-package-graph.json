@@ -2,10 +2,10 @@
   "angle": "card-grid",
   "title": "Cortex Package Graph",
   "subtitle": "Six packages, their dependencies, and current build state",
-  "purpose": "Shows the v0.5.0 package layout and dependency direction. NOTE: cortex-config was merged into cortex-core (src/config/) on 2026-05-19. cortex-provider-sqlite-vec was added 2026-05-20 (vector). cortex-provider-llm-claude-code was added 2026-05-21 (LLM, subprocess transport per ADR 012).",
-  "generated": "2026-05-21",
+  "purpose": "Shows the v2.1.0 package layout. Renamed from Arcana at v2.0.0 (ADR 014). v2.1.0 adds Gap 1 layered defence (stopwords + minMatchRatio). 352 tests passing.",
+  "generated": "2026-05-24",
   "system": "cortex",
-  "milestone": "v0.5.0",
+  "milestone": "v2.1.0",
   "package_count": 6,
   "status_legend": [
     { "id": "not_started", "symbol": "○", "label": "Not started" },
@@ -16,7 +16,7 @@
     {
       "id": "cortex-contracts",
       "npm_name": "@kybernesis/cortex-contracts",
-      "version": "0.1.1",
+      "version": "2.1.0",
       "role": "Base — Zod schemas, provider interfaces, Logger, QueryResult envelope, ARP scopes",
       "depends_on": ["zod@^3.23.0"],
       "status": "complete",
@@ -30,7 +30,7 @@
     {
       "id": "cortex-core",
       "npm_name": "@kybernesis/cortex-core",
-      "version": "0.1.1",
+      "version": "2.1.0",
       "role": "Kernel — createCortex() factory + ingest/retrieve/maintain/access zones + config loader (cortex-config merged in 2026-05-19) + getEntityProfile + factRetrieval implementations",
       "depends_on": ["@kybernesis/cortex-contracts (workspace)", "zod@^3.23.0"],
       "status": "complete",
@@ -48,7 +48,7 @@
     {
       "id": "cortex-testkit",
       "npm_name": "@kybernesis/cortex-testkit",
-      "version": "0.1.1",
+      "version": "2.1.0",
       "role": "In-memory fake providers for consumer integration tests (compliance harness deferred until second real provider)",
       "depends_on": ["@kybernesis/cortex-contracts (workspace)"],
       "status": "complete",
@@ -59,7 +59,7 @@
     {
       "id": "cortex-provider-libsql",
       "npm_name": "@kybernesis/cortex-provider-libsql",
-      "version": "0.1.1",
+      "version": "2.1.0",
       "role": "Full StructuredStore implementation over libsql (same sync SQLite binding as KyberBot). All 9 entity types. In-memory integration tests. mkdirSync fix for file-path databases (DVR-EC-001). Unblocks KyberBot wiring initCortex().",
       "depends_on": ["@kybernesis/cortex-contracts (workspace)", "libsql@0.5.x"],
       "status": "complete",
@@ -73,7 +73,7 @@
     {
       "id": "cortex-provider-sqlite-vec",
       "npm_name": "@kybernesis/cortex-provider-sqlite-vec",
-      "version": "0.1.1",
+      "version": "2.1.0",
       "role": "VectorStore over sqlite-vec (no Docker, :memory: support). vec0 virtual table with rowid_ref companion pattern. Unblocks hybridSearch and enables ChromaDB removal from KyberBot.",
       "depends_on": ["@kybernesis/cortex-contracts (workspace)", "sqlite-vec"],
       "status": "complete",
@@ -87,7 +87,7 @@
     {
       "id": "cortex-provider-llm-claude-code",
       "npm_name": "@kybernesis/cortex-provider-llm-claude-code",
-      "version": "0.5.0",
+      "version": "2.1.0",
       "role": "LLMProvider via Claude Code CLI subprocess (claude -p). No API key — uses local subscription. Faithful port of KyberBot claude.ts → completeSubprocess per ADR 011. First concrete LLMProvider impl, unblocks the sleep pipeline.",
       "depends_on": ["@kybernesis/cortex-contracts (workspace)"],
       "status": "complete",

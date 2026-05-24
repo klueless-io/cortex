@@ -1,11 +1,11 @@
 {
   "angle": "matrix",
   "title": "Testkit Provider Compliance",
-  "subtitle": "Provider × compliance test + shared parity harness (since v0.3.0)",
-  "purpose": "The contract claim: any provider in any package must pass cortex-testkit's runComplianceSuite. v0.3.0 also ships runParityHarness — the shared comparison engine for ADR 009 consumer swaps. 249 tests across 25 files.",
-  "generated": "2026-05-20",
+  "subtitle": "Provider × compliance test + parity harness — v2.1.0 (352 tests, 0.958 parity)",
+  "purpose": "The contract claim: any provider in any package must pass cortex-testkit's runComplianceSuite. runParityHarness (since v0.3.0) is the shared comparison engine for ADR 009 consumer swaps. v2.1.0 Gap 1 layered defence added stopword + minMatchRatio tests. KyberBot parity harness measured 0.958 meanOverlap on cortex-adoption branch (2026-05-24). 352 tests across 27 files.",
+  "generated": "2026-05-24",
   "system": "cortex",
-  "milestone": "v0.3.0",
+  "milestone": "v2.1.0",
   "status_legend": [
     { "id": "not_applicable", "symbol": "—", "label": "Not applicable to this provider" },
     { "id": "not_started", "symbol": "○", "label": "Not implemented" },
