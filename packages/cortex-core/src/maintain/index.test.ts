@@ -69,6 +69,8 @@ function makeStructured(overrides: Partial<StructuredStore> = {}): StructuredSto
     getFact: vi.fn().mockResolvedValue(null),
     getFactsForEntity: vi.fn().mockResolvedValue([]),
     markFactSuperseded: vi.fn(),
+    expireFacts: vi.fn().mockResolvedValue(0),
+    decayFactConfidence: vi.fn().mockResolvedValue(0),
     searchFulltext: vi.fn().mockResolvedValue([]),
     searchFactsFulltext: vi.fn().mockResolvedValue([]),
     storeContradiction: vi.fn(),
@@ -307,6 +309,30 @@ describe('decayMemories step', () => {
     const api = createMaintain(makeDeps({ structured }));
     await api.runSleepPipeline({ steps: ['decayMemories'] });
     expect(structured.updateMemory).not.toHaveBeenCalled();
+  });
+
+  it('skips archive-tier memories (KB optimisation)', async () => {
+    const archived = makeMemory({ tier: 'archive', isPinned: false });
+    const structured = makeStructured({ listMemories: vi.fn().mockResolvedValue([archived]) });
+    const api = createMaintain(makeDeps({ structured }));
+    await api.runSleepPipeline({ steps: ['decayMemories'] });
+    expect(structured.updateMemory).not.toHaveBeenCalled();
+  });
+
+  it('invokes expireFacts subjob each cycle (KB decay.ts:44-59)', async () => {
+    const expireFacts = vi.fn().mockResolvedValue(3);
+    const structured = makeStructured({ expireFacts });
+    const api = createMaintain(makeDeps({ structured }));
+    await api.runSleepPipeline({ steps: ['decayMemories'] });
+    expect(expireFacts).toHaveBeenCalledTimes(1);
+  });
+
+  it('invokes decayFactConfidence subjob each cycle (provider gates internally)', async () => {
+    const decayFactConfidence = vi.fn().mockResolvedValue(5);
+    const structured = makeStructured({ decayFactConfidence });
+    const api = createMaintain(makeDeps({ structured }));
+    await api.runSleepPipeline({ steps: ['decayMemories'] });
+    expect(decayFactConfidence).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -100,6 +100,32 @@ export interface StructuredStore {
    */
   getEdgesFor(node: NodeRef): Promise<Edge[]>;
 
+  /**
+   * v2.1.8 — sleep-pipeline maintenance. Marks every fact where
+   * `expiresAt < now AND isLatest = true` as `isLatest = false`. Returns
+   * the number of facts affected. Mirrors KB decay.ts:44-59 fact-expiration
+   * subjob — kept as a provider method so the implementation can use a
+   * single bulk UPDATE rather than N round-trips.
+   *
+   * `now` defaults to the current time. Pass an explicit value for
+   * deterministic tests.
+   */
+  expireFacts(now?: string): Promise<number>;
+
+  /**
+   * v2.1.8 — sleep-pipeline maintenance. Applies weekly fact-confidence
+   * decay to AI-extracted and chat-sourced facts that haven't been
+   * reinforced. Mirrors KB decay.ts:126-160 — `confidence = max(confidence
+   * * 0.95, 0.15)` for facts where source_type IN ('ai-extraction','chat')
+   * AND created_at < (now - 90 days) AND last_reinforced_at IS NULL
+   * AND confidence > 0.15 AND is_latest = 1.
+   *
+   * Internally throttled: returns 0 without writing if invoked less than
+   * 7 days after the previous successful run (provider tracks the stamp).
+   * Returns the number of facts updated.
+   */
+  decayFactConfidence(): Promise<number>;
+
   // Fact
   storeFact(fact: Fact): Promise<void>;
   /**

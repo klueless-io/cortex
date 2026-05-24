@@ -36,6 +36,8 @@ export function createFakeStructuredStore(): StructuredStore {
   const entityProfiles = new Map<string, EntityProfile>();
   let agentSelf: AgentSelf | null = null;
   let connected = false;
+  // v2.1.8 — last-run stamp for the weekly decayFactConfidence subjob.
+  let lastFactConfidenceDecayAt: string | null = null;
 
   const store: StructuredStore = {
     connect: async () => {
@@ -347,6 +349,43 @@ export function createFakeStructuredStore(): StructuredStore {
         isLatest: false,
         supersededBy: newFactId,
       });
+    },
+
+    expireFacts: async (now?: string) => {
+      const cutoff = now ?? new Date().toISOString();
+      let changes = 0;
+      for (const [id, f] of facts.entries()) {
+        if (f.expiresAt && f.expiresAt < cutoff && f.isLatest) {
+          facts.set(id, { ...f, isLatest: false });
+          changes++;
+        }
+      }
+      return changes;
+    },
+
+    decayFactConfidence: async () => {
+      const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+      const now = new Date();
+      if (lastFactConfidenceDecayAt) {
+        const lastMs = new Date(lastFactConfidenceDecayAt).getTime();
+        if (now.getTime() - lastMs < SEVEN_DAYS_MS) return 0;
+      }
+      const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
+      let changes = 0;
+      for (const [id, f] of facts.entries()) {
+        if (
+          (f.sourceType === 'ai-extraction' || f.sourceType === 'chat') &&
+          f.createdAt < ninetyDaysAgo &&
+          !f.lastReinforcedAt &&
+          f.confidence > 0.15 &&
+          f.isLatest
+        ) {
+          facts.set(id, { ...f, confidence: Math.max(f.confidence * 0.95, 0.15) });
+          changes++;
+        }
+      }
+      lastFactConfidenceDecayAt = now.toISOString();
+      return changes;
     },
 
     storeContradiction: async (contradiction: Contradiction) => {

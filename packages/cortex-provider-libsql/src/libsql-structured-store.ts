@@ -745,6 +745,56 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
       }
     },
 
+    expireFacts: async (now?: string) => {
+      assertConnected(db);
+      const cutoff = now ?? new Date().toISOString();
+      // KB decay.ts:44-59 — UPDATE facts SET is_latest = 0 WHERE expires_at < now AND is_latest = 1.
+      const info = db
+        .prepare(
+          `UPDATE facts SET is_latest = 0
+             WHERE expires_at IS NOT NULL
+               AND expires_at < ?
+               AND is_latest = 1`,
+        )
+        .run(cutoff);
+      return (info as { changes: number }).changes;
+    },
+
+    decayFactConfidence: async () => {
+      assertConnected(db);
+      const now = new Date();
+      const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+      // Read last-run stamp from _cortex_meta; gate if < 7 days.
+      const lastRow = db
+        .prepare("SELECT value FROM _cortex_meta WHERE key = 'last_fact_confidence_decay'")
+        .get() as { value: string } | undefined;
+      if (lastRow) {
+        const lastMs = new Date(lastRow.value).getTime();
+        if (now.getTime() - lastMs < SEVEN_DAYS_MS) return 0;
+      }
+      // KB decay.ts:126-160 — confidence *= 0.95, floored at 0.15, for old
+      // AI/chat facts that have never been reinforced.
+      const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
+      const info = db
+        .prepare(
+          `UPDATE facts
+              SET confidence = MAX(confidence * 0.95, 0.15)
+            WHERE source_type IN ('ai-extraction','chat')
+              AND created_at < ?
+              AND last_reinforced_at IS NULL
+              AND confidence > 0.15
+              AND is_latest = 1`,
+        )
+        .run(ninetyDaysAgo);
+      const changes = (info as { changes: number }).changes;
+      // Stamp last-run time regardless of whether any rows changed, so the
+      // 7-day window is honoured even when no candidates exist.
+      db.prepare(
+        "INSERT OR REPLACE INTO _cortex_meta (key, value) VALUES ('last_fact_confidence_decay', ?)",
+      ).run(now.toISOString());
+      return changes;
+    },
+
     // ── Fulltext ──────────────────────────────────────────────────────────
 
     searchFulltext: async (

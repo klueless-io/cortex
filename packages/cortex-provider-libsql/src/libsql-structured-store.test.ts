@@ -279,6 +279,41 @@ describe('LibsqlStructuredStore (in-memory SQLite)', () => {
 
   // ── Fact ──────────────────────────────────────────────────────────────────
 
+  it('expireFacts marks facts past expires_at as not-latest and returns affected count', async () => {
+    const past = '2024-01-01T00:00:00.000Z';
+    const future = '2099-01-01T00:00:00.000Z';
+    await store.storeFact({ ...baseFact(), id: 'f_expired', expiresAt: past });
+    await store.storeFact({ ...baseFact(), id: 'f_fresh', expiresAt: future });
+    await store.storeFact({ ...baseFact(), id: 'f_no_expiry' });
+    const count = await store.expireFacts();
+    expect(count).toBe(1);
+    const expired = await store.getFact('f_expired');
+    const fresh = await store.getFact('f_fresh');
+    const noExpiry = await store.getFact('f_no_expiry');
+    expect(expired!.isLatest).toBe(false);
+    expect(fresh!.isLatest).toBe(true);
+    expect(noExpiry!.isLatest).toBe(true);
+  });
+
+  it('decayFactConfidence applies *0.95 (floored 0.15) on first call, gates within 7 days', async () => {
+    const old = new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString(); // > 90 days
+    await store.storeFact({
+      ...baseFact(),
+      id: 'f_old_ai',
+      sourceType: 'ai-extraction',
+      confidence: 0.8,
+      createdAt: old,
+    });
+    // First run: applies decay.
+    const first = await store.decayFactConfidence();
+    expect(first).toBe(1);
+    const after = await store.getFact('f_old_ai');
+    expect(after!.confidence).toBeCloseTo(0.76, 5);
+    // Second immediate run: gated by 7-day stamp, no work done.
+    const second = await store.decayFactConfidence();
+    expect(second).toBe(0);
+  });
+
   it('storeFact then getFactsForEntity round-trips', async () => {
     const fact = baseFact();
     await store.storeFact(fact);
