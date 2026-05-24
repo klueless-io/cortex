@@ -1,6 +1,6 @@
 {
   "name": "@kybernesis/cortex-provider-sqlite-vec",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Cortex VectorStore provider — sqlite-vec (no Docker, zero-infrastructure vector search)",
   "license": "MIT",
   "author": "David Cruwys (AppyDave)",
