@@ -1,6 +1,6 @@
 {
   "name": "@kybernesis/cortex-provider-llm-claude-code",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "LLM provider for Cortex — subprocess-based Claude Code CLI wrapper (no API key)",
   "license": "MIT",
   "author": "David Cruwys (AppyDave)",
