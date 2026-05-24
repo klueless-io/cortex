@@ -445,12 +445,12 @@
   </div>
 </div>
 
-<div class="section-title">// V0.5.0 — NEW LLM PROVIDER + 5-PKG ALIGN (STAGED, AWAITING OTP)</div>
+<div class="section-title">// V0.5.0 — NEW LLM PROVIDER + 5-PKG ALIGN (COMPLETE)</div>
 
 <div class="lane">
   <div class="lane-header">
-    <div class="lane-label">v0.5.0 — pnpm publish -r — minor bump (new package @kybernesis/cortex-provider-llm-claude-code + 5-pkg version-align)</div>
-    <div class="lane-status ls-future">NOT STARTED</div>
+    <div class="lane-label">v0.5.0 — pnpm publish -r — minor bump (new package @kybernesis/cortex-provider-llm-claude-code + 5-pkg version-align) — published 2026-05-21</div>
+    <div class="lane-status ls-done">COMPLETE</div>
   </div>
   <div class="pipeline">
     <div class="step-wrap">
@@ -463,25 +463,17 @@
     </div>
     <div class="step-wrap">
       <div class="step">
-        <div class="step-status ss-missing"></div>
-        <div class="step-label">pnpm publish --dry-run</div>
-        <div class="step-note">Verify workspace:* → ^0.5.0 for the new package</div>
-      </div>
-      <div class="arrow">→</div>
-    </div>
-    <div class="step-wrap">
-      <div class="step">
-        <div class="step-status ss-missing"></div>
+        <div class="step-status ss-green"></div>
         <div class="step-label">pnpm publish -r</div>
-        <div class="step-note">OTP browser flow — awaiting user</div>
+        <div class="step-note">OTP browser flow completed · all 6 packages live</div>
       </div>
       <div class="arrow">→</div>
     </div>
     <div class="step-wrap">
       <div class="step">
-        <div class="step-status ss-missing"></div>
+        <div class="step-status ss-green"></div>
         <div class="step-label">verify v0.5.0</div>
-        <div class="step-note">npm view × 6 — incl new @kybernesis/cortex-provider-llm-claude-code</div>
+        <div class="step-note">npm view confirmed × 6 including new llm-claude-code</div>
       </div>
       <div class="arrow">→</div>
     </div>
@@ -489,13 +481,139 @@
       <div class="step">
         <div class="step-status ss-green"></div>
         <div class="step-label">git tag v0.5.0</div>
-        <div class="step-note">Tagged + pushed by goal-runner pre-publish</div>
+        <div class="step-note">Tagged + pushed 2026-05-21</div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="section-title">// V0.X+ — CI-DRIVEN (FUTURE)</div>
+<div class="section-title">// V1.2.1 — KB-FAITHFUL LAYER 0 SCORING (COMPLETE)</div>
+
+<div class="lane">
+  <div class="lane-header">
+    <div class="lane-label">v1.2.1 — all 6 packages — KB-faithful content-only word-match-ratio Layer 0 scoring — published 2026-05-23</div>
+    <div class="lane-status ls-done">COMPLETE</div>
+  </div>
+  <div class="pipeline">
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-green"></div>
+        <div class="step-label">pnpm publish -r</div>
+        <div class="step-note">All 6 packages live · content-only word-match-ratio replaces BM25-derived FTS5 rank</div>
+      </div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-green"></div>
+        <div class="step-label">git tag v1.2.1</div>
+        <div class="step-note">Tagged 2026-05-23</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">// V2.0.0 — LIBRARY RENAME ARCANA → CORTEX (COMPLETE · BREAKING)</div>
+
+<div class="lane">
+  <div class="lane-header">
+    <div class="lane-label">v2.0.0 — BREAKING rename @kybernesis/arcana-* → @kybernesis/cortex-* · createArcana() → createCortex() — published 2026-05-23</div>
+    <div class="lane-status ls-done">COMPLETE</div>
+  </div>
+  <div class="pipeline">
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-green"></div>
+        <div class="step-label">pnpm publish -r (6 cortex-* packages)</div>
+        <div class="step-note">All 6 cortex-* packages live · functionally identical to v1.2.1</div>
+      </div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-green"></div>
+        <div class="step-label">npm deprecate ×6 arcana-* packages</div>
+        <div class="step-note">All arcana-* pointing to github.com/klueless-io/cortex</div>
+      </div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-green"></div>
+        <div class="step-label">git tag v2.0.0</div>
+        <div class="step-note">ADR 014. Repo, dir, remote all updated.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">// V2.0.X — PRE-PHASE-2 BLOCKERS (BUNDLED INTO V2.1.0)</div>
+
+<div class="lane">
+  <div class="lane-header">
+    <div class="lane-label">v2.0.x — 3 pre-Phase-2 fixes: CORTEX_* env vars + transaction inFlight guard + deleteEntity uses store.transaction() — 2026-05-24</div>
+    <div class="lane-status ls-done">COMPLETE (bundled)</div>
+  </div>
+  <div class="pipeline">
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-green"></div>
+        <div class="step-label">git commit 6958010</div>
+        <div class="step-note">EC-015 inFlight guard · ENV_MAP ARCANA_*→CORTEX_* · deleteEntity transaction fix</div>
+      </div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-green"></div>
+        <div class="step-label">bundled into v2.1.0</div>
+        <div class="step-note">Included in v2.1.0 publish batch</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">// V2.1.0 — GAP 1 LAYERED DEFENCE (PENDING OTP)</div>
+
+<div class="lane">
+  <div class="lane-header">
+    <div class="lane-label">v2.1.0 — Gap 1 layered defence (stopwords + minMatchRatio + configurability) · KyberBot parity 0.958 — AWAITING OTP</div>
+    <div class="lane-status ls-partial">PENDING OTP</div>
+  </div>
+
+<div class="fix-box" style="margin:0 20px 16px">
+  <div class="fix-label">Publish command — run when OTP available</div>
+  <div class="fix-command">! pnpm publish -r --access public --otp YOUR_CODE</div>
+</div>
+
+  <div class="pipeline">
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-green"></div>
+        <div class="step-label">git commit d9361b2</div>
+        <div class="step-note">Gap 1: DEFAULT_STOPWORDS (30 commons) + minMatchRatio floor (0.2) + FactRetrievalInput configurability · Tests 345→352</div>
+      </div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-missing"></div>
+        <div class="step-label">pnpm publish -r --otp</div>
+        <div class="step-note">AWAITING OPERATOR OTP — all 6 packages</div>
+      </div>
+      <div class="arrow">→</div>
+    </div>
+    <div class="step-wrap">
+      <div class="step">
+        <div class="step-status ss-missing"></div>
+        <div class="step-label">git tag v2.1.0</div>
+        <div class="step-note">Tag + push after OTP completes</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">// CI-DRIVEN (FUTURE)</div>
 
 <div class="lane">
   <div class="lane-header">

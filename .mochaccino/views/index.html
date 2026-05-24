@@ -69,9 +69,9 @@
 <body>
 
 <div class="header">
-  <div class="wordmark">// <em>KYBERNESIS</em> · ARCANA · BUILD DOCUMENTATION</div>
+  <div class="wordmark">// <em>KYBERNESIS</em> · CORTEX · BUILD DOCUMENTATION</div>
   <h1>Mochaccino Gallery</h1>
-  <div class="tagline">Portable brain kernel for AI agents — v2.0.0 — 2026-05-23 (Cortex — renamed from Cortex)</div>
+  <div class="tagline">Portable brain kernel for AI agents — v2.1.0 — 2026-05-24 — Gap 1 layered defence (stopwords + minMatchRatio) — KyberBot parity 0.958</div>
   <div class="stats">
     <div class="stat">
       <div class="stat-val">352</div>
@@ -90,8 +90,8 @@
       <div class="stat-label">Read parity</div>
     </div>
     <div class="stat">
-      <div class="stat-val emerald">100%</div>
-      <div class="stat-label">Sleep pipeline</div>
+      <div class="stat-val emerald">0.958</div>
+      <div class="stat-label">KB Parity (mean)</div>
     </div>
   </div>
 </div>
@@ -105,7 +105,7 @@
     <div class="card-accent ca-emerald"></div>
     <div class="card-label">Matrix</div>
     <div class="card-title">Kernel Method Status</div>
-    <div class="card-desc">Zone × method grid. What's implemented vs stubbed. Which consumer demanded each method. Write, read, and sleep parity at a glance.</div>
+    <div class="card-desc">Zone × method grid. What's implemented vs stubbed. Which consumer demanded each method. Write, read, and sleep parity at a glance. v2.1.0 factRetrieval: Gap 1 layered defence, 0.958 parity.</div>
     <div class="card-meta">
       <span class="badge badge-start">Start here</span>
       <span class="datasource">06-kernel-methods.json</span>
@@ -116,7 +116,7 @@
     <div class="card-accent ca-cyan"></div>
     <div class="card-label">Graph</div>
     <div class="card-title">Package Graph</div>
-    <div class="card-desc">6 packages and their dependency direction. Why cortex-contracts publishes first. cortex-config absorption · sqlite-vec addition · v1.0.0 LLM Claude Code provider.</div>
+    <div class="card-desc">6 packages and their dependency direction. Why cortex-contracts publishes first. cortex-config absorbed · sqlite-vec added v0.1.1 · llm-claude-code added v0.5.0 · v2.1.0 all at 2.1.0.</div>
     <div class="card-meta">
       <span class="datasource">02-package-graph.json</span>
     </div>
@@ -126,7 +126,7 @@
     <div class="card-accent ca-teal"></div>
     <div class="card-label">Heatmap</div>
     <div class="card-title">Parity Gap</div>
-    <div class="card-desc">Cortex vs KyberBot vs Brain vs KyberAgent Desktop. What each consumer has, uses, and needs. The 5 Convex artifacts blocking Brain adoption.</div>
+    <div class="card-desc">Cortex vs KyberBot vs Brain vs KyberAgent Desktop. What each consumer has, uses, and needs. KyberBot 0.958 parity measured. 5 Convex artifacts blocking Brain adoption.</div>
     <div class="card-meta">
       <span class="datasource">06-kernel-methods.json · 01-task-progress.json</span>
     </div>
@@ -136,7 +136,7 @@
     <div class="card-accent ca-emerald"></div>
     <div class="card-label">Landscape</div>
     <div class="card-title">Provider Landscape</div>
-    <div class="card-desc">6 provider interfaces. Which have real providers, which are testkit fakes, which are consumer adapters. The postgres gap blocking Brain migration.</div>
+    <div class="card-desc">7 provider interfaces. 3 real providers (libsql, sqlite-vec, llm-claude-code). 4 in-memory fakes. 2 consumer adapters. The postgres gap blocking Brain migration.</div>
     <div class="card-meta">
       <span class="datasource">02-package-graph.json · 05-testkit-compliance.json</span>
     </div>
@@ -146,7 +146,7 @@
     <div class="card-accent ca-cyan"></div>
     <div class="card-label">Pipeline</div>
     <div class="card-title">Publish Pipeline</div>
-    <div class="card-desc">v0.1.0 partial · v0.2.0 superseded · v0.2.0 live (FTS+hybrid sprint, 2026-05-20). CI-driven path defined but not wired.</div>
+    <div class="card-desc">v0.1.0–v0.5.0 complete · v1.2.1 live (KB-faithful scoring) · v2.0.0 live (rename Arcana→Cortex, BREAKING) · v2.1.0 pending OTP (Gap 1 layered defence).</div>
     <div class="card-meta">
       <span class="datasource">03-publish-pipeline.json</span>
     </div>
@@ -159,15 +159,22 @@
     <div class="blocker">
       <div class="blocker-status">PENDING</div>
       <div class="blocker-body">
-        <div class="blocker-name">v0.2.0 npm publish</div>
-        <div class="blocker-detail">Sprint code shipped (FTS+hybrid). Awaiting version bump on 5 packages + pnpm publish -r + git tag v0.2.0.</div>
+        <div class="blocker-name">v2.1.0 npm publish — awaiting OTP</div>
+        <div class="blocker-detail">Gap 1 layered defence shipped. Run: ! pnpm publish -r --access public --otp YOUR_CODE</div>
       </div>
     </div>
     <div class="blocker">
       <div class="blocker-status">PENDING</div>
       <div class="blocker-body">
-        <div class="blocker-name">KyberBot hybrid-search.ts swap</div>
-        <div class="blocker-detail">Gated on parity harness per ADR 009. Kernel hybridSearch shape is wave-1 KyberBot-parity to minimise swap delta.</div>
+        <div class="blocker-name">KyberBot factRetrieval + hybridSearch swap</div>
+        <div class="blocker-detail">Gated on parity gate (ADR 009). 0.958 parity measured. Re-run expected ≈0.983 after v2.1.0 publish. 4 KyberBot blocker items must be fixed before cortex-adoption branch merges.</div>
+      </div>
+    </div>
+    <div class="blocker">
+      <div class="blocker-status">NEXT</div>
+      <div class="blocker-body">
+        <div class="blocker-name">Phase 2 — retrieve correctness</div>
+        <div class="blocker-detail">Layer 0 priority comparator · tokenBudget enforcement · BM25 sum vs max · 5 missing tests · wire ConfigSchema or remove dead config.</div>
       </div>
     </div>
     <div class="blocker">
@@ -177,43 +184,40 @@
         <div class="blocker-detail">Brain migration gate. tsvector @@ to_tsquery impl of searchFulltext satisfying same contract as libsql FTS5.</div>
       </div>
     </div>
-    <div class="blocker">
-      <div class="blocker-status">DEFERRED</div>
-      <div class="blocker-body">
-        <div class="blocker-name">Sleep pipeline (13 steps)</div>
-        <div class="blocker-detail">All stubbed. KyberBot's 9-step pipeline is the reference. ADR 010 records the consolidate/observe gap — design decision deferred.</div>
-      </div>
-    </div>
   </div>
 
   <div class="section-title">// SHIPPED</div>
   <div class="done-strip">
-    <div class="done-item">cortex-contracts v0.2.0</div>
-    <div class="done-item">cortex-core v0.2.0</div>
-    <div class="done-item">cortex-testkit v0.2.0</div>
-    <div class="done-item">cortex-provider-libsql v0.2.0</div>
-    <div class="done-item">cortex-provider-sqlite-vec v0.2.0</div>
+    <div class="done-item">v0.1.1 — 5 packages live</div>
+    <div class="done-item">v0.2.0 — FTS+hybrid sprint</div>
+    <div class="done-item">v0.3.0 — parity harness</div>
+    <div class="done-item">v0.4.0 — hybridSearch rebase KB-faithful</div>
+    <div class="done-item">v0.5.0 — llm-claude-code provider</div>
+    <div class="done-item">v1.2.1 — KB-faithful Layer 0 scoring</div>
+    <div class="done-item">v2.0.0 — rename Arcana → Cortex (BREAKING)</div>
+    <div class="done-item">v2.0.x — CORTEX_* env vars + transaction guard</div>
+    <div class="done-item">Gap 1 — DEFAULT_STOPWORDS (30 commons)</div>
+    <div class="done-item">Gap 1 — minMatchRatio floor (default 0.2)</div>
+    <div class="done-item">Gap 1 — FactRetrievalInput full configurability</div>
+    <div class="done-item">0.958 KyberBot parity measured 2026-05-24</div>
+    <div class="done-item">sleep pipeline — runSleepPipeline (10-step v1.1.0)</div>
+    <div class="done-item">sleep pipeline — startSleepSchedule + stopSleepSchedule</div>
     <div class="done-item">getEntityProfile</div>
-    <div class="done-item">factRetrieval</div>
-    <div class="done-item">hybridSearch (kernel)</div>
-    <div class="done-item">searchFulltext (libsql FTS5)</div>
+    <div class="done-item">factRetrieval (4-layer KB-faithful)</div>
+    <div class="done-item">hybridSearch (4-channel KB-faithful)</div>
+    <div class="done-item">searchFulltext (libsql FTS5 + facts_fts)</div>
     <div class="done-item">queryFacts asOf</div>
-    <div class="done-item">ADR 009 parity gate</div>
-    <div class="done-item">ADR 010 sleep step gap</div>
     <div class="done-item">query.getNeighbors</div>
     <div class="done-item">query.listContradictions</div>
     <div class="done-item">query.listInsights</div>
-    <div class="done-item">runParityHarness (testkit)</div>
     <div class="done-item">query.readBlock</div>
     <div class="done-item">query.getBlockHistory</div>
-    <div class="done-item">sleep gap analysis doc</div>
+    <div class="done-item">runParityHarness (testkit/parity)</div>
+    <div class="done-item">ADR 009 parity gate</div>
     <div class="done-item">ADR 011 port-first principle</div>
-    <div class="done-item">hybridSearch rebase (KB-faithful 4-channel)</div>
-    <div class="done-item">Memory.createdAt schema</div>
-    <div class="done-item">listEntities contract method</div>
-    <div class="done-item">factRetrieval rebase (KB-faithful 4-layer)</div>
-    <div class="done-item">ADR 012 LLM provider architecture</div>
-    <div class="done-item">cortex-provider-llm-claude-code v1.0.0 (subprocess)</div>
+    <div class="done-item">ADR 013 FactSchema BREAKING (entities[])</div>
+    <div class="done-item">ADR 014 rename arcana → cortex</div>
+    <div class="done-item">352 tests · 27 files · 6 packages</div>
   </div>
 </div>
 
