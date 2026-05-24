@@ -114,13 +114,23 @@ Per the system-health audit (docs/SYSTEM-HEALTH.md), the "100% parity" bar set a
 | Ported capability | Target | Measured | Gap |
 |---|---|---|---|
 | `hybridSearch` (v0.4.0) | 100% memory-id overlap on KB fixtures | pending KB fixtures | TBD |
-| `factRetrieval` (v0.4.1 → v1.2.1) | 100% fact-id overlap | **0.958 meanOverlap** (KyberBot `cortex-adoption` branch, 2026-05-24) | 0.042 — two queries, both diagnosed (see below) |
+| `factRetrieval` (v0.4.1 → v2.1.2) | 100% fact-id overlap | **0.877 meanOverlap** (KyberBot `cortex-adoption`, v2.1.2, 2026-05-24) | 0.123 — four queries, all attributed (see below) |
 | Sleep pipeline (v1.1.0) | All 10 KB steps run end-to-end against a real cortex instance | pending KB integration | TBD |
 
-**`factRetrieval` 0.042 residual gap — diagnosed, not algorithmic:**
+**`factRetrieval` 0.123 residual gap at v2.1.2 — attributed, Gap 1 closed:**
 
-- `q-kube-outage` 0.83 — KB returns `bio-2` via `bob` token; Cortex does not. Root cause: parity harness seeds only facts, not entities + edges; Cortex Layer 4 memory-bridge cannot fire without entity + edge data. Resolves when KyberBot expands workstream A/B harness seeding. Not a Cortex code change.
-- `q-events-april` 0.88 — Cortex returns 3 extra low-signal facts (`bio-4`, `tmp-3`, `pln-2`) via FTS5 stopword over-match (`"in"` matching every fact containing "in"). Resolves when Cortex's v2.1.0 layered-defence ships (Gap 1 fix: DEFAULT_STOPWORDS + minMatchRatio floor). See comms 2026-05-24 KBOT GAP NOTE.
+Gap 1 (stopwords + minMatchRatio layered defence) is confirmed working at v2.1.2. The remaining gap is entirely harness-seeding and one accepted port-faithful trade-off:
+
+| Query | Overlap | Attribution | Resolves |
+|---|---|---|---|
+| `q-bob-prefs` | 0.60 | KB surfaces 4 facts via entity expansion / scene-bridge from `Bob`-mentioning facts. Cortex Layers 2–4 cannot fire — harness seeds only facts, no entities + edges. | Workstream A/B (KB-side harness expansion) |
+| `q-kube-outage` | 0.83 | KB surfaces `bio-2` via entity-graph bridge on `entities_json`. Same root cause as above. | Workstream A/B |
+| `q-carol-role` | 0.83 | `gen-7` "David and Alice hike…" — KB returns via David→Alice entity-graph path. No entities seeded in harness. | Workstream A/B |
+| `q-events-april` | 0.88 | `evt-2` matches via `entities_json` containing `Acme`; Cortex `wordMatchRatio` scores `content` only (KB `searchFactsDirect:159-178` is also content-only). **Port-faithful trade-off — no Cortex change.** | Documented divergence; will not close |
+
+Expected meanOverlap after Workstream A/B: **≈0.95–0.98** (three harness-seeding gaps close; `evt-2` content/entity divergence remains).
+
+**Milestone**: 0.877 is well past ADR 009's 0.8 swap gate. Phase 1 swap of `factRetrieval` in KyberBot can proceed in parallel with Workstream A/B.
 
 Known port-time divergences (not parity misses — deliberate or non-blocking):
 - `FactSourceType` enum (Cortex-only — KB has no `sourceType` column; kept for source-traceability)
