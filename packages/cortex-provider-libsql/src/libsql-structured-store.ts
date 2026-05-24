@@ -207,6 +207,8 @@ function rowToEntity(row: Row): Entity {
     type: row.type as Entity['type'],
     mentionCount: row.mention_count as number,
     scopes: row.scopes ? p(row.scopes as string) : undefined,
+    createdAt: (row.created_at as string | null) ?? undefined,
+    isPinned: row.is_pinned != null ? Boolean(row.is_pinned) : undefined,
   };
 }
 
@@ -341,6 +343,20 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
         // Two-step: add with empty-string constant default, then backfill.
         db.exec(`ALTER TABLE memories ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`);
         db.exec(`UPDATE memories SET created_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE created_at = ''`);
+      }
+
+      // v2.1.8 — entities table gains created_at + is_pinned (needed by
+      // entity-hygiene Phase 2 prune to mirror KB's age + pinned filters).
+      const entityCols = db
+        .prepare('PRAGMA table_info(entities)')
+        .all() as Array<{ name: string }>;
+      const entityColNames = new Set(entityCols.map((c) => c.name));
+      if (!entityColNames.has('created_at')) {
+        db.exec(`ALTER TABLE entities ADD COLUMN created_at TEXT`);
+        db.exec(`UPDATE entities SET created_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE created_at IS NULL`);
+      }
+      if (!entityColNames.has('is_pinned')) {
+        db.exec(`ALTER TABLE entities ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0`);
       }
 
       // v1.2.0 — meta table + idempotent entity-normalisation migration.
@@ -484,14 +500,16 @@ export function createLibsqlStructuredStore(dbPath: string): StructuredStore {
     upsertEntity: async (entity: Entity) => {
       assertConnected(db);
       db.prepare(`
-        INSERT OR REPLACE INTO entities (id, name, type, mention_count, scopes)
-        VALUES (@id, @name, @type, @mention_count, @scopes)
+        INSERT OR REPLACE INTO entities (id, name, type, mention_count, scopes, created_at, is_pinned)
+        VALUES (@id, @name, @type, @mention_count, @scopes, @created_at, @is_pinned)
       `).run({
         id: entity.id,
         name: entity.name,
         type: entity.type,
         mention_count: entity.mentionCount,
         scopes: entity.scopes ? j(entity.scopes) : null,
+        created_at: entity.createdAt ?? new Date().toISOString(),
+        is_pinned: entity.isPinned ? 1 : 0,
       });
     },
 

@@ -33,7 +33,9 @@ CREATE TABLE IF NOT EXISTS entities (
   name TEXT NOT NULL,
   type TEXT NOT NULL,
   mention_count INTEGER NOT NULL DEFAULT 0,
-  scopes TEXT
+  scopes TEXT,
+  created_at TEXT,
+  is_pinned INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS edges (

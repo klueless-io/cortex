@@ -217,7 +217,12 @@ describe('LibsqlStructuredStore (in-memory SQLite)', () => {
   it('upsertEntity then getEntity round-trips', async () => {
     const ent = baseEntity();
     await store.upsertEntity(ent);
-    expect(await store.getEntity('ent_1')).toEqual(ent);
+    const got = await store.getEntity('ent_1');
+    // Provider defaults createdAt to now and isPinned to false when caller omits;
+    // assert structural match without pinning the auto-set timestamp.
+    expect(got).toMatchObject(ent);
+    expect(typeof got!.createdAt).toBe('string');
+    expect(got!.isPinned).toBe(false);
   });
 
   it('getEntity returns null for unknown id', async () => {

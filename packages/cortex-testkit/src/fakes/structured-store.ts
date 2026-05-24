@@ -109,7 +109,15 @@ export function createFakeStructuredStore(): StructuredStore {
       chunksByMemory.get(memoryId) ?? [],
 
     upsertEntity: async (entity: Entity) => {
-      entities.set(entity.id, entity);
+      // Default createdAt to now (matches libsql provider behaviour) and
+      // isPinned to false when caller omits them — keeps fake parity with
+      // the real provider.
+      const stored: Entity = {
+        ...entity,
+        createdAt: entity.createdAt ?? new Date().toISOString(),
+        isPinned: entity.isPinned ?? false,
+      };
+      entities.set(entity.id, stored);
     },
     getEntity: async (id: string) => entities.get(id) ?? null,
     listEntities: async (filter?: EntityFilter) => {

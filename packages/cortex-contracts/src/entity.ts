@@ -17,6 +17,20 @@ export const EntitySchema = z
     type: EntityTypeSchema,
     mentionCount: z.number().int().nonnegative(),
     scopes: ScopesSchema.optional(),
+    /**
+     * v2.1.8 — ISO 8601 timestamp; set on upsertEntity for new rows.
+     * Used by entity-hygiene Phase 2 prune to check `pruneMinAgeDays`
+     * (KB entity-hygiene.ts:258-269). Optional so legacy v0.x/v1.x
+     * databases don't break — entities without createdAt are treated
+     * as "age unknown, age filter does not exclude them".
+     */
+    createdAt: z.string().datetime().optional(),
+    /**
+     * v2.1.8 — protects an entity from sleep-pipeline pruning. Mirrors
+     * KB entity-hygiene.ts:259's `is_pinned IS NULL OR is_pinned = 0`
+     * filter. Optional; defaults to false (not pinned).
+     */
+    isPinned: z.boolean().optional(),
   })
   .strict();
 

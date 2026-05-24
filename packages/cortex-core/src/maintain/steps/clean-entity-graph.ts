@@ -1,19 +1,19 @@
 /**
- * Entity Hygiene Step — ported from KB sleep/steps/entity-hygiene.ts.
+ * Entity Hygiene Step — ported from KB sleep/steps/entity-hygiene.ts per ADR 011.
  *
  * Cleans the entity graph by:
  * 1. Removing transcription artifacts (Speaker 0, Speaker 1, Unknown, etc.)
- * 2. Pruning low-value noise (entities with 1 mention and a name matching a
- *    stop-word list) — mirrors KB's pruneMinAgeDays logic adapted for Cortex
- *    which lacks entity createdAt (KB uses the graph DB timestamp).
+ * 2. Pruning noise topics: mention_count ≤ 1 AND type = 'topic' AND
+ *    age ≥ pruneMinAgeDays AND not pinned AND no edges — mirrors KB
+ *    entity-hygiene.ts:258-269 exactly (KBOT H3 Bug 2, 2026-05-24).
  *
  * Full AI-powered merge detection (KB's step 2/3) is deferred to v2 sleep —
  * it requires a more complex LLM loop that KB drives via mergeEntities() +
- * entity-graph.ts. For v1, automatic artifact removal + mention-based pruning
- * achieves the primary noise-reduction goal.
+ * entity-graph.ts. For v1, automatic artifact removal + topic-focused
+ * pruning achieves the primary noise-reduction goal.
  *
- * Adapter note: KB uses getEntityGraphDb + mergeEntities + deleteEntity from
- * entity-graph.ts. Cortex uses deps.structured.listEntities + deleteEntity.
+ * Adapter note: KB joins entities + entity_relations in one SQL statement.
+ * Cortex iterates listEntities + calls getEdgesFor per candidate.
  */
 
 import type { MaintainDeps } from '../index.js';
@@ -72,17 +72,29 @@ export async function runCleanEntityGraph(
       continue;
     }
 
-    // Phase 2: Prune low-value noise — 1 mention, no facts
-    if (entity.mentionCount <= 1) {
-      try {
-        const facts = await deps.structured.getFactsForEntity(entity.name);
-        if (facts.length === 0) {
-          await deps.structured.deleteEntity(entity.id);
-          pruned++;
-        }
-      } catch (err) {
-        errors.push(`prune check failed for ${entity.name}: ${err}`);
-      }
+    // Phase 2: KB entity-hygiene.ts:258-269 — five conjoined filters.
+    // All must hold for a prune. Any one fails → keep.
+    if (entity.mentionCount > 1) continue;
+    if (entity.type !== 'topic') continue;
+    if (entity.isPinned) continue;
+
+    // Age filter — entities without createdAt are treated as "age unknown"
+    // and skipped (safer than guessing they're old).
+    if (!entity.createdAt) continue;
+    const ageMs = Date.now() - new Date(entity.createdAt).getTime();
+    const minAgeMs = config.pruneMinAgeDays * 24 * 60 * 60 * 1000;
+    if (ageMs < minAgeMs) continue;
+
+    // No-edges filter — entity must have zero edges to either memories or
+    // other entities. KB uses NOT EXISTS on entity_relations; Cortex
+    // equivalent is getEdgesFor returning [].
+    try {
+      const edges = await deps.structured.getEdgesFor({ type: 'entity', id: entity.id });
+      if (edges.length > 0) continue;
+      await deps.structured.deleteEntity(entity.id);
+      pruned++;
+    } catch (err) {
+      errors.push(`prune check failed for ${entity.name}: ${err}`);
     }
   }
 

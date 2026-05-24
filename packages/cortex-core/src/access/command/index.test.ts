@@ -50,7 +50,8 @@ describe('command.upsertEntity', () => {
 
   it('persists an entity', async () => {
     await api.upsertEntity(sample);
-    expect(await structured.getEntity('ent_1')).toEqual(sample);
+    // Provider/fake auto-default createdAt and isPinned when caller omits.
+    expect(await structured.getEntity('ent_1')).toMatchObject(sample);
   });
 
   it('replaces an existing entity on second call', async () => {

@@ -64,6 +64,7 @@ function makeStructured(overrides: Partial<StructuredStore> = {}): StructuredSto
     deleteEntity: vi.fn().mockResolvedValue(undefined),
     storeEdge: vi.fn().mockResolvedValue(undefined),
     getNeighbors: vi.fn().mockResolvedValue([]),
+    getEdgesFor: vi.fn().mockResolvedValue([]),
     storeFact: vi.fn().mockResolvedValue(undefined),
     getFact: vi.fn().mockResolvedValue(null),
     getFactsForEntity: vi.fn().mockResolvedValue([]),
@@ -384,11 +385,20 @@ describe('cleanEntityGraph step', () => {
     expect(structured.deleteEntity).toHaveBeenCalledWith(speaker.id);
   });
 
-  it('prunes low-mention entities with no facts', async () => {
-    const noise = makeEntity({ name: 'RandomThing', mentionCount: 1 });
+  it('prunes a noise topic that matches all four KB Phase 2 filters', async () => {
+    // KB entity-hygiene.ts:258-269 — prune requires ALL: mentionCount ≤ 1,
+    // type = 'topic', age ≥ pruneMinAgeDays, not pinned, no edges.
+    const oldDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(); // 60 days old
+    const noise = makeEntity({
+      name: 'RandomThing',
+      type: 'topic',
+      mentionCount: 1,
+      createdAt: oldDate,
+      isPinned: false,
+    });
     const structured = makeStructured({
       listEntities: vi.fn().mockResolvedValue([noise]),
-      getFactsForEntity: vi.fn().mockResolvedValue([]),
+      getEdgesFor: vi.fn().mockResolvedValue([]),
       deleteEntity: vi.fn().mockResolvedValue(undefined),
     });
     const api = createMaintain(makeDeps({ structured }));
@@ -396,11 +406,82 @@ describe('cleanEntityGraph step', () => {
     expect(structured.deleteEntity).toHaveBeenCalledWith(noise.id);
   });
 
-  it('keeps low-mention entities that have facts', async () => {
-    const entity = makeEntity({ mentionCount: 1 });
+  it('keeps a person entity (Phase 2 only prunes topics)', async () => {
+    const oldDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+    const person = makeEntity({
+      mentionCount: 1,
+      type: 'person',
+      createdAt: oldDate,
+    });
     const structured = makeStructured({
-      listEntities: vi.fn().mockResolvedValue([entity]),
-      getFactsForEntity: vi.fn().mockResolvedValue([{ id: 'f1', fact: 'Alice is a developer', entities: ['Alice'], confidence: 0.9, category: 'biographical', sourceType: 'ai-extraction', isLatest: true, createdAt: new Date().toISOString() }]),
+      listEntities: vi.fn().mockResolvedValue([person]),
+      getEdgesFor: vi.fn().mockResolvedValue([]),
+      deleteEntity: vi.fn().mockResolvedValue(undefined),
+    });
+    const api = createMaintain(makeDeps({ structured }));
+    await api.runSleepPipeline({ steps: ['cleanEntityGraph'] });
+    expect(structured.deleteEntity).not.toHaveBeenCalled();
+  });
+
+  it('keeps a pinned topic regardless of other criteria', async () => {
+    const oldDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+    const pinned = makeEntity({
+      name: 'PinnedTopic',
+      type: 'topic',
+      mentionCount: 1,
+      createdAt: oldDate,
+      isPinned: true,
+    });
+    const structured = makeStructured({
+      listEntities: vi.fn().mockResolvedValue([pinned]),
+      getEdgesFor: vi.fn().mockResolvedValue([]),
+      deleteEntity: vi.fn().mockResolvedValue(undefined),
+    });
+    const api = createMaintain(makeDeps({ structured }));
+    await api.runSleepPipeline({ steps: ['cleanEntityGraph'] });
+    expect(structured.deleteEntity).not.toHaveBeenCalled();
+  });
+
+  it('keeps a topic with at least one edge', async () => {
+    const oldDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+    const topic = makeEntity({
+      name: 'ConnectedTopic',
+      type: 'topic',
+      mentionCount: 1,
+      createdAt: oldDate,
+    });
+    const structured = makeStructured({
+      listEntities: vi.fn().mockResolvedValue([topic]),
+      getEdgesFor: vi.fn().mockResolvedValue([
+        {
+          id: 'e1',
+          from: { type: 'entity', id: topic.id },
+          to: { type: 'memory', id: 'mem_1' },
+          relation: 'mentioned-in',
+          confidence: 1.0,
+          sharedTags: [],
+          method: 'manual',
+          createdAt: '2026-01-01T00:00:00.000Z',
+        },
+      ]),
+      deleteEntity: vi.fn().mockResolvedValue(undefined),
+    });
+    const api = createMaintain(makeDeps({ structured }));
+    await api.runSleepPipeline({ steps: ['cleanEntityGraph'] });
+    expect(structured.deleteEntity).not.toHaveBeenCalled();
+  });
+
+  it('keeps a young topic (under pruneMinAgeDays)', async () => {
+    const recentDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(); // 5 days
+    const youngTopic = makeEntity({
+      name: 'YoungTopic',
+      type: 'topic',
+      mentionCount: 1,
+      createdAt: recentDate,
+    });
+    const structured = makeStructured({
+      listEntities: vi.fn().mockResolvedValue([youngTopic]),
+      getEdgesFor: vi.fn().mockResolvedValue([]),
       deleteEntity: vi.fn().mockResolvedValue(undefined),
     });
     const api = createMaintain(makeDeps({ structured }));

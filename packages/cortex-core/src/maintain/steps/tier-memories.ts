@@ -1,13 +1,15 @@
 /**
- * Tier Step — ported from KB sleep/steps/tier.ts.
+ * Tier Step — ported from KB sleep/steps/tier.ts per ADR 011.
  *
- * Moves memories between hot / warm / archive tiers:
- * - hot:     high priority, low decay, recently accessed
- * - warm:    moderate priority or moderate recency
- * - archive: low priority, high decay, or long-inactive
+ * Moves memories between hot / warm / archive tiers using OR semantics
+ * across five signals (priority, decay, recency, relationship score, raw
+ * edge count). Mirrors KB's tier.ts:81-87. Earlier Cortex versions used
+ * AND semantics + dropped the relationship signals; that port deviation
+ * is fixed here (KBOT H3 Bug 1, 2026-05-24).
  *
  * Adapter note: KB reads from getTimelineDb directly. Cortex uses
- * deps.structured.listMemories + updateMemory.
+ * deps.structured.listMemories + deps.structured.getEdgesFor (for the
+ * two edge-derived signals) + updateMemory.
  */
 
 import type { Tier } from '@kybernesis/cortex-contracts';
@@ -24,6 +26,8 @@ function computeTier(
   decayScore: number,
   lastAccessedAt: string | undefined,
   accessCount: number,
+  edgeCount: number,
+  relationshipScore: number,
   config: SleepConfig,
 ): Tier {
   const now = Date.now();
@@ -33,16 +37,22 @@ function computeTier(
     ? (now - new Date(lastAccessedAt).getTime()) / DAY_MS
     : Infinity;
 
+  // KB tier.ts:81-87 — OR across five signals; any one trips hot.
   const isHot =
-    priority >= config.hotPriorityThreshold &&
-    decayScore < config.hotDecayThreshold &&
-    daysSinceAccess <= config.hotAccessDays;
+    priority >= config.hotPriorityThreshold ||
+    decayScore <= config.hotDecayThreshold ||
+    daysSinceAccess <= config.hotAccessDays ||
+    relationshipScore >= config.hotEdgeCount ||
+    edgeCount >= 4;
 
   if (isHot) return 'hot';
 
+  // Same OR shape for warm — weaker thresholds across the same signals.
   const isWarm =
     priority >= config.warmPriorityThreshold ||
-    (daysSinceAccess <= config.warmAccessDays && accessCount > 0);
+    (daysSinceAccess <= config.warmAccessDays && accessCount > 0) ||
+    relationshipScore >= config.warmEdgeCount ||
+    edgeCount >= 2;
 
   if (isWarm) return 'warm';
 
@@ -60,11 +70,29 @@ export async function runTierMemories(
   for (const memory of memories) {
     if (memory.isPinned) continue;
 
+    // Edge-derived signals — KB joins memory_edges; Cortex fetches per memory.
+    let edgeCount = 0;
+    let relationshipScore = 0;
+    try {
+      const edges = await deps.structured.getEdgesFor({ type: 'memory', id: memory.id });
+      edgeCount = edges.length;
+      relationshipScore = edges.reduce((sum, e) => sum + e.confidence, 0);
+    } catch (err) {
+      // Edge fetch failure shouldn't kill the whole step; log and proceed
+      // with edge signals at zero (matches a memory with no edges).
+      deps.logger.debug('cortex.maintain.tier-memories.edges-failed', {
+        memoryId: memory.id,
+        error: (err as Error).message,
+      });
+    }
+
     const newTier = computeTier(
       memory.priority,
       memory.decayScore,
       memory.lastAccessedAt,
       memory.accessCount,
+      edgeCount,
+      relationshipScore,
       config,
     );
 
