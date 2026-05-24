@@ -20,7 +20,8 @@
     "lint:fix": "eslint --no-error-on-unmatched-pattern --fix 'packages/**/*.ts'",
     "typecheck": "tsc -b",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "release": "bash scripts/release.sh"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
