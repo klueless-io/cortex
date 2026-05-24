@@ -1,6 +1,6 @@
 {
   "name": "@kybernesis/cortex-testkit",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "description": "In-memory fake providers for testing Cortex consumers",
   "license": "MIT",
   "author": "David Cruwys (AppyDave)",
