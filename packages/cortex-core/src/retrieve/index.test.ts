@@ -492,6 +492,114 @@ describe('factRetrieval', () => {
     expect(linked?.why).toBe('fact-retrieval/direct_facts');
   });
 
+  it('tokenBudget caps assembledContext to tokenBudget * 4 chars', async () => {
+    // Store a fact with long text so assembledContext would exceed budget without enforcement.
+    await structured.storeFact({
+      id: 'f_long',
+      fact: 'A'.repeat(500),
+      entities: ['LongFact'],
+      category: 'general',
+      confidence: 0.9,
+      sourceType: 'ai-extraction',
+      createdAt: '2026-05-24T00:00:00.000Z',
+      isLatest: true,
+    });
+    const api = createRetrieve(deps);
+    const result = await api.factRetrieval({ query: 'LongFact', tokenBudget: 50 });
+    // tokenBudget 50 → max chars = 50 * 4 = 200
+    expect(result.data.assembledContext.length).toBeLessThanOrEqual(200);
+    expect(result.data.tokenEstimate).toBeLessThanOrEqual(50);
+  });
+
+  it('equal-score tiebreaker: direct priority outranks entity_expansion when scores tie', async () => {
+    // mem_direct: FTS match (direct priority 3) + entity_expansion (priority 2)
+    //   → bump() keeps score from entity_expansion (1.0) but updates source to direct
+    // mem_entity: entity_expansion only (priority 2, score 1.0)
+    // Both have score 1.0; tiebreaker must put mem_direct first.
+    await structured.storeMemory({
+      id: 'mem_direct_and_entity', title: 'kybernesis alpha info', summary: '',
+      content: 'kybernesis alpha info', tags: [], priority: 0.5, tier: 'warm',
+      decayScore: 0, accessCount: 0, isPinned: false, contentHash: 'da',
+      createdAt: '2026-05-24T00:00:00.000Z', source: 'cli', status: 'active', isLatest: true,
+    });
+    await structured.storeMemory({
+      id: 'mem_entity_only', title: 'unrelated content', summary: '',
+      content: 'unrelated content', tags: [], priority: 0.5, tier: 'warm',
+      decayScore: 0, accessCount: 0, isPinned: false, contentHash: 'eo',
+      createdAt: '2026-05-24T00:00:00.000Z', source: 'cli', status: 'active', isLatest: true,
+    });
+    await structured.upsertEntity({ id: 'ent_alpha2', name: 'Alpha', type: 'concept', mentionCount: 1 });
+    await structured.upsertEntity({ id: 'ent_kyb2', name: 'Kybernesis', type: 'company', mentionCount: 1 });
+    await structured.storeEdge({
+      id: 'e_alpha_direct', from: { type: 'entity', id: 'ent_alpha2' },
+      to: { type: 'memory', id: 'mem_direct_and_entity' },
+      relation: 'mentioned-in', confidence: 1.0, sharedTags: [], method: 'manual',
+      createdAt: '2026-05-24T00:00:00.000Z',
+    });
+    await structured.storeEdge({
+      id: 'e_kyb_entity', from: { type: 'entity', id: 'ent_kyb2' },
+      to: { type: 'memory', id: 'mem_entity_only' },
+      relation: 'mentioned-in', confidence: 1.0, sharedTags: [], method: 'manual',
+      createdAt: '2026-05-24T00:00:00.000Z',
+    });
+
+    const api = createRetrieve(deps);
+    const result = await api.factRetrieval({ query: 'kybernesis alpha' });
+    const directIdx = result.data.supportingMemories.findIndex((r) => r.memory.id === 'mem_direct_and_entity');
+    const entityIdx = result.data.supportingMemories.findIndex((r) => r.memory.id === 'mem_entity_only');
+    expect(directIdx).toBeGreaterThanOrEqual(0);
+    expect(entityIdx).toBeGreaterThanOrEqual(0);
+    expect(directIdx).toBeLessThan(entityIdx);
+  });
+
+  it('searchFactsFulltext content field is fact text used for wordMatchRatio', async () => {
+    await structured.storeFact({
+      id: 'f_content_verify',
+      fact: 'Cortex is the portable brain library',
+      entities: ['Cortex'],
+      category: 'general',
+      confidence: 0.9,
+      sourceType: 'ai-extraction',
+      createdAt: '2026-05-24T00:00:00.000Z',
+      isLatest: true,
+    });
+    const api = createRetrieve(deps);
+    // Query: 'portable brain' → tokens ['portable', 'brain']. Both are in fact text.
+    // wordMatchRatio = 2/2 = 1.0 → score = 1.0
+    const result = await api.factRetrieval({ query: 'portable brain' });
+    const hit = result.data.facts.find((f) => f.fact.id === 'f_content_verify');
+    expect(hit).toBeDefined();
+    expect(hit!.score).toBeCloseTo(1.0, 5);
+  });
+
+  it('active/latest filter excludes deleted and non-latest memories from results', async () => {
+    await structured.storeMemory({
+      id: 'mem_deleted', title: 'deleted kybernesis', summary: '', content: 'kybernesis',
+      tags: [], priority: 0.5, tier: 'warm', decayScore: 0, accessCount: 0,
+      isPinned: false, contentHash: 'del', createdAt: '2026-05-24T00:00:00.000Z',
+      source: 'cli', status: 'deleted', isLatest: true,
+    });
+    await structured.storeMemory({
+      id: 'mem_old_version', title: 'old kybernesis', summary: '', content: 'kybernesis',
+      tags: [], priority: 0.5, tier: 'warm', decayScore: 0, accessCount: 0,
+      isPinned: false, contentHash: 'old', createdAt: '2026-05-24T00:00:00.000Z',
+      source: 'cli', status: 'active', isLatest: false,
+    });
+    await structured.storeMemory({
+      id: 'mem_good', title: 'good kybernesis', summary: '', content: 'kybernesis',
+      tags: [], priority: 0.5, tier: 'warm', decayScore: 0, accessCount: 0,
+      isPinned: false, contentHash: 'good', createdAt: '2026-05-24T00:00:00.000Z',
+      source: 'cli', status: 'active', isLatest: true,
+    });
+
+    const api = createRetrieve(deps);
+    const result = await api.factRetrieval({ query: 'kybernesis' });
+    const ids = result.data.supportingMemories.map((r) => r.memory.id);
+    expect(ids).toContain('mem_good');
+    expect(ids).not.toContain('mem_deleted');
+    expect(ids).not.toContain('mem_old_version');
+  });
+
   it('parity-harness smoke test — factRetrieval can be wired into runParityHarness', async () => {
     const { runParityHarness } = await import('@kybernesis/cortex-testkit/parity');
     await structured.storeMemory({
@@ -671,6 +779,26 @@ describe('hybridSearch', () => {
     const linked = result.data.find((r) => r.memory.id === 'mem_linked');
     expect(linked?.matchType).toBe('keyword'); // entity channel collapses into keyword bucket per KB
     expect(linked?.keywordScore).toBeGreaterThan(0);
+  });
+
+  it('keywordScore is additive across keyword + temporal channels (KB-faithful, BH-003)', async () => {
+    // One memory matching keyword. Both keyword channel (rank 0) and temporal
+    // channel (rank 0) contribute. With additive keywordScore:
+    //   keywordScore = 1/(60+1) + 1/(60+1) = 2/61
+    // With Math.max (bug): keywordScore = max(1/61, 1/61) = 1/61
+    await structured.storeMemory(baseMemory({
+      id: 'mem_additive',
+      title: 'kybernesis additive',
+      content: 'kybernesis',
+      createdAt: '2026-05-24T00:00:00.000Z',
+    }));
+    const api = createRetrieve({ ...deps, vector: makeVector(), embed: makeEmbed() });
+    const result = await api.hybridSearch({ query: 'kybernesis' });
+    expect(result.data).toHaveLength(1);
+    const hit = result.data[0]!;
+    const singleVote = 1 / (60 + 0 + 1);
+    // Additive: keyword channel vote + temporal channel vote
+    expect(hit.keywordScore).toBeCloseTo(singleVote * 2, 6);
   });
 
   it('graphHops parameter is accepted but ignored (deprecated since v0.4.0)', async () => {

@@ -267,11 +267,12 @@ export function createRetrieve(deps: RetrieveDeps): RetrieveApi {
           };
           existing.score += contribution;
           if (bucket === 'semantic') {
-            // semantic channel exclusive
+            // semantic channel: max (one semantic channel; no additive benefit)
             existing.semanticScore = Math.max(existing.semanticScore, contribution);
           } else {
-            // keyword bucket: keyword + temporal + entity all funnel here
-            existing.keywordScore = Math.max(existing.keywordScore, contribution);
+            // keyword bucket: keyword + temporal + entity all additive per KB
+            // (hybrid-search.ts sums, not max — each channel is a distinct vote)
+            existing.keywordScore += contribution;
           }
           fused.set(id, existing);
         });
@@ -650,7 +651,16 @@ export function createRetrieve(deps: RetrieveDeps): RetrieveApi {
       }
 
       // ── Fusion + enrichment ─────────────────────────────────────────────
-      const ranked = [...scored.values()].sort((a, b) => b.score - a.score).slice(0, topK);
+      // Secondary sort by MEMORY_PRIORITY breaks equal-score ties so that
+      // higher-priority layers (bridge > direct > entity_expansion > graph)
+      // surface first even when numerical scores match.
+      const ranked = [...scored.values()]
+        .sort(
+          (a, b) =>
+            b.score - a.score ||
+            MEMORY_PRIORITY[b.source] - MEMORY_PRIORITY[a.source],
+        )
+        .slice(0, topK);
 
       const supportingMemories: HybridSearchResult[] = [];
       for (const s of ranked) {
@@ -668,8 +678,13 @@ export function createRetrieve(deps: RetrieveDeps): RetrieveApi {
         });
       }
 
-      // Resolve fact ids → ScoredFact[]. KB sorts facts by score desc.
-      const factEntries = [...factHits.values()].sort((a, b) => b.score - a.score);
+      // Resolve fact ids → ScoredFact[]. KB sorts facts by score desc; priority
+      // breaks ties (bridge > direct_facts > entity_expansion > graph_expansion).
+      const factEntries = [...factHits.values()].sort(
+        (a, b) =>
+          b.score - a.score ||
+          FACT_PRIORITY[b.source] - FACT_PRIORITY[a.source],
+      );
       const facts: ScoredFact[] = [];
       const factSourceMemoryIds = new Set<string>();
       for (const hit of factEntries.slice(0, topK)) {
@@ -681,8 +696,10 @@ export function createRetrieve(deps: RetrieveDeps): RetrieveApi {
 
       // Layer 0 fan-out: surface memories backlinked by direct-fact hits
       // when they aren't already represented in supportingMemories.
+      // Capped at topK to honour the caller's size contract (BH-006).
       const presentMemoryIds = new Set(supportingMemories.map((m) => m.memory.id));
       for (const memId of factSourceMemoryIds) {
+        if (supportingMemories.length >= topK) break;
         if (presentMemoryIds.has(memId)) continue;
         const memory = await deps.structured.getMemory(memId);
         if (!memory) continue;
@@ -709,8 +726,12 @@ export function createRetrieve(deps: RetrieveDeps): RetrieveApi {
       const sections: string[] = [];
       if (factLines.length > 0) sections.push('FACTS:\n' + factLines.join('\n'));
       if (memoryLines.length > 0) sections.push('SUPPORTING CONTEXT:\n' + memoryLines.join('\n\n'));
-      const assembledContext = sections.join('\n\n');
       // KB convention (fact-retrieval.ts:65-67): ~4 chars per token.
+      // Enforce tokenBudget as a hard char ceiling so the contract is not a lie.
+      const rawContext = sections.join('\n\n');
+      const assembledContext = input.tokenBudget
+        ? rawContext.slice(0, input.tokenBudget * 4)
+        : rawContext;
       const tokenEstimate = Math.ceil(assembledContext.length / 4);
 
       const totalCandidates =
