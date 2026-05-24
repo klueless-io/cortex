@@ -2,6 +2,15 @@ import { readFileSync } from 'node:fs';
 import { ConfigSchema, type Config } from './config.js';
 
 /**
+ * ⚠ STATUS as of v2.1.5: the loaders below produce a validated, deep-frozen
+ * `Config` object — but `createCortex()` does not consume it. The kernel
+ * currently reads from independent sources (see config.ts for the breakdown).
+ *
+ * Use these loaders to validate config files and env vars syntactically.
+ * Do not assume the values flow into runtime behaviour yet.
+ */
+
+/**
  * Describes how one environment variable maps onto a nested config path.
  */
 export interface EnvMapEntry {

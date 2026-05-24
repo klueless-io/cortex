@@ -1,12 +1,23 @@
 import { z } from 'zod';
 
 /**
- * Cortex kernel configuration. Every field has a built-in default derived
- * from the locked decisions in cortex-spec.md §11. Consumers can override
- * any subset via a config file, env vars, or both.
+ * Cortex kernel configuration shape.
  *
- * Note: scope of v0.1 is the *shape*. Real implementations consume these
- * values starting in v0.x.
+ * ⚠ STATUS as of v2.1.5: this schema is **defined and exported but not
+ * yet wired into the kernel**. Calling `loadConfig()` returns a validated
+ * `Config` object, but `createCortex()` does not accept it and the
+ * runtime kernel reads from independent sources:
+ *
+ *   - `maintain` uses `SleepConfig` (packages/cortex-core/src/maintain/config.ts)
+ *     with its own hardcoded defaults — Config.sleep / Config.decay are ignored
+ *   - `retrieve.hybridSearch` hardcodes `RRF_K = 60` — Config.retrieval.rrfK ignored
+ *   - tier evaluation / source weighting / chunking / logging — all hardcoded
+ *
+ * Treat the schema as the *target* config surface, not the live one. A future
+ * release will route these fields into the kernel via createCortex(opts).
+ * Until then any value you pass through loadConfig is informational only.
+ *
+ * Tracking: docs/SYSTEM-HEALTH.md — pattern B (contract promises code doesn't keep).
  */
 export const ConfigSchema = z
   .object({
