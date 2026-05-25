@@ -57,11 +57,16 @@ export async function runLinkMemories(
   let processed = 0;
   const errors: string[] = [];
 
-  // Build semantic tag sets (exclude noise tags)
+  // Build semantic tag sets from topic:* tags only (port-faithful to KB runLinkStep).
+  // Mirror writes prefix all tags (type:*, entity:*, topic:*) for round-trip fidelity,
+  // but Jaccard similarity must use the topic-only view to match KB's behaviour.
   const tagSets = new Map<string, Set<string>>();
   for (const m of memories) {
     const tags = new Set(
-      m.tags.map((t) => t.toLowerCase()).filter((t) => !EXCLUDED_TAGS.has(t) && t.length > 2),
+      m.tags
+        .filter((t) => t.startsWith('topic:'))
+        .map((t) => t.slice('topic:'.length).toLowerCase())
+        .filter((t) => !EXCLUDED_TAGS.has(t) && t.length > 2),
     );
     if (tags.size > 0) tagSets.set(m.id, tags);
   }
