@@ -1,6 +1,6 @@
 {
   "name": "@kybernesis/cortex-contracts",
-  "version": "2.1.8",
+  "version": "2.1.9",
   "description": "Zod schemas, provider interfaces, and shared types for Cortex",
   "license": "MIT",
   "author": "David Cruwys (AppyDave)",
