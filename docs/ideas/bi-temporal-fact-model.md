@@ -7,9 +7,28 @@
 
 ---
 
-## The One-Line Problem
+## What This Actually Is
 
-Cortex can tell you *that* a fact was superseded. It cannot tell you *when* a fact was true in the real world, or answer "what did the system believe about this entity on date D?"
+This is not a feature addition. It is a qualitative change in what kind of system Cortex is.
+
+Right now Cortex is a fact store that knows the **current state** of the world. With bi-temporal facts it becomes a fact store that knows the **history of its own beliefs** — when it came to believe something, and when it stopped believing it. That is a different category of system.
+
+The practical difference: an agent running for a week doesn't need this. An agent running for a year, across hundreds of conversations, where facts about people and projects have changed multiple times — that agent needs to answer "what did we believe about this before the pivot?" or "what was Alice's role when that decision was made?" Without temporal history, those questions are permanently unanswerable. You cannot reconstruct what you didn't record.
+
+**The value compounds over time.** The earlier the columns exist, the more history the system accumulates. Adding them later means starting from zero on the day they're added — all prior facts remain unanchored in time.
+
+---
+
+## The Core Proposal Is Two Nullable SQL Columns
+
+```sql
+ALTER TABLE facts ADD COLUMN valid_at   TEXT;  -- when fact became true in the world
+ALTER TABLE facts ADD COLUMN invalid_at TEXT;  -- when fact stopped being true
+```
+
+That is the whole proposal for now. Both nullable. All existing rows get NULL — semantically correct ("we recorded this fact but don't know when it became true in the world"). No consumer changes. No LLM calls added. No latency impact. No migration risk.
+
+Everything else in this document — the extraction prompt extension, the sleep step, the retrieval channel — is a future layer that activates when you're ready. The columns are what make all of it possible. Without them, none of it can be retrofitted once three consumers have adopted the current schema.
 
 ---
 
@@ -412,6 +431,25 @@ The first two steps are genuinely free — do them now. Schema columns that sit 
 - **No change to any existing consumer** — KyberBot, KyberAgent Desktop, Ian's Cloud can all ignore the new fields until they're ready.
 - **No breaking change to any existing query** — all current queries omit `valid_at`/`invalid_at` and will continue to return the same results. The temporal filter is opt-in.
 - **No new sleep step before the migration** — Steps 1 and 2 are the only pre-migration work.
+
+---
+
+## On LLM Costs
+
+The schema change has zero LLM cost. The question of LLM cost only arises when — and if — you choose to populate the fields. Here is the breakdown by phase:
+
+| Phase | LLM cost change | Notes |
+|---|---|---|
+| Add two nullable columns | Zero | No LLM involved |
+| Extend extraction prompt | ~50 extra tokens on an **existing** call | Same call, more fields in output schema |
+| `invalid_at` in contradiction handler | Zero | Timestamp comparison in code — no LLM |
+| `resolveContradictions` sleep step | Zero | Pure SQL arithmetic on existing data |
+| Temporal retrieval channel (hybridSearch) | Zero | SQL filter, no LLM |
+| Optional standalone timestamp fallback | Modest, opt-in | Graphiti's second-pass pattern — not required in Phase 1 |
+
+The only LLM cost in the initial implementation is asking for two optional fields on a call that already runs. If the model cannot determine a date from the source text, it returns null — the correct answer, and handled gracefully. No cost is incurred. No new call is made.
+
+The more expensive patterns (the standalone fallback timestamp pass, community-level temporal summaries) are future work, explicitly deferred, and not part of this proposal.
 
 ---
 

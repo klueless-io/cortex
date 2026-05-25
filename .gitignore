@@ -48,3 +48,6 @@ yarn-error.log*
 # Mochaccino generated views (data files are versioned; rendered HTML is not)
 .mochaccino/designs/
 .mochaccino/.cache/
+
+# understand-anything analysis output
+.understand-anything/
